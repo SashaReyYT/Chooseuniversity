@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+/*
+  Unifind design tokens.
+  Ported from the "Academic Excellence System" design reference
+  (stitch_unimatch_premium/academic_excellence_system/DESIGN.md), which is
+  the palette/type system used across the landing, questionnaire, and
+  results mockups. This is the visual source of truth — do not invent
+  new colors or type scales; extend this file instead.
+
+  The "Technical Academic Engine" reference (used by the decision-dashboard
+  mockup) shares this structure but swaps primary/tertiary to near-black and
+  body type to Plus Jakarta Sans. Its extra status tokens (success, warning,
+  neutral-variant, outline-technical) are included below since they're
+  additive. If a later stage needs the dashboard's distinct near-black
+  primary treatment, introduce it as a scoped variant rather than
+  overwriting these tokens.
+*/
+
+@theme inline {
+  /* Color tokens */
+  --color-surface: #fbf9f7;
+  --color-surface-dim: #dbdad8;
+  --color-surface-bright: #fbf9f7;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f5f3f1;
+  --color-surface-container: #efedec;
+  --color-surface-container-high: #eae8e6;
+  --color-surface-container-highest: #e4e2e0;
+  --color-surface-variant: #e4e2e0;
+
+  --color-on-surface: #1b1c1b;
+  --color-on-surface-variant: #44474e;
+  --color-inverse-surface: #30302f;
+  --color-inverse-on-surface: #f2f0ee;
+
+  --color-outline: #75777f;
+  --color-outline-variant: #c5c6cf;
+  --color-outline-technical: #c5c6cf;
+
+  --color-surface-tint: #4e5e81;
+
+  --color-primary: #031635;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #1a2b4b;
+  --color-on-primary-container: #8293b8;
+  --color-inverse-primary: #b6c6ef;
+  --color-primary-fixed: #d8e2ff;
+  --color-primary-fixed-dim: #b6c6ef;
+  --color-on-primary-fixed: #081b3a;
+  --color-on-primary-fixed-variant: #364768;
+
+  --color-secondary: #775a19;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #fed488;
+  --color-on-secondary-container: #785a1a;
+  --color-secondary-fixed: #ffdea5;
+  --color-secondary-fixed-dim: #e9c176;
+  --color-on-secondary-fixed: #261900;
+  --color-on-secondary-fixed-variant: #5d4201;
+
+  --color-tertiary: #001c10;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #003321;
+  --color-on-tertiary-container: #629f81;
+  --color-tertiary-fixed: #b1f0ce;
+  --color-tertiary-fixed-dim: #95d4b3;
+  --color-on-tertiary-fixed: #002114;
+  --color-on-tertiary-fixed-variant: #0e5138;
+
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  --color-background: #fbf9f7;
+  --color-on-background: #1b1c1b;
+
+  /* Semantic status tokens (from Technical Academic Engine reference) */
+  --color-success: #2e7d32;
+  --color-warning: #ed6c02;
+  --color-neutral-variant: #75777f;
+
+  /* Typography — families */
+  --font-display-xl: var(--font-playfair), "Playfair Display", serif;
+  --font-headline-lg: var(--font-playfair), "Playfair Display", serif;
+  --font-headline-lg-mobile: var(--font-playfair), "Playfair Display", serif;
+  --font-headline-md: var(--font-playfair), "Playfair Display", serif;
+  --font-headline-sm: var(--font-playfair), "Playfair Display", serif;
+  --font-body-lg: var(--font-inter), "Inter", sans-serif;
+  --font-body-md: var(--font-inter), "Inter", sans-serif;
+  --font-body-sm: var(--font-inter), "Inter", sans-serif;
+  --font-label-caps: var(--font-inter), "Inter", sans-serif;
+  --font-data-lg: var(--font-inter), "Inter", sans-serif;
+
+  /* Typography — sizes (paired with matching line-height via matching text utilities) */
+  --text-display-xl: 64px;
+  --text-display-xl--line-height: 72px;
+  --text-display-xl--letter-spacing: -0.02em;
+  --text-display-xl--font-weight: 700;
+
+  --text-headline-lg: 48px;
+  --text-headline-lg--line-height: 56px;
+  --text-headline-lg--letter-spacing: -0.01em;
+  --text-headline-lg--font-weight: 700;
+
+  --text-headline-lg-mobile: 32px;
+  --text-headline-lg-mobile--line-height: 40px;
+  --text-headline-lg-mobile--font-weight: 700;
+
+  --text-headline-md: 32px;
+  --text-headline-md--line-height: 40px;
+  --text-headline-md--font-weight: 600;
+
+  --text-headline-sm: 24px;
+  --text-headline-sm--line-height: 32px;
+  --text-headline-sm--font-weight: 600;
+
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 28px;
+  --text-body-lg--font-weight: 400;
+
+  --text-body-md: 16px;
+  --text-body-md--line-height: 24px;
+  --text-body-md--font-weight: 400;
+
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--font-weight: 400;
+
+  --text-label-caps: 12px;
+  --text-label-caps--line-height: 16px;
+  --text-label-caps--letter-spacing: 0.05em;
+  --text-label-caps--font-weight: 600;
+
+  --text-data-lg: 18px;
+  --text-data-lg--line-height: 28px;
+  --text-data-lg--font-weight: 600;
+
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-DEFAULT: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Spacing / layout */
+  --spacing-unit: 8px;
+  --spacing-container-max: 1280px;
+  --spacing-gutter: 24px;
+  --spacing-margin-mobile: 16px;
+  --spacing-margin-desktop: 48px;
+  --spacing-section-gap: 80px;
+
+  --container-container-max: 1280px;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-on-background);
+}
+
+.ambient-shadow {
+  box-shadow: 0px 10px 30px rgba(3, 22, 53, 0.04);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
