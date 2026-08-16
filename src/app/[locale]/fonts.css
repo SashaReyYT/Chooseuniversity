@@ -1,0 +1,10 @@
+/*
+  @fontsource registers @font-face rules under the font-family names
+  "Inter" and "Playfair Display" (see the imports in layout.tsx). This maps
+  those to the --font-inter / --font-playfair custom properties that
+  globals.css's @theme block builds the font-* utilities from.
+*/
+:root {
+  --font-inter: "Inter", sans-serif;
+  --font-playfair: "Playfair Display", serif;
+}
