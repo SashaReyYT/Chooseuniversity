@@ -73,34 +73,21 @@ export async function saveOnboardingProfile(
   const ieltsScore = optionalNumber(formData, "ielts_score");
 
   try {
-    await new ProfileService(supabase).saveProfile(
-      user.id,
-      {
-        full_name: optionalText(formData, "full_name"),
-        nationality_country_code: optionalText(formData, "nationality_country_code"),
-        current_education_level: optionalText(formData, "current_education_level") as EducationLevel | null,
-        current_gpa: gpa,
-        current_gpa_scale: gpaScale,
-        budget_min: budgetMin,
-        budget_max: budgetMax,
-        budget_currency: optionalText(formData, "budget_currency"),
-        preferred_degree_level: optionalText(formData, "preferred_degree_level") as DegreeLevel | null,
-        preferred_country_codes: listField(formData, "preferred_country_codes"),
-        preferred_cities: commaListField(formData, "preferred_cities"),
-        preferred_field_of_study_ids: listField(formData, "preferred_field_of_study_ids"),
-        preferred_language_codes: listField(formData, "preferred_language_codes"),
-      },
-      ieltsScore != null
-        ? [
-            {
-              test_type: "IELTS",
-              score: ieltsScore,
-              score_display: String(ieltsScore),
-              test_date: null,
-            },
-          ]
-        : [],
-    );
+    await new ProfileService(supabase).upsert(user.id, {
+      full_name: optionalText(formData, "full_name"),
+      nationality_country_code: optionalText(formData, "nationality_country_code"),
+      current_education_level: optionalText(formData, "current_education_level") as EducationLevel | null,
+      current_gpa: gpa,
+      current_gpa_scale: gpaScale,
+      budget_min: budgetMin,
+      budget_max: budgetMax,
+      budget_currency: optionalText(formData, "budget_currency"),
+      preferred_degree_level: optionalText(formData, "preferred_degree_level") as DegreeLevel | null,
+      preferred_country_codes: listField(formData, "preferred_country_codes"),
+      preferred_cities: commaListField(formData, "preferred_cities"),
+      preferred_field_of_study_ids: listField(formData, "preferred_field_of_study_ids"),
+      preferred_language_codes: listField(formData, "preferred_language_codes"),
+    });
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Couldn't save your profile." };
   }

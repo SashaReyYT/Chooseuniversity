@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ProgrammeWithDetails } from "@/lib/repositories/programmes.repository";
 import type { MatchResult } from "@/lib/matching/types";
+import type { MatchMessage } from "@/lib/matching/messages";
 import { SaveButton } from "@/components/save-button";
 import { CompareButton } from "@/components/compare-button";
 
@@ -14,6 +15,10 @@ const LABEL_COLOR: Record<string, string> = {
 
 function formatMoney(amount: number, currency: string) {
   return `${Math.round(amount).toLocaleString()} ${currency}`;
+}
+
+function renderMatchMessage(message: MatchMessage): string {
+  return message.type === "raw" ? message.text : message.key;
 }
 
 /**
@@ -83,20 +88,20 @@ export function MatchCard({
             Why this match
           </summary>
           <div className="mt-3 space-y-1.5">
-            {match.reasons.map((reason) => (
+            {match.reasons.map((reason, index) => (
               <p
-                key={reason}
+                key={`${renderMatchMessage(reason)}-${index}`}
                 className="font-body-sm text-body-sm text-on-surface flex items-start gap-2"
               >
-                <span className="text-success">✓</span> {reason}
+                <span className="text-success">✓</span> {renderMatchMessage(reason)}
               </p>
             ))}
-            {match.concerns.map((concern) => (
+            {match.concerns.map((concern, index) => (
               <p
-                key={concern}
+                key={`${renderMatchMessage(concern)}-${index}`}
                 className="font-body-sm text-body-sm text-on-surface flex items-start gap-2"
               >
-                <span className="text-warning">⚠</span> {concern}
+                <span className="text-warning">⚠</span> {renderMatchMessage(concern)}
               </p>
             ))}
           </div>
