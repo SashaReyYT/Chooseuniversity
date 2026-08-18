@@ -3,9 +3,7 @@
  *
  * Hand-authored to match `supabase/migrations/*.sql` exactly (verified
  * column-by-column against `information_schema.columns` on a locally
- * validated instance of the schema вЂ” the CLI's own `gen types typescript`
- * needs Docker, which isn't available in every environment this repo is
- * developed in).
+ * validated instance of the schema).
  *
  * Once a real Supabase project is linked, prefer regenerating this file
  * with the CLI so it can never drift from the live schema:
@@ -13,7 +11,7 @@
  *   npx supabase gen types typescript --linked > src/types/database.ts
  *
  * If you hand-edit this file in the meantime, keep it in sync with the
- * migrations вЂ” nothing enforces that automatically.
+ * migrations — nothing enforces that automatically.
  */
 
 export type Json =
@@ -37,8 +35,15 @@ export type LocationPreferenceType =
   | "student_city"
   | "flexible";
 export type BudgetMode = "exact" | "low" | "medium" | "high" | "unknown";
-export type QualificationCategory = "national" | "academic" | "language" | "other";
-export type RequirementComparison = "greater_or_equal" | "greater" | "equal";
+export type QualificationCategory =
+  | "national"
+  | "academic"
+  | "language"
+  | "other";
+export type RequirementComparison =
+  | "greater_or_equal"
+  | "greater"
+  | "equal";
 export type CefrLevel =
   | "a1"
   | "a2"
@@ -48,9 +53,23 @@ export type CefrLevel =
   | "c2"
   | "native"
   | "not_sure";
-export type MathBackground = "excellent" | "good" | "average" | "weak" | "not_sure";
-export type AdmissionPreference = "safest" | "balanced" | "competitive" | "no_preference";
-export type ProgrammeStudyMode = "full_time" | "part_time" | "distance" | "online" | "hybrid";
+export type MathBackground =
+  | "excellent"
+  | "good"
+  | "average"
+  | "weak"
+  | "not_sure";
+export type AdmissionPreference =
+  | "safest"
+  | "balanced"
+  | "competitive"
+  | "no_preference";
+export type ProgrammeStudyMode =
+  | "full_time"
+  | "part_time"
+  | "distance"
+  | "online"
+  | "hybrid";
 export type SourceType =
   | "official_university"
   | "official_faculty"
@@ -58,7 +77,26 @@ export type SourceType =
   | "public_reference";
 export type SourceProvenance = "official" | "external";
 export type ImportFormat = "json" | "csv";
-export type ImportStatus = "parsed" | "validated" | "review" | "imported" | "failed";
+export type ImportStatus =
+  | "parsed"
+  | "validated"
+  | "review"
+  | "imported"
+  | "failed";
+
+export type UniversityResourceCategory =
+  | "international_office"
+  | "housing"
+  | "visa_support"
+  | "buddy_program"
+  | "student_services"
+  | "erasmus"
+  | "arrival_info";
+
+export type UniversityResourceLinkType =
+  | "official"
+  | "guide"
+  | "portal";
 
 export type Database = {
   public: {
@@ -84,6 +122,7 @@ export type Database = {
         };
         Relationships: [];
       };
+
       languages: {
         Row: {
           code: string;
@@ -99,6 +138,7 @@ export type Database = {
         };
         Relationships: [];
       };
+
       fields_of_study: {
         Row: {
           id: string;
@@ -120,6 +160,7 @@ export type Database = {
         };
         Relationships: [];
       };
+
       currency_rates: {
         Row: {
           currency: string;
@@ -138,6 +179,7 @@ export type Database = {
         };
         Relationships: [];
       };
+
       universities: {
         Row: {
           id: string;
@@ -214,6 +256,7 @@ export type Database = {
           },
         ];
       };
+
       programmes: {
         Row: {
           id: string;
@@ -335,6 +378,7 @@ export type Database = {
           },
         ];
       };
+
       faculties: {
         Row: {
           id: string;
@@ -372,6 +416,7 @@ export type Database = {
           },
         ];
       };
+
       qualifications: {
         Row: {
           id: string;
@@ -411,6 +456,7 @@ export type Database = {
         };
         Relationships: [];
       };
+
       programme_tuition_variants: {
         Row: {
           id: string;
@@ -457,6 +503,7 @@ export type Database = {
           },
         ];
       };
+
       programme_academic_requirements: {
         Row: {
           id: string;
@@ -509,6 +556,7 @@ export type Database = {
           },
         ];
       };
+
       programme_test_requirements: {
         Row: {
           id: string;
@@ -564,6 +612,7 @@ export type Database = {
           },
         ];
       };
+
       university_accommodation: {
         Row: {
           id: string;
@@ -634,6 +683,7 @@ export type Database = {
           },
         ];
       };
+
       city_accommodation_estimates: {
         Row: {
           id: string;
@@ -683,6 +733,7 @@ export type Database = {
           },
         ];
       };
+
       programme_living_cost_estimates: {
         Row: {
           id: string;
@@ -777,6 +828,7 @@ export type Database = {
           },
         ];
       };
+
       nmt_subjects: {
         Row: {
           code: string;
@@ -798,6 +850,7 @@ export type Database = {
         };
         Relationships: [];
       };
+
       user_nmt_scores: {
         Row: {
           id: string;
@@ -841,6 +894,7 @@ export type Database = {
           },
         ];
       };
+
       user_qualifications: {
         Row: {
           id: string;
@@ -884,6 +938,7 @@ export type Database = {
           },
         ];
       };
+
       career_priorities: {
         Row: {
           code: string;
@@ -899,6 +954,7 @@ export type Database = {
         };
         Relationships: [];
       };
+
       user_match_weights: {
         Row: {
           user_id: string;
@@ -945,6 +1001,7 @@ export type Database = {
           },
         ];
       };
+
       user_profiles: {
         Row: {
           id: string;
@@ -1048,6 +1105,7 @@ export type Database = {
           },
         ];
       };
+
       user_test_scores: {
         Row: {
           id: string;
@@ -1084,6 +1142,7 @@ export type Database = {
         };
         Relationships: [];
       };
+
       saved_programmes: {
         Row: {
           id: string;
@@ -1115,6 +1174,7 @@ export type Database = {
           },
         ];
       };
+
       comparisons: {
         Row: {
           id: string;
@@ -1139,6 +1199,7 @@ export type Database = {
         };
         Relationships: [];
       };
+
       comparison_items: {
         Row: {
           id: string;
@@ -1176,6 +1237,7 @@ export type Database = {
           },
         ];
       };
+
       sources: {
         Row: {
           id: string;
@@ -1195,17 +1257,9 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
-        Update: {
-          id?: string;
-          url?: string;
-          name?: string;
-          type?: SourceType;
-          notes?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
         Relationships: [];
       };
+
       programme_sources: {
         Row: {
           programme_id: string;
@@ -1237,6 +1291,7 @@ export type Database = {
           },
         ];
       };
+
       university_sources: {
         Row: {
           university_id: string;
@@ -1268,6 +1323,63 @@ export type Database = {
           },
         ];
       };
+
+      university_resources: {
+        Row: {
+          id: string;
+          university_id: string;
+          category: UniversityResourceCategory;
+          title: string;
+          description: string | null;
+          link_title: string | null;
+          link_url: string | null;
+          link_type: UniversityResourceLinkType | null;
+          contact_type: string | null;
+          contact_value: string | null;
+          contact_label: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          category: UniversityResourceCategory;
+          title: string;
+          description?: string | null;
+          link_title?: string | null;
+          link_url?: string | null;
+          link_type?: UniversityResourceLinkType | null;
+          contact_type?: string | null;
+          contact_value?: string | null;
+          contact_label?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          university_id?: string;
+          category?: UniversityResourceCategory;
+          title?: string;
+          description?: string | null;
+          link_title?: string | null;
+          link_url?: string | null;
+          link_type?: UniversityResourceLinkType | null;
+          contact_type?: string | null;
+          contact_value?: string | null;
+          contact_label?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "university_resources_university_id_fkey";
+            columns: ["university_id"];
+            referencedRelation: "universities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+
       imports: {
         Row: {
           id: string;
@@ -1317,6 +1429,7 @@ export type Database = {
           },
         ];
       };
+
       import_errors: {
         Row: {
           id: string;
@@ -1354,6 +1467,7 @@ export type Database = {
           },
         ];
       };
+
       admin_users: {
         Row: {
           user_id: string;
@@ -1380,8 +1494,11 @@ export type Database = {
         ];
       };
     };
+
     Views: Record<string, never>;
+
     Functions: Record<string, never>;
+
     Enums: {
       degree_level: DegreeLevel;
       tuition_fee_period: TuitionFeePeriod;
