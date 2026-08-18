@@ -17,7 +17,11 @@ Rules:
   scores + the programme catalog via the repository layer and runs each
   programme through `computeMatchScore` (`src/lib/matching/engine.ts`).
   Contains no scoring logic itself, only wiring and sorting:
-  - `listMatchesForUser(userId)` — every programme, ranked best-fit first.
+  - `listMatchesForUser(userId, filters?)` — every programme matching
+    `filters` (search/field/degree/language/tuition/sort, spec §35–36 —
+    same shape `ProgrammesRepository.search` takes), ranked per
+    `filters.sortBy` (`sortRankedMatches`, unit-tested). Omitting
+    `filters` returns every programme, best-fit first.
   - `getMatchForProgramme(userId, programmeId)` — one programme's match,
     for a programme detail page.
 - `favourites.service.ts` — `FavouritesService`. The shortlist: saves,

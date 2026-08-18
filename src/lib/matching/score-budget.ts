@@ -2,39 +2,50 @@ import type {
   MatchDimensionResult,
   MatchUserProfile,
   ProgrammeWithDetails,
-} from "./types";
-import { MATCH_DIMENSION_LABELS } from "./types";
+} from "./match-types";
+import { MATCH_DIMENSION_LABELS } from "./match-types";
 import type { MatchMessage } from "./messages";
 import { translated } from "./messages";
-import { roundScore } from "./utils";
+import type { CurrencyRateTable } from "./currency";
+import { convertAmount } from "./currency";
+import { annualLivingCost, roundScore } from "./utils";
 
 /**
- * Normalizes a programme's tuition to an annual figure so programmes
- * billed per-semester or as a lump sum compare on the same basis as a
- * user's (implicitly annual) budget.
+ * Rough, internal-only annual ceilings (EUR) for students who answered
+ * the budget question qualitatively (spec §15: "How would you describe
+ * your budget? Low / Medium / High / I'm not sure") instead of a number.
+ * These never get rendered back to the user as if they were a figure the
+ * user entered — see `budget.approximateFromMode` — they only let the
+ * scoring curve run instead of the dimension going non-applicable.
+ * `unknown` deliberately isn't in this table: "I'm not sure" means we
+ * genuinely don't score this dimension, same as no answer at all.
  */
-function annualTuition(programme: ProgrammeWithDetails): number {
-  switch (programme.tuition_fee_period) {
-    case "per_semester":
-      return programme.tuition_fee_amount * 2;
-    case "total": {
-      const years = programme.duration_months / 12;
-      return years > 0 ? programme.tuition_fee_amount / years : programme.tuition_fee_amount;
-    }
-    case "per_year":
-    default:
-      return programme.tuition_fee_amount;
-  }
-}
+const BUDGET_MODE_CEILINGS_EUR: Partial<Record<MatchUserProfile["budget_mode"], number>> = {
+  low: 8000,
+  medium: 15000,
+  high: 30000,
+};
 
 /**
  * Budget Fit compares a programme's estimated annual cost (tuition +
  * living costs) against the user's stated budget ceiling.
  *
- * No currency conversion is performed — there's no FX-rate table in the
- * schema yet. A currency mismatch is surfaced as a concern rather than
- * silently treating different currencies as equal, so the score is never
- * presented as more precise than it actually is.
+ * Tuition is a range (`tuition_min`–`tuition_max`, spec §49): the score
+ * is honest about the range instead of picking an average. The worst
+ * case (`tuition_max`) determines a full fit; a budget that falls
+ * inside the range scores proportionally; and if even the cheapest
+ * option (`tuition_min`) is over budget, the falloff is computed from
+ * that lower bound.
+ *
+ * Currency conversion (spec §15, §26–§27): when the programme's tuition
+ * currency differs from the user's stated budget currency, the total is
+ * converted via `rates` (an EUR-based exchange rate table — see
+ * `currency.ts` and `supabase/migrations/0012_currency_rates.sql`)
+ * before comparing. When no rate is available for either currency, this
+ * dimension degrades to UNKNOWN (`applicable: false`, `score: null` —
+ * spec §29) rather than silently comparing the raw numbers as if the
+ * currencies were equal, which would be a false pass/fail dressed up as
+ * a real score.
  *
  * Amounts are passed as raw numbers in message params, not pre-formatted
  * strings — this function doesn't know the active UI locale, and
@@ -44,11 +55,15 @@ function annualTuition(programme: ProgrammeWithDetails): number {
 export function scoreBudgetFit(
   profile: MatchUserProfile,
   programme: ProgrammeWithDetails,
+  rates: CurrencyRateTable = {},
 ): MatchDimensionResult {
   const reasons: MatchMessage[] = [];
   const concerns: MatchMessage[] = [];
 
-  if (profile.budget_max == null) {
+  const isApproximate = profile.budget_max == null;
+  const budgetMax = profile.budget_max ?? BUDGET_MODE_CEILINGS_EUR[profile.budget_mode] ?? null;
+
+  if (budgetMax == null) {
     return {
       key: "budget",
       label: MATCH_DIMENSION_LABELS.budget,
@@ -59,51 +74,108 @@ export function scoreBudgetFit(
     };
   }
 
-  const annualLivingCost = (programme.estimated_living_cost_monthly ?? 0) * 12;
-  const annualCost = annualTuition(programme) + annualLivingCost;
-  const currency = programme.tuition_fee_currency;
+  if (isApproximate) {
+    concerns.push(translated("budget.approximateFromMode"));
+  }
 
-  if (profile.budget_currency && profile.budget_currency !== currency) {
+  const annualLiving = annualLivingCost(programme);
+  const programmeCurrency = programme.tuition_currency;
+  // The qualitative ceilings (`BUDGET_MODE_CEILINGS_EUR`) are internally
+  // EUR-denominated, and the profile form defaults the currency selector
+  // to EUR — an explicit budget with no stated currency is treated the
+  // same way, rather than being assumed to match whatever currency the
+  // programme happens to be priced in.
+  const budgetCurrency = profile.budget_currency ?? "EUR";
+
+  let annualCostMin = programme.tuition_min + annualLiving;
+  let annualCostMax = programme.tuition_max + annualLiving;
+  let currency = programmeCurrency;
+
+  if (budgetCurrency !== programmeCurrency) {
+    const convertedMin = convertAmount(annualCostMin, programmeCurrency, budgetCurrency, rates);
+    const convertedMax = convertAmount(annualCostMax, programmeCurrency, budgetCurrency, rates);
+
+    if (convertedMin == null || convertedMax == null) {
+      // No rate available for this pair — UNKNOWN (spec §29), not a
+      // score computed by comparing mismatched currencies as if equal.
+      return {
+        key: "budget",
+        label: MATCH_DIMENSION_LABELS.budget,
+        score: null,
+        applicable: false,
+        reasons,
+        concerns: [
+          ...concerns,
+          translated("budget.currencyMismatch", {
+            currency: programmeCurrency,
+            budgetCurrency,
+          }),
+        ],
+      };
+    }
+
+    annualCostMin = convertedMin;
+    annualCostMax = convertedMax;
+    currency = budgetCurrency;
     concerns.push(
-      translated("budget.currencyMismatch", {
-        currency,
-        budgetCurrency: profile.budget_currency,
+      translated("budget.currencyConverted", {
+        currency: programmeCurrency,
+        budgetCurrency,
       }),
     );
   }
 
-  const budgetMax = profile.budget_max;
   let score: number;
 
-  if (annualCost <= budgetMax) {
+  if (annualCostMax <= budgetMax) {
+    // The most expensive option still fits — clean 100.
     score = 100;
     reasons.push(
-      translated("budget.fitsBudget", { amount: Math.round(annualCost), currency }),
+      translated("budget.fitsBudgetRange", {
+        amountMin: Math.round(annualCostMin),
+        amountMax: Math.round(annualCostMax),
+        currency,
+      }),
     );
-  } else if (annualCost <= budgetMax * 1.5) {
-    // Linear falloff from 100 (at budget) to 50 (at 1.5x budget).
-    const overBudgetFraction = (annualCost - budgetMax) / (budgetMax * 0.5);
-    score = roundScore(100 - overBudgetFraction * 50);
+  } else if (annualCostMin <= budgetMax) {
+    // The budget falls inside the programme's cost range: linear
+    // 100 (budget at the cheap end) → 50 (budget at the expensive end).
+    const span = annualCostMax - annualCostMin || 1;
+    const fraction = (budgetMax - annualCostMin) / span;
+    score = roundScore(50 + fraction * 50);
     concerns.push(
-      translated("budget.overBudget", {
-        amount: Math.round(annualCost),
+      translated("budget.partiallyFitsBudget", {
+        amountMin: Math.round(annualCostMin),
+        amountMax: Math.round(annualCostMax),
         budgetMax,
         currency,
       }),
     );
   } else {
-    // Continue the falloff below 50, floored at 10 so "wildly over
-    // budget" is still distinguishable from "just over" rather than both
-    // collapsing to 0.
-    const overBudgetFraction = (annualCost - budgetMax * 1.5) / (budgetMax * 0.5);
-    score = roundScore(Math.max(10, 50 - overBudgetFraction * 40));
-    concerns.push(
-      translated("budget.significantlyOverBudget", {
-        amount: Math.round(annualCost),
-        budgetMax,
-        currency,
-      }),
-    );
+    // Even the cheapest option is over budget. Same falloff shape as
+    // before: linear from 100 (at budget) to 50 (at 1.5x budget), then
+    // a shallower curve floored at 10 — but measured from `tuition_min`,
+    // the best case, so the range can't hide an over-budget programme.
+    const overBudgetFraction = (annualCostMin - budgetMax) / (budgetMax * 0.5);
+    if (overBudgetFraction <= 1) {
+      score = roundScore(100 - overBudgetFraction * 50);
+      concerns.push(
+        translated("budget.overBudget", {
+          amount: Math.round(annualCostMin),
+          budgetMax,
+          currency,
+        }),
+      );
+    } else {
+      score = roundScore(Math.max(10, 50 - (overBudgetFraction - 1) * 40));
+      concerns.push(
+        translated("budget.significantlyOverBudget", {
+          amount: Math.round(annualCostMin),
+          budgetMax,
+          currency,
+        }),
+      );
+    }
   }
 
   return {
@@ -115,3 +187,5 @@ export function scoreBudgetFit(
     concerns,
   };
 }
+
+

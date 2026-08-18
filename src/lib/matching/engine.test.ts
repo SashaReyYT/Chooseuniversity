@@ -13,7 +13,7 @@ describe("computeMatchScore", () => {
     expect(result.overallScore).not.toBeNull();
     expect(result.overallScore!).toBeGreaterThanOrEqual(90);
     expect(result.overallLabel).toBe("Excellent Fit");
-    expect(result.dimensions).toHaveLength(5);
+    expect(result.dimensions).toHaveLength(8);
     expect(result.reasons.length).toBeGreaterThan(0);
   });
 
@@ -65,7 +65,7 @@ describe("computeMatchScore", () => {
       testScores: [],
     });
     const programme = makeProgramme({
-      language_requirements: [],
+      test_requirements: [],
       academic_requirements: null,
       application_deadline: null,
     });

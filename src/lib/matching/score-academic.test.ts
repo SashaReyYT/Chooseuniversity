@@ -63,7 +63,11 @@ describe("scoreAcademicFit", () => {
         required_subjects: [],
         entrance_exam_required: false,
         entrance_exam_notes: null,
+        portfolio_required: false,
+        interview_required: false,
         notes: null,
+        required_degree_level: null,
+        required_math_background: null,
       },
     });
 
@@ -84,7 +88,11 @@ describe("scoreAcademicFit", () => {
         required_subjects: ["Mathematics", "Physics"],
         entrance_exam_required: false,
         entrance_exam_notes: null,
+        portfolio_required: false,
+        interview_required: false,
         notes: null,
+        required_degree_level: null,
+        required_math_background: null,
       },
     });
 
@@ -108,7 +116,11 @@ describe("scoreAcademicFit", () => {
         required_subjects: [],
         entrance_exam_required: true,
         entrance_exam_notes: null,
+        portfolio_required: false,
+        interview_required: false,
         notes: null,
+        required_degree_level: null,
+        required_math_background: null,
       },
     });
 
@@ -129,6 +141,10 @@ describe("scoreAcademicFit", () => {
         entrance_exam_required: true,
         entrance_exam_notes: "Entrance test in mathematics and logical reasoning.",
         notes: null,
+        required_degree_level: null,
+        required_math_background: null,
+        portfolio_required: false,
+        interview_required: false,
       },
     });
 

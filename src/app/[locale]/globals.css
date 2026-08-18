@@ -171,3 +171,24 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
+
+/*
+  Maps to the Material Symbols Outlined <link> loaded in
+  src/app/[locale]/layout.tsx — Google's font ships glyphs only; this is
+  the standard font-family + rendering-feature rule needed to actually
+  use them via <span class="material-symbols-outlined">icon_name</span>.
+*/
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}

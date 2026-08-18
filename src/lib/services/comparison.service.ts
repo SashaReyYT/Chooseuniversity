@@ -18,6 +18,17 @@ export interface ComparisonWithProgrammes {
   programmes: ProgrammeWithDetails[];
 }
 
+/** Spec §38: a comparison holds at most this many programmes. Single source of truth — service enforces it, UI reads it for copy. */
+export const MAX_COMPARISON_SIZE = 3;
+
+/** Thrown when a comparison already holds the maximum number of programmes (spec §38: 3). */
+export class ComparisonLimitError extends Error {
+  constructor(readonly maxSize: number) {
+    super(`Comparison is limited to ${maxSize} programmes`);
+    this.name = "ComparisonLimitError";
+  }
+}
+
 /**
  * Orchestrates side-by-side comparisons: loads a user's comparison sets
  * and hydrates each one's items with full programme details from the
@@ -39,6 +50,31 @@ export class ComparisonService {
     return this.hydrate(comparisons);
   }
 
+  /**
+   * V1 doesn't offer UI to manage multiple named comparison sets — every
+   * "add to compare" action operates on one implicit comparison per user,
+   * created on first use. If named/multiple comparisons become a real
+   * feature later, `createComparison`/`listForUser` below already support
+   * it; this is purely a convenience on top for the single-comparison
+   * case.
+   */
+  async getOrCreateDefaultComparison(
+    userId: string,
+    defaultName: string,
+  ): Promise<ComparisonWithProgrammes> {
+    const existing = await this.comparisons.listByUserId(userId);
+
+    const withItems =
+      existing[0] ??
+      (await this.comparisons.create(userId, defaultName).then((c) => ({
+        ...c,
+        items: [],
+      })));
+
+    const [hydrated] = await this.hydrate([withItems]);
+    return hydrated;
+  }
+
   async getById(comparisonId: string): Promise<ComparisonWithProgrammes | null> {
     const comparison = await this.comparisons.findById(comparisonId);
     if (!comparison) return null;
@@ -51,29 +87,6 @@ export class ComparisonService {
     return this.comparisons.create(userId, name);
   }
 
-  /**
-   * Returns the user's most recently created comparison, creating one if
-   * none exists yet. V1 gives every user exactly one implicit "working"
-   * comparison (no UI for naming/managing multiple sets) — this is the
-   * single entry point catalog/compare screens use so they never have to
-   * know a comparison's id ahead of time.
-   */
-  async getOrCreateDefaultComparison(
-    userId: string,
-  ): Promise<ComparisonWithProgrammes> {
-    const existing = await this.listForUser(userId);
-    if (existing.length > 0) return existing[0];
-
-    const created = await this.comparisons.create(userId);
-    return {
-      id: created.id,
-      name: created.name,
-      createdAt: created.created_at,
-      updatedAt: created.updated_at,
-      programmes: [],
-    };
-  }
-
   renameComparison(comparisonId: string, name: string) {
     return this.comparisons.rename(comparisonId, name);
   }
@@ -83,6 +96,28 @@ export class ComparisonService {
   }
 
   addProgramme(comparisonId: string, programmeId: string) {
+    return this.comparisons.addItem(comparisonId, programmeId);
+  }
+
+  /**
+   * Enforces the product spec's comparison size limit (max 3 programmes,
+   * spec §38). Throws when the comparison is already full.
+   */
+  async addProgrammeWithinLimit(
+    comparisonId: string,
+    programmeId: string,
+    maxSize = MAX_COMPARISON_SIZE,
+  ): Promise<ReturnType<ComparisonsRepository["addItem"]>> {
+    const alreadyPresent = await this.comparisons.isPresent(
+      comparisonId,
+      programmeId,
+    );
+    if (alreadyPresent) return this.comparisons.addItem(comparisonId, programmeId);
+
+    const count = await this.comparisons.countItems(comparisonId);
+    if (count >= maxSize) {
+      throw new ComparisonLimitError(maxSize);
+    }
     return this.comparisons.addItem(comparisonId, programmeId);
   }
 

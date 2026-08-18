@@ -2,8 +2,8 @@ import type {
   MatchDimensionResult,
   MatchUserProfile,
   ProgrammeWithDetails,
-} from "./types";
-import { MATCH_DIMENSION_LABELS } from "./types";
+} from "./match-types";
+import { MATCH_DIMENSION_LABELS } from "./match-types";
 import type { MatchMessage } from "./messages";
 import { translated } from "./messages";
 import { roundScore } from "./utils";
@@ -33,48 +33,71 @@ export function scoreLanguageFit(
     ? profile.preferred_language_codes.includes(programme.language_code)
     : null;
 
-  const requirements = programme.language_requirements;
-  let proficiencyMatch: boolean | null = null;
-  const scoresByTestType = new Map(
-    profile.testScores.map((s) => [s.test_type, s.score]),
-  );
+  const requirements = programme.test_requirements;
 
-  if (requirements.length > 0) {
-    const userTestTypesForProgramme = requirements.filter((r) =>
-      scoresByTestType.has(r.test_type),
+  // A user's score matches a requirement by qualification identity
+  // (spec §50–§51). Legacy rows with no qualification_id fall back to a
+  // case-insensitive match on the qualification's name.
+  const userScoreForRequirement = (qualificationId: string, qualificationName: string) =>
+    profile.testScores.find(
+      (s) =>
+        (s.qualification_id != null && s.qualification_id === qualificationId) ||
+        (s.qualification_id == null &&
+          s.test_type.toLowerCase() === qualificationName.toLowerCase()),
     );
 
-    if (userTestTypesForProgramme.length === 0) {
+  const languageRequirements = requirements.filter((r) =>
+    r.qualification.category === "language",
+  );
+  let proficiencyMatch: boolean | null = null;
+
+  if (languageRequirements.length > 0) {
+    // A requirement row without a minimum_score means the test is
+    // accepted but no threshold is published — any recorded score meets.
+    const scoreMeets = (requirement: (typeof languageRequirements)[number], userScore: number) =>
+      requirement.minimum_score == null || userScore >= requirement.minimum_score;
+
+    const userTestsForProgramme = languageRequirements.filter((r) =>
+      userScoreForRequirement(r.qualification_id, r.qualification.name),
+    );
+
+    if (userTestsForProgramme.length === 0) {
       proficiencyMatch = null;
       concerns.push(
         translated("language.addTestScore", {
-          testTypes: requirements.map((r) => r.test_type).join(" / "),
+          testTypes: languageRequirements
+            .map((r) => r.qualification.name)
+            .join(" / "),
         }),
       );
     } else {
-      const meetsAny = userTestTypesForProgramme.some(
-        (r) => (scoresByTestType.get(r.test_type) ?? 0) >= r.min_score,
-      );
+      const meetsAny = userTestsForProgramme.some((r) => {
+        const user = userScoreForRequirement(r.qualification_id, r.qualification.name)!;
+        return scoreMeets(r, user.score);
+      });
       proficiencyMatch = meetsAny;
 
       if (meetsAny) {
-        const met = userTestTypesForProgramme.find(
-          (r) => (scoresByTestType.get(r.test_type) ?? 0) >= r.min_score,
-        )!;
+        const met = userTestsForProgramme.find((r) => {
+          const user = userScoreForRequirement(r.qualification_id, r.qualification.name)!;
+          return scoreMeets(r, user.score);
+        })!;
+        const userScore = userScoreForRequirement(met.qualification_id, met.qualification.name)!;
         reasons.push(
           translated("language.meetsTestRequirement", {
-            testType: met.test_type,
-            score: scoresByTestType.get(met.test_type)!,
-            minScore: met.min_score_display,
+            testType: met.qualification.name,
+            score: userScore.score,
+            minScore: met.minimum_score_display ?? String(met.minimum_score ?? ""),
           }),
         );
       } else {
-        const closest = userTestTypesForProgramme[0];
+        const closest = userTestsForProgramme[0];
+        const userScore = userScoreForRequirement(closest.qualification_id, closest.qualification.name)!;
         concerns.push(
           translated("language.belowTestRequirement", {
-            testType: closest.test_type,
-            score: scoresByTestType.get(closest.test_type)!,
-            minScore: closest.min_score_display,
+            testType: closest.qualification.name,
+            score: userScore.score,
+            minScore: closest.minimum_score_display ?? String(closest.minimum_score ?? ""),
           }),
         );
       }

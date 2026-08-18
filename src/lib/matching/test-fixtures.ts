@@ -1,5 +1,5 @@
-import type { ProgrammeWithDetails } from "./types";
-import type { MatchUserProfile } from "./types";
+import type { ProgrammeWithDetails } from "./match-types";
+import type { MatchUserProfile } from "./match-types";
 import type { MatchMessage } from "./messages";
 
 /** True if any message in the list is a translated message with this exact key (params not checked). */
@@ -31,20 +31,31 @@ export function makeProgramme(
   return {
     id: "programme-1",
     university_id: "university-1",
+    faculty_id: null,
     name: "MSc Computer Science",
+    slug: null,
     degree_level: "master",
+    degree_title: null,
     field_of_study_id: "field-cs",
     language_code: "en",
     duration_months: 24,
-    tuition_fee_amount: 18500,
-    tuition_fee_currency: "EUR",
-    tuition_fee_period: "per_year",
+    study_mode: null,
+    tuition_min: 18500,
+    tuition_max: 18500,
+    tuition_currency: "EUR",
     estimated_living_cost_monthly: 1100,
     living_cost_currency: "EUR",
     application_deadline: "2027-01-15",
     intake_start: "2027-09-01",
     description: null,
     programme_url: null,
+    application_url: null,
+    application_fee_amount: null,
+    application_fee_currency: null,
+    required_documents: [],
+    scholarship_notes: null,
+    career_notes: null,
+    published: true,
     created_at: "2026-01-01T00:00:00.000Z",
     updated_at: "2026-01-01T00:00:00.000Z",
     university: {
@@ -56,18 +67,16 @@ export function makeProgramme(
       logo_url: null,
       description: null,
       founded_year: 1842,
-      dormitory_available: true,
-      international_office: true,
-      erasmus_participation: true,
-      international_support_notes: null,
       created_at: "2026-01-01T00:00:00.000Z",
       updated_at: "2026-01-01T00:00:00.000Z",
-      country: { code: "NL", name: "Netherlands" },
+      country: { code: "NL", name: "Netherlands", supported: false, sort_order: 100 },
     },
+    faculty: null,
     field_of_study: {
       id: "field-cs",
       name: "Computer Science",
       category: "Engineering & Technology",
+      subcategory: "Software & AI",
     },
     language: { code: "en", name: "English" },
     academic_requirements: {
@@ -79,36 +88,68 @@ export function makeProgramme(
       entrance_exam_required: false,
       entrance_exam_notes: null,
       notes: null,
+      required_degree_level: null,
+      required_math_background: null,
+      portfolio_required: false,
+      interview_required: false,
     },
-    language_requirements: [
+    test_requirements: [
       {
-        id: "lang-req-1",
+        id: "test-req-1",
         programme_id: "programme-1",
-        test_type: "IELTS",
-        min_score: 6.5,
-        min_score_display: "6.5",
+        qualification_id: "qual-ielts",
+        section: null,
+        subject: null,
+        minimum_score: 6.5,
+        minimum_score_display: "6.5",
+        comparison: "greater_or_equal",
         notes: null,
+        created_at: "2026-01-01T00:00:00.000Z",
+        updated_at: "2026-01-01T00:00:00.000Z",
+        qualification: {
+          id: "qual-ielts",
+          code: "ielts",
+          name: "IELTS",
+          category: "language",
+          description: null,
+          max_score: 9,
+          active: true,
+          sort_order: 20,
+          created_at: "2026-01-01T00:00:00.000Z",
+          updated_at: "2026-01-01T00:00:00.000Z",
+        },
       },
     ],
+    tuition_variants: [],
     ...overrides,
-  };
+    // Undefined from Partial<...> spread overrides explicit null, so
+    // re-null these to keep the type checker happy.
+    accommodation: overrides.accommodation ?? null,
+    living_cost_estimates: overrides.living_cost_estimates ?? null,
+  } as ProgrammeWithDetails;
 }
 
 export function makeProfile(
   overrides: Partial<MatchUserProfile> = {},
 ): MatchUserProfile {
   return {
+    current_education_level: "bachelor",
     current_gpa: 3.6,
     current_gpa_scale: 4.0,
     budget_min: null,
     budget_max: 20000,
     budget_currency: "EUR",
+    budget_mode: "exact",
     preferred_degree_level: "master",
     preferred_country_codes: ["NL"],
     preferred_cities: [],
     preferred_field_of_study_ids: ["field-cs"],
     preferred_language_codes: ["en"],
-    testScores: [{ test_type: "IELTS", score: 7.0 }],
+    english_level: "b2",
+    math_background: "good",
+    testScores: [
+      { test_type: "IELTS", qualification_id: "qual-ielts", score: 7.0, cefr_equivalent: "c1" },
+    ],
     ...overrides,
   };
 }

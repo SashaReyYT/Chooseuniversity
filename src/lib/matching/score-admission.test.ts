@@ -31,7 +31,11 @@ describe("scoreAdmissionFit", () => {
         required_subjects: [],
         entrance_exam_required: true,
         entrance_exam_notes: null,
+        portfolio_required: false,
+        interview_required: false,
         notes: null,
+        required_degree_level: null,
+        required_math_background: null,
       },
       application_deadline: "2027-06-01",
     });
@@ -68,7 +72,11 @@ describe("scoreAdmissionFit", () => {
         required_subjects: [],
         entrance_exam_required: true,
         entrance_exam_notes: null,
+        portfolio_required: false,
+        interview_required: false,
         notes: null,
+        required_degree_level: null,
+        required_math_background: null,
       },
       application_deadline: "2025-12-01",
     });

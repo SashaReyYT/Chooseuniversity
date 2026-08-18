@@ -16,6 +16,18 @@ Postgres schema for Unifind, managed as Supabase migrations under
    universities and 6 sourced programmes with requirements. See the
    file's own header for sourcing/honesty notes on what's real vs. left
    NULL where unconfirmed.
+8. `0008_university_living_costs.sql` — living-cost reference estimates
+   per country/city and per programme, plus scholarships and enrolment
+   facts for the public university pages
+9. `0009_accommodation_living_costs_qualifications.sql` — university
+   dormitory data, per-programme living-cost breakdowns, NMT scores,
+   user qualifications
+10. `0010_catalog_enrichment_sources_admin.sql` — university model
+    extension (slug, cover image, official application URL, ranking
+    data, student counts, coordinates, published flag), programme
+    study-mode/application-fee/documents/scholarship/career columns,
+    the `sources` ledger (§41), the import ledger (§43), and admin
+    access via `admin_users` (§44)
 
 Baseline reference data (countries, languages, the field-of-study
 taxonomy) ships inside `0001_reference_tables.sql` itself, not a separate
@@ -43,6 +55,22 @@ instead would break any migration that depends on it.
 - **No persisted match scores.** The engine (next stage) is meant to
   compute scores on demand from these tables, not cache a stale number —
   keep it that way unless a real performance need shows up.
+- **Catalog writes are admin-only, public read stays open.** The RLS
+  setup splits cleanly: catalog tables are public-read (visitors render
+  programme pages directly) with insert/update/delete granted only
+  through `public.is_admin()`, a `security definer` function reading
+  `admin_users` without RLS — that indirection is what avoids the
+  recursion a policy on `admin_users` reading itself would create
+  (see `0010`). User-owned tables stay owner-only; admins never touch
+  user data.
+- **Sources are a ledger, not decoration.** Every fact worth citing
+  links through `programme_sources`/`university_sources` to a
+  `sources` row (URL, name, type). The rule that governs the data —
+  "never invent, leave NULL" — is documented in `docs/data-acquisition.md`.
+- **Imports are audited.** Every file upload creates an `imports` row
+  with its status (`parsed` → `imported`/`review`/`failed`) and
+  per-row problems in `import_errors`. Format contract and pipeline
+  behavior live in `docs/data-import.md`.
 - **No signup/login in V1.** Every visitor gets an anonymous Supabase
   session (`auth.signInAnonymously()`, wired in `src/proxy.ts`) — a real
   `auth.users` row with a stable UUID, no email/password. Every RLS

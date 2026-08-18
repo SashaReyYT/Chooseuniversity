@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Supabase database types.
  *
  * Hand-authored to match `supabase/migrations/*.sql` exactly (verified
  * column-by-column against `information_schema.columns` on a locally
- * validated instance of the schema — the CLI's own `gen types typescript`
+ * validated instance of the schema вЂ” the CLI's own `gen types typescript`
  * needs Docker, which isn't available in every environment this repo is
  * developed in).
  *
@@ -13,7 +13,7 @@
  *   npx supabase gen types typescript --linked > src/types/database.ts
  *
  * If you hand-edit this file in the meantime, keep it in sync with the
- * migrations — nothing enforces that automatically.
+ * migrations вЂ” nothing enforces that automatically.
  */
 
 export type Json =
@@ -27,6 +27,38 @@ export type Json =
 export type DegreeLevel = "foundation" | "bachelor" | "master" | "phd";
 export type TuitionFeePeriod = "per_year" | "per_semester" | "total";
 export type EducationLevel = "high_school" | "bachelor" | "master";
+export type StudyFormat = "full_time" | "part_time" | "either";
+export type LocationPreferenceType =
+  | "specific_city"
+  | "any_city"
+  | "capital_or_large_city"
+  | "medium_city"
+  | "small_city"
+  | "student_city"
+  | "flexible";
+export type BudgetMode = "exact" | "low" | "medium" | "high" | "unknown";
+export type QualificationCategory = "national" | "academic" | "language" | "other";
+export type RequirementComparison = "greater_or_equal" | "greater" | "equal";
+export type CefrLevel =
+  | "a1"
+  | "a2"
+  | "b1"
+  | "b2"
+  | "c1"
+  | "c2"
+  | "native"
+  | "not_sure";
+export type MathBackground = "excellent" | "good" | "average" | "weak" | "not_sure";
+export type AdmissionPreference = "safest" | "balanced" | "competitive" | "no_preference";
+export type ProgrammeStudyMode = "full_time" | "part_time" | "distance" | "online" | "hybrid";
+export type SourceType =
+  | "official_university"
+  | "official_faculty"
+  | "official_dormitory"
+  | "public_reference";
+export type SourceProvenance = "official" | "external";
+export type ImportFormat = "json" | "csv";
+export type ImportStatus = "parsed" | "validated" | "review" | "imported" | "failed";
 
 export type Database = {
   public: {
@@ -35,14 +67,20 @@ export type Database = {
         Row: {
           code: string;
           name: string;
+          supported: boolean;
+          sort_order: number;
         };
         Insert: {
           code: string;
           name: string;
+          supported?: boolean;
+          sort_order?: number;
         };
         Update: {
           code?: string;
           name?: string;
+          supported?: boolean;
+          sort_order?: number;
         };
         Relationships: [];
       };
@@ -66,16 +104,37 @@ export type Database = {
           id: string;
           name: string;
           category: string;
+          subcategory: string | null;
         };
         Insert: {
           id?: string;
           name: string;
           category: string;
+          subcategory?: string | null;
         };
         Update: {
           id?: string;
           name?: string;
           category?: string;
+          subcategory?: string | null;
+        };
+        Relationships: [];
+      };
+      currency_rates: {
+        Row: {
+          currency: string;
+          rate_to_eur: number;
+          updated_at: string;
+        };
+        Insert: {
+          currency: string;
+          rate_to_eur: number;
+          updated_at?: string;
+        };
+        Update: {
+          currency?: string;
+          rate_to_eur?: number;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -89,10 +148,16 @@ export type Database = {
           logo_url: string | null;
           description: string | null;
           founded_year: number | null;
-          dormitory_available: boolean | null;
-          international_office: boolean | null;
-          erasmus_participation: boolean | null;
-          international_support_notes: string | null;
+          slug: string | null;
+          short_description: string | null;
+          cover_image_url: string | null;
+          official_application_url: string | null;
+          ranking_data: Json | null;
+          student_count: number | null;
+          international_student_percentage: number | null;
+          latitude: number | null;
+          longitude: number | null;
+          published: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -105,10 +170,16 @@ export type Database = {
           logo_url?: string | null;
           description?: string | null;
           founded_year?: number | null;
-          dormitory_available?: boolean | null;
-          international_office?: boolean | null;
-          erasmus_participation?: boolean | null;
-          international_support_notes?: string | null;
+          slug?: string | null;
+          short_description?: string | null;
+          cover_image_url?: string | null;
+          official_application_url?: string | null;
+          ranking_data?: Json | null;
+          student_count?: number | null;
+          international_student_percentage?: number | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          published?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -121,10 +192,16 @@ export type Database = {
           logo_url?: string | null;
           description?: string | null;
           founded_year?: number | null;
-          dormitory_available?: boolean | null;
-          international_office?: boolean | null;
-          erasmus_participation?: boolean | null;
-          international_support_notes?: string | null;
+          slug?: string | null;
+          short_description?: string | null;
+          cover_image_url?: string | null;
+          official_application_url?: string | null;
+          ranking_data?: Json | null;
+          student_count?: number | null;
+          international_student_percentage?: number | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          published?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -137,119 +214,97 @@ export type Database = {
           },
         ];
       };
-      university_resources: {
-        Row: {
-          id: string;
-          university_id: string;
-          category: string;
-          title: string;
-          description: string | null;
-          link_title: string | null;
-          link_url: string | null;
-          link_type: string | null;
-          contact_type: string | null;
-          contact_value: string | null;
-          contact_label: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          university_id: string;
-          category: string;
-          title: string;
-          description?: string | null;
-          link_title?: string | null;
-          link_url?: string | null;
-          link_type?: string | null;
-          contact_type?: string | null;
-          contact_value?: string | null;
-          contact_label?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          university_id?: string;
-          category?: string;
-          title?: string;
-          description?: string | null;
-          link_title?: string | null;
-          link_url?: string | null;
-          link_type?: string | null;
-          contact_type?: string | null;
-          contact_value?: string | null;
-          contact_label?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "university_resources_university_id_fkey";
-            columns: ["university_id"];
-            referencedRelation: "universities";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       programmes: {
         Row: {
           id: string;
           university_id: string;
+          faculty_id: string | null;
           name: string;
+          slug: string | null;
           degree_level: DegreeLevel;
+          degree_title: string | null;
           field_of_study_id: string;
           language_code: string;
           duration_months: number;
-          tuition_fee_amount: number;
-          tuition_fee_currency: string;
-          tuition_fee_period: TuitionFeePeriod;
+          study_mode: ProgrammeStudyMode | null;
+          tuition_min: number;
+          tuition_max: number;
+          tuition_currency: string;
           estimated_living_cost_monthly: number | null;
           living_cost_currency: string | null;
           application_deadline: string | null;
           intake_start: string | null;
           description: string | null;
           programme_url: string | null;
+          application_url: string | null;
+          application_fee_amount: number | null;
+          application_fee_currency: string | null;
+          required_documents: string[];
+          scholarship_notes: string | null;
+          career_notes: string | null;
+          published: boolean;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           university_id: string;
+          faculty_id?: string | null;
           name: string;
+          slug?: string | null;
           degree_level: DegreeLevel;
+          degree_title?: string | null;
           field_of_study_id: string;
           language_code: string;
           duration_months: number;
-          tuition_fee_amount: number;
-          tuition_fee_currency: string;
-          tuition_fee_period?: TuitionFeePeriod;
+          study_mode?: ProgrammeStudyMode | null;
+          tuition_min: number;
+          tuition_max: number;
+          tuition_currency: string;
           estimated_living_cost_monthly?: number | null;
           living_cost_currency?: string | null;
           application_deadline?: string | null;
           intake_start?: string | null;
           description?: string | null;
           programme_url?: string | null;
+          application_url?: string | null;
+          application_fee_amount?: number | null;
+          application_fee_currency?: string | null;
+          required_documents?: string[];
+          scholarship_notes?: string | null;
+          career_notes?: string | null;
+          published?: boolean;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           university_id?: string;
+          faculty_id?: string | null;
           name?: string;
+          slug?: string | null;
           degree_level?: DegreeLevel;
+          degree_title?: string | null;
           field_of_study_id?: string;
           language_code?: string;
           duration_months?: number;
-          tuition_fee_amount?: number;
-          tuition_fee_currency?: string;
-          tuition_fee_period?: TuitionFeePeriod;
+          study_mode?: ProgrammeStudyMode | null;
+          tuition_min?: number;
+          tuition_max?: number;
+          tuition_currency?: string;
           estimated_living_cost_monthly?: number | null;
           living_cost_currency?: string | null;
           application_deadline?: string | null;
           intake_start?: string | null;
           description?: string | null;
           programme_url?: string | null;
+          application_url?: string | null;
+          application_fee_amount?: number | null;
+          application_fee_currency?: string | null;
+          required_documents?: string[];
+          scholarship_notes?: string | null;
+          career_notes?: string | null;
+          published?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -258,6 +313,12 @@ export type Database = {
             foreignKeyName: "programmes_university_id_fkey";
             columns: ["university_id"];
             referencedRelation: "universities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "programmes_faculty_id_fkey";
+            columns: ["faculty_id"];
+            referencedRelation: "faculties";
             referencedColumns: ["id"];
           },
           {
@@ -274,6 +335,128 @@ export type Database = {
           },
         ];
       };
+      faculties: {
+        Row: {
+          id: string;
+          university_id: string;
+          name: string;
+          description: string | null;
+          website_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          name: string;
+          description?: string | null;
+          website_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          university_id?: string;
+          name?: string;
+          description?: string | null;
+          website_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "faculties_university_id_fkey";
+            columns: ["university_id"];
+            referencedRelation: "universities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      qualifications: {
+        Row: {
+          id: string;
+          code: string;
+          name: string;
+          category: QualificationCategory;
+          description: string | null;
+          max_score: number | null;
+          active: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          name: string;
+          category?: QualificationCategory;
+          description?: string | null;
+          max_score?: number | null;
+          active?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          name?: string;
+          category?: QualificationCategory;
+          description?: string | null;
+          max_score?: number | null;
+          active?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      programme_tuition_variants: {
+        Row: {
+          id: string;
+          programme_id: string;
+          name: string;
+          tuition_min: number;
+          tuition_max: number;
+          currency: string;
+          period: TuitionFeePeriod;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          programme_id: string;
+          name: string;
+          tuition_min: number;
+          tuition_max: number;
+          currency: string;
+          period?: TuitionFeePeriod;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          programme_id?: string;
+          name?: string;
+          tuition_min?: number;
+          tuition_max?: number;
+          currency?: string;
+          period?: TuitionFeePeriod;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "programme_tuition_variants_programme_id_fkey";
+            columns: ["programme_id"];
+            referencedRelation: "programmes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       programme_academic_requirements: {
         Row: {
           id: string;
@@ -284,6 +467,10 @@ export type Database = {
           entrance_exam_required: boolean;
           entrance_exam_notes: string | null;
           notes: string | null;
+          required_degree_level: DegreeLevel | null;
+          required_math_background: MathBackground | null;
+          portfolio_required: boolean;
+          interview_required: boolean;
         };
         Insert: {
           id?: string;
@@ -294,6 +481,10 @@ export type Database = {
           entrance_exam_required?: boolean;
           entrance_exam_notes?: string | null;
           notes?: string | null;
+          required_degree_level?: DegreeLevel | null;
+          required_math_background?: MathBackground | null;
+          portfolio_required?: boolean;
+          interview_required?: boolean;
         };
         Update: {
           id?: string;
@@ -304,6 +495,10 @@ export type Database = {
           entrance_exam_required?: boolean;
           entrance_exam_notes?: string | null;
           notes?: string | null;
+          required_degree_level?: DegreeLevel | null;
+          required_math_background?: MathBackground | null;
+          portfolio_required?: boolean;
+          interview_required?: boolean;
         };
         Relationships: [
           {
@@ -314,36 +509,438 @@ export type Database = {
           },
         ];
       };
-      programme_language_requirements: {
+      programme_test_requirements: {
         Row: {
           id: string;
           programme_id: string;
-          test_type: string;
-          min_score: number;
-          min_score_display: string;
+          qualification_id: string;
+          section: string | null;
+          subject: string | null;
+          minimum_score: number | null;
+          minimum_score_display: string | null;
+          comparison: RequirementComparison;
           notes: string | null;
+          created_at: string;
+          updated_at: string;
         };
         Insert: {
           id?: string;
           programme_id: string;
-          test_type: string;
-          min_score: number;
-          min_score_display: string;
+          qualification_id: string;
+          section?: string | null;
+          subject?: string | null;
+          minimum_score?: number | null;
+          minimum_score_display?: string | null;
+          comparison?: RequirementComparison;
           notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
         };
         Update: {
           id?: string;
           programme_id?: string;
-          test_type?: string;
-          min_score?: number;
-          min_score_display?: string;
+          qualification_id?: string;
+          section?: string | null;
+          subject?: string | null;
+          minimum_score?: number | null;
+          minimum_score_display?: string | null;
+          comparison?: RequirementComparison;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "programme_test_requirements_programme_id_fkey";
+            columns: ["programme_id"];
+            referencedRelation: "programmes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "programme_test_requirements_qualification_id_fkey";
+            columns: ["qualification_id"];
+            referencedRelation: "qualifications";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      university_accommodation: {
+        Row: {
+          id: string;
+          university_id: string;
+          dormitory_available: boolean;
+          dormitory_name: string | null;
+          room_type: string | null;
+          estimated_monthly_cost_min: number | null;
+          estimated_monthly_cost_max: number | null;
+          currency: string | null;
+          estimated_deposit: number | null;
+          estimated_capacity: number | null;
+          distance_from_campus_km: number | null;
+          official_link: string | null;
+          source_url: string | null;
+          source_name: string | null;
+          source_date: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          dormitory_available?: boolean;
+          dormitory_name?: string | null;
+          room_type?: string | null;
+          estimated_monthly_cost_min?: number | null;
+          estimated_monthly_cost_max?: number | null;
+          currency?: string | null;
+          estimated_deposit?: number | null;
+          estimated_capacity?: number | null;
+          distance_from_campus_km?: number | null;
+          official_link?: string | null;
+          source_url?: string | null;
+          source_name?: string | null;
+          source_date?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          university_id?: string;
+          dormitory_available?: boolean;
+          dormitory_name?: string | null;
+          room_type?: string | null;
+          estimated_monthly_cost_min?: number | null;
+          estimated_monthly_cost_max?: number | null;
+          currency?: string | null;
+          estimated_deposit?: number | null;
+          estimated_capacity?: number | null;
+          distance_from_campus_km?: number | null;
+          official_link?: string | null;
+          source_url?: string | null;
+          source_name?: string | null;
+          source_date?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "university_accommodation_university_id_fkey";
+            columns: ["university_id"];
+            referencedRelation: "universities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      city_accommodation_estimates: {
+        Row: {
+          id: string;
+          country_code: string;
+          city: string;
+          estimated_monthly_cost_min: number | null;
+          estimated_monthly_cost_max: number | null;
+          currency: string | null;
+          source_url: string | null;
+          source_name: string | null;
+          source_type: SourceProvenance | null;
+          source_date: string | null;
+          notes: string | null;
+        };
+        Insert: {
+          id?: string;
+          country_code: string;
+          city: string;
+          estimated_monthly_cost_min?: number | null;
+          estimated_monthly_cost_max?: number | null;
+          currency?: string | null;
+          source_url?: string | null;
+          source_name?: string | null;
+          source_type?: SourceProvenance | null;
+          source_date?: string | null;
+          notes?: string | null;
+        };
+        Update: {
+          id?: string;
+          country_code?: string;
+          city?: string;
+          estimated_monthly_cost_min?: number | null;
+          estimated_monthly_cost_max?: number | null;
+          currency?: string | null;
+          source_url?: string | null;
+          source_name?: string | null;
+          source_type?: SourceProvenance | null;
+          source_date?: string | null;
           notes?: string | null;
         };
         Relationships: [
           {
-            foreignKeyName: "programme_language_requirements_programme_id_fkey";
+            foreignKeyName: "city_accommodation_estimates_country_code_fkey";
+            columns: ["country_code"];
+            referencedRelation: "countries";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
+      programme_living_cost_estimates: {
+        Row: {
+          id: string;
+          programme_id: string;
+          accommodation_min: number | null;
+          accommodation_max: number | null;
+          food_min: number | null;
+          food_max: number | null;
+          transport_min: number | null;
+          transport_max: number | null;
+          utilities_min: number | null;
+          utilities_max: number | null;
+          internet_phone_min: number | null;
+          internet_phone_max: number | null;
+          study_materials_min: number | null;
+          study_materials_max: number | null;
+          other_min: number | null;
+          other_max: number | null;
+          total_min: number | null;
+          total_max: number | null;
+          currency: string | null;
+          source_url: string | null;
+          source_name: string | null;
+          source_type: SourceProvenance | null;
+          source_date: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          programme_id: string;
+          accommodation_min?: number | null;
+          accommodation_max?: number | null;
+          food_min?: number | null;
+          food_max?: number | null;
+          transport_min?: number | null;
+          transport_max?: number | null;
+          utilities_min?: number | null;
+          utilities_max?: number | null;
+          internet_phone_min?: number | null;
+          internet_phone_max?: number | null;
+          study_materials_min?: number | null;
+          study_materials_max?: number | null;
+          other_min?: number | null;
+          other_max?: number | null;
+          total_min?: number | null;
+          total_max?: number | null;
+          currency?: string | null;
+          source_url?: string | null;
+          source_name?: string | null;
+          source_type?: SourceProvenance | null;
+          source_date?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          programme_id?: string;
+          accommodation_min?: number | null;
+          accommodation_max?: number | null;
+          food_min?: number | null;
+          food_max?: number | null;
+          transport_min?: number | null;
+          transport_max?: number | null;
+          utilities_min?: number | null;
+          utilities_max?: number | null;
+          internet_phone_min?: number | null;
+          internet_phone_max?: number | null;
+          study_materials_min?: number | null;
+          study_materials_max?: number | null;
+          other_min?: number | null;
+          other_max?: number | null;
+          total_min?: number | null;
+          total_max?: number | null;
+          currency?: string | null;
+          source_url?: string | null;
+          source_name?: string | null;
+          source_type?: SourceProvenance | null;
+          source_date?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "programme_living_cost_estimates_programme_id_fkey";
             columns: ["programme_id"];
             referencedRelation: "programmes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      nmt_subjects: {
+        Row: {
+          code: string;
+          name: string;
+          available_from_year: number | null;
+          available_until_year: number | null;
+        };
+        Insert: {
+          code: string;
+          name: string;
+          available_from_year?: number | null;
+          available_until_year?: number | null;
+        };
+        Update: {
+          code?: string;
+          name?: string;
+          available_from_year?: number | null;
+          available_until_year?: number | null;
+        };
+        Relationships: [];
+      };
+      user_nmt_scores: {
+        Row: {
+          id: string;
+          user_id: string;
+          subject_code: string;
+          score: number;
+          max_score: number;
+          test_year: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          subject_code: string;
+          score: number;
+          max_score?: number;
+          test_year?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          subject_code?: string;
+          score?: number;
+          max_score?: number;
+          test_year?: number | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_nmt_scores_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "auth.users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_nmt_scores_subject_code_fkey";
+            columns: ["subject_code"];
+            referencedRelation: "nmt_subjects";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
+      user_qualifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          qualification_id: string;
+          details: Json;
+          year: number | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          qualification_id: string;
+          details?: Json;
+          year?: number | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          qualification_id?: string;
+          details?: Json;
+          year?: number | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_qualifications_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "auth.users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_qualifications_qualification_id_fkey";
+            columns: ["qualification_id"];
+            referencedRelation: "qualifications";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      career_priorities: {
+        Row: {
+          code: string;
+          label: string;
+        };
+        Insert: {
+          code: string;
+          label: string;
+        };
+        Update: {
+          code?: string;
+          label?: string;
+        };
+        Relationships: [];
+      };
+      user_match_weights: {
+        Row: {
+          user_id: string;
+          academic: number;
+          admission: number;
+          budget: number;
+          language: number;
+          location: number;
+          career: number;
+          format: number;
+          lifestyle: number;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          academic?: number;
+          admission?: number;
+          budget?: number;
+          language?: number;
+          location?: number;
+          career?: number;
+          format?: number;
+          lifestyle?: number;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          academic?: number;
+          admission?: number;
+          budget?: number;
+          language?: number;
+          location?: number;
+          career?: number;
+          format?: number;
+          lifestyle?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_match_weights_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "auth.users";
             referencedColumns: ["id"];
           },
         ];
@@ -364,6 +961,17 @@ export type Database = {
           preferred_cities: string[];
           preferred_field_of_study_ids: string[];
           preferred_language_codes: string[];
+          preferred_study_format: StudyFormat | null;
+          location_preference_type: LocationPreferenceType | null;
+          open_to_other_cities: boolean | null;
+          budget_mode: BudgetMode;
+          primary_field_of_study_id: string | null;
+          graduation_year: number | null;
+          has_graduated: boolean | null;
+          english_level: CefrLevel | null;
+          math_background: MathBackground | null;
+          admission_preference: AdmissionPreference | null;
+          career_priorities: string[];
           created_at: string;
           updated_at: string;
         };
@@ -382,6 +990,17 @@ export type Database = {
           preferred_cities?: string[];
           preferred_field_of_study_ids?: string[];
           preferred_language_codes?: string[];
+          preferred_study_format?: StudyFormat | null;
+          location_preference_type?: LocationPreferenceType | null;
+          open_to_other_cities?: boolean | null;
+          budget_mode?: BudgetMode;
+          primary_field_of_study_id?: string | null;
+          graduation_year?: number | null;
+          has_graduated?: boolean | null;
+          english_level?: CefrLevel | null;
+          math_background?: MathBackground | null;
+          admission_preference?: AdmissionPreference | null;
+          career_priorities?: string[];
           created_at?: string;
           updated_at?: string;
         };
@@ -400,6 +1019,17 @@ export type Database = {
           preferred_cities?: string[];
           preferred_field_of_study_ids?: string[];
           preferred_language_codes?: string[];
+          preferred_study_format?: StudyFormat | null;
+          location_preference_type?: LocationPreferenceType | null;
+          open_to_other_cities?: boolean | null;
+          budget_mode?: BudgetMode;
+          primary_field_of_study_id?: string | null;
+          graduation_year?: number | null;
+          has_graduated?: boolean | null;
+          english_level?: CefrLevel | null;
+          math_background?: MathBackground | null;
+          admission_preference?: AdmissionPreference | null;
+          career_priorities?: string[];
           created_at?: string;
           updated_at?: string;
         };
@@ -410,6 +1040,12 @@ export type Database = {
             referencedRelation: "countries";
             referencedColumns: ["code"];
           },
+          {
+            foreignKeyName: "user_profiles_primary_field_of_study_id_fkey";
+            columns: ["primary_field_of_study_id"];
+            referencedRelation: "fields_of_study";
+            referencedColumns: ["id"];
+          },
         ];
       };
       user_test_scores: {
@@ -417,27 +1053,33 @@ export type Database = {
           id: string;
           user_id: string;
           test_type: string;
+          qualification_id: string | null;
           score: number;
           score_display: string;
           test_date: string | null;
+          cefr_equivalent: CefrLevel | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           user_id: string;
           test_type: string;
+          qualification_id?: string | null;
           score: number;
           score_display: string;
           test_date?: string | null;
+          cefr_equivalent?: CefrLevel | null;
           created_at?: string;
         };
         Update: {
           id?: string;
           user_id?: string;
           test_type?: string;
+          qualification_id?: string | null;
           score?: number;
           score_display?: string;
           test_date?: string | null;
+          cefr_equivalent?: CefrLevel | null;
           created_at?: string;
         };
         Relationships: [];
@@ -534,6 +1176,209 @@ export type Database = {
           },
         ];
       };
+      sources: {
+        Row: {
+          id: string;
+          url: string;
+          name: string;
+          type: SourceType;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          url: string;
+          name: string;
+          type: SourceType;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          url?: string;
+          name?: string;
+          type?: SourceType;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      programme_sources: {
+        Row: {
+          programme_id: string;
+          source_id: string;
+          fact_key: string;
+        };
+        Insert: {
+          programme_id: string;
+          source_id: string;
+          fact_key?: string;
+        };
+        Update: {
+          programme_id?: string;
+          source_id?: string;
+          fact_key?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "programme_sources_programme_id_fkey";
+            columns: ["programme_id"];
+            referencedRelation: "programmes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "programme_sources_source_id_fkey";
+            columns: ["source_id"];
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      university_sources: {
+        Row: {
+          university_id: string;
+          source_id: string;
+          fact_key: string;
+        };
+        Insert: {
+          university_id: string;
+          source_id: string;
+          fact_key?: string;
+        };
+        Update: {
+          university_id?: string;
+          source_id?: string;
+          fact_key?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "university_sources_university_id_fkey";
+            columns: ["university_id"];
+            referencedRelation: "universities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "university_sources_source_id_fkey";
+            columns: ["source_id"];
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      imports: {
+        Row: {
+          id: string;
+          source_name: string;
+          source_url: string | null;
+          format: ImportFormat;
+          status: ImportStatus;
+          row_count: number;
+          imported_count: number;
+          error_count: number;
+          created_by: string | null;
+          created_at: string;
+          completed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          source_name: string;
+          source_url?: string | null;
+          format: ImportFormat;
+          status?: ImportStatus;
+          row_count?: number;
+          imported_count?: number;
+          error_count?: number;
+          created_by?: string | null;
+          created_at?: string;
+          completed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          source_name?: string;
+          source_url?: string | null;
+          format?: ImportFormat;
+          status?: ImportStatus;
+          row_count?: number;
+          imported_count?: number;
+          error_count?: number;
+          created_by?: string | null;
+          created_at?: string;
+          completed_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "imports_created_by_fkey";
+            columns: ["created_by"];
+            referencedRelation: "auth.users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      import_errors: {
+        Row: {
+          id: string;
+          import_id: string;
+          row_number: number | null;
+          field: string | null;
+          message: string;
+          raw_row: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          import_id: string;
+          row_number?: number | null;
+          field?: string | null;
+          message: string;
+          raw_row?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          import_id?: string;
+          row_number?: number | null;
+          field?: string | null;
+          message?: string;
+          raw_row?: Json | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "import_errors_import_id_fkey";
+            columns: ["import_id"];
+            referencedRelation: "imports";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      admin_users: {
+        Row: {
+          user_id: string;
+          granted_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          granted_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          granted_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "admin_users_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "auth.users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -541,6 +1386,14 @@ export type Database = {
       degree_level: DegreeLevel;
       tuition_fee_period: TuitionFeePeriod;
       education_level: EducationLevel;
+      study_format: StudyFormat;
+      location_preference_type: LocationPreferenceType;
+      budget_mode: BudgetMode;
+      cefr_level: CefrLevel;
+      math_background: MathBackground;
+      admission_preference: AdmissionPreference;
+      programme_study_mode: ProgrammeStudyMode;
+      source_type: SourceType;
     };
   };
 };

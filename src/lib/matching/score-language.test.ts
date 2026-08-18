@@ -6,7 +6,7 @@ describe("scoreLanguageFit", () => {
   it("scores 100 when the language matches preference and the test score is met", () => {
     const profile = makeProfile({
       preferred_language_codes: ["en"],
-      testScores: [{ test_type: "IELTS", score: 7.0 }],
+      testScores: [{ test_type: "IELTS", qualification_id: "qual-ielts", score: 7.0, cefr_equivalent: "c1" }],
     });
     const programme = makeProgramme();
 
@@ -53,7 +53,7 @@ describe("scoreLanguageFit", () => {
   it("adds a concern with the numeric shortfall (as message params) when the test score is below the minimum", () => {
     const profile = makeProfile({
       preferred_language_codes: ["en"],
-      testScores: [{ test_type: "IELTS", score: 5.5 }],
+      testScores: [{ test_type: "IELTS", qualification_id: "qual-ielts", score: 5.5, cefr_equivalent: "b1" }],
     });
     const programme = makeProgramme(); // requires IELTS 6.5
 

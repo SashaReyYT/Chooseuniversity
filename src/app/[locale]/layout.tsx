@@ -10,7 +10,7 @@ import "@fontsource/playfair-display/700.css";
 import "./globals.css";
 import "./fonts.css";
 import { routing } from "@/i18n/routing";
-import { AppShell } from "./app-shell";
+import { AppNav } from "@/components/app-nav";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -62,9 +62,10 @@ export default async function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-background text-on-background font-body-md min-h-screen">
+      <body className="bg-background text-on-background font-body-md min-h-screen pb-16 md:pb-0">
         <NextIntlClientProvider>
-          <AppShell>{children}</AppShell>
+          <AppNav />
+          {children}
         </NextIntlClientProvider>
       </body>
     </html>

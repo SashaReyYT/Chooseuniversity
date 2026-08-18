@@ -30,4 +30,20 @@ export class UserTestScoresRepository {
     if (error) throw error;
     return data;
   }
+
+  /** Removes test-type scores the user un-selected on a later submission. */
+  async deleteByTestTypes(userId: string, keepTestTypes: string[]): Promise<void> {
+    let query = this.supabase
+      .from("user_test_scores")
+      .delete()
+      .eq("user_id", userId);
+
+    query =
+      keepTestTypes.length > 0
+        ? query.not("test_type", "in", `(${keepTestTypes.join(",")})`)
+        : query;
+
+    const { error } = await query;
+    if (error) throw error;
+  }
 }

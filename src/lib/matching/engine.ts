@@ -1,16 +1,20 @@
+import { checkHardRequirements } from "./hard-requirements";
 import { scoreAcademicFit } from "./score-academic";
 import { scoreAdmissionFit } from "./score-admission";
 import { scoreBudgetFit } from "./score-budget";
+import { scoreCareerFit, scoreFormatFit, scoreLifestyleFit } from "./score-extended";
 import { scoreLanguageFit } from "./score-language";
 import { scoreLocationFit } from "./score-location";
 import type {
   MatchDimensionResult,
   MatchResult,
   MatchUserProfile,
+  MatchWeights,
   ProgrammeWithDetails,
-} from "./types";
-import { labelForScore } from "./types";
+} from "./match-types";
+import { labelForScore } from "./match-types";
 import type { MatchMessage } from "./messages";
+import type { CurrencyRateTable } from "./currency";
 import { roundScore } from "./utils";
 
 /**
@@ -28,44 +32,74 @@ import { roundScore } from "./utils";
  * `messages.ts`. Render them via next-intl at the UI layer; this module
  * has no locale awareness and shouldn't need any.
  *
- * The overall score is a simple average of whichever dimensions had
- * enough data to be scored (a dimension with `applicable: false` — e.g.
- * "Budget Fit" with no budget set — is excluded rather than penalizing
- * the user for missing profile data). All five dimensions are weighted
- * equally; there's no product signal yet that any one dimension should
- * dominate the others, so unequal weights would be an unjustified guess.
+ * The overall score is a WEIGHTED average of whichever dimensions had
+ * enough data to be scored (spec §26–§27). Per-user weights come in via
+ * the optional `weights` parameter; dimensions that weren't specified
+ * default to weight 1 (equal weighting). Weights are normalized before
+ * computing, so absolute scale doesn't matter — only the ratios do.
+ *
+ * A dimension with `applicable: false` (e.g. "Budget Fit" with no budget
+ * set) is excluded rather than penalizing the user for missing profile
+ * data. Programme data being incomplete must never produce a false
+ * perfect score — this is handled by the per-dimension `UNKNOWN` states
+ * (spec §29) and surfaced to the user as "Match based on available
+ * programme data" rather than silently scoring 100.
+ *
+ * Hard requirements (spec §28) don't directly change the weighted score —
+ * they gate it. `hardRequirements` reports each gate's PASS/FAIL/UNKNOWN
+ * status so the UI can show "Does not meet current admission requirement"
+ * without the overall percentage misleadingly staying high.
  *
  * `now` is threaded through to `scoreAdmissionFit` for deterministic
- * deadline-proximity testing — see that module.
+ * deadline-proximity testing — see that module. `currencyRates` is
+ * threaded through to `scoreBudgetFit` for cross-currency comparisons
+ * (spec §15) — an EUR-based rate table the caller loads via
+ * `ReferenceDataRepository.listCurrencyRates()`; omitting it (or a
+ * currency missing from it) degrades that dimension to UNKNOWN rather
+ * than failing the whole match.
  */
 export function computeMatchScore(
   profile: MatchUserProfile,
   programme: ProgrammeWithDetails,
   now: Date = new Date(),
+  weights: MatchWeights = {},
+  currencyRates: CurrencyRateTable = {},
 ): MatchResult {
   const dimensions: MatchDimensionResult[] = [
     scoreAcademicFit(profile, programme),
-    scoreBudgetFit(profile, programme),
+    scoreBudgetFit(profile, programme, currencyRates),
     scoreLanguageFit(profile, programme),
     scoreLocationFit(profile, programme),
     scoreAdmissionFit(programme, now),
+    scoreCareerFit(profile, programme),
+    scoreFormatFit(profile, programme),
+    scoreLifestyleFit(profile, programme),
   ];
 
-  const applicableScores = dimensions.filter(
+  const applicableDimensions = dimensions.filter(
     (d): d is MatchDimensionResult & { score: number } =>
       d.applicable && d.score != null,
   );
 
+  const weightOf = (d: MatchDimensionResult): number => weights[d.key] ?? 1;
+  const totalWeight = applicableDimensions.reduce(
+    (sum, d) => sum + weightOf(d),
+    0,
+  );
+
   const overallScore =
-    applicableScores.length > 0
+    applicableDimensions.length > 0 && totalWeight > 0
       ? roundScore(
-          applicableScores.reduce((sum, d) => sum + d.score, 0) /
-            applicableScores.length,
+          applicableDimensions.reduce(
+            (sum, d) => sum + d.score * weightOf(d),
+            0,
+          ) / totalWeight,
         )
       : null;
 
   const reasons = dedupeMessages(dimensions.flatMap((d) => d.reasons));
   const concerns = dedupeMessages(dimensions.flatMap((d) => d.concerns));
+  const hardRequirements = checkHardRequirements(profile, programme);
 
   return {
     overallScore,
@@ -73,7 +107,40 @@ export function computeMatchScore(
     dimensions,
     reasons,
     concerns,
+    hardRequirements,
+    confidence: computeConfidence(profile, dimensions),
   };
+}
+
+/**
+ * Data confidence (spec §30): low / medium / high. More applicable
+ * dimensions scored from real user data → higher confidence. A score
+ * built from very little data is still shown honestly, labeled with low
+ * confidence, rather than pretending completeness.
+ */
+function computeConfidence(
+  profile: MatchUserProfile,
+  dimensions: MatchDimensionResult[],
+): "low" | "medium" | "high" {
+  const applicable = dimensions.filter((d) => d.applicable && d.score != null).length;
+
+  // Few or no profile fields populated → low confidence even if a couple
+  // of dimensions happen to be applicable (e.g. admission is always-on).
+  const profileDataPoints = [
+    profile.current_gpa != null,
+    profile.current_gpa_scale != null,
+    profile.budget_max != null || profile.budget_mode !== "unknown",
+    profile.preferred_degree_level != null,
+    profile.preferred_country_codes.length > 0,
+    profile.preferred_cities.length > 0,
+    profile.preferred_language_codes.length > 0,
+    profile.english_level != null,
+    profile.math_background != null,
+  ].filter(Boolean).length;
+
+  if (applicable >= 5 && profileDataPoints >= 6) return "high";
+  if (applicable >= 3 && profileDataPoints >= 3) return "medium";
+  return "low";
 }
 
 /**
@@ -106,6 +173,9 @@ export type {
   MatchLabel,
   MatchResult,
   MatchUserProfile,
-} from "./types";
-export { MATCH_DIMENSION_LABELS, MATCH_LABEL_THRESHOLDS } from "./types";
+  MatchWeights,
+} from "./match-types";
+export { MATCH_DIMENSION_LABELS, MATCH_LABEL_THRESHOLDS } from "./match-types";
+export type { HardRequirementCheck, MatchConfidence } from "./match-types";
 export type { MatchMessage } from "./messages";
+export type { CurrencyRateTable } from "./currency";

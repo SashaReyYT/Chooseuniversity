@@ -1,5 +1,5 @@
-import type { MatchDimensionResult, ProgrammeWithDetails } from "./types";
-import { MATCH_DIMENSION_LABELS } from "./types";
+import type { MatchDimensionResult, ProgrammeWithDetails } from "./match-types";
+import { MATCH_DIMENSION_LABELS } from "./match-types";
 import type { MatchMessage } from "./messages";
 import { translated } from "./messages";
 import { roundScore } from "./utils";

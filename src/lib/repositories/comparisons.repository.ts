@@ -141,4 +141,26 @@ export class ComparisonsRepository {
 
     if (error) throw error;
   }
+
+  async countItems(comparisonId: string): Promise<number> {
+    const { count, error } = await this.supabase
+      .from("comparison_items")
+      .select("*", { count: "exact", head: true })
+      .eq("comparison_id", comparisonId);
+
+    if (error) throw error;
+    return count ?? 0;
+  }
+
+  async isPresent(comparisonId: string, programmeId: string): Promise<boolean> {
+    const { data, error } = await this.supabase
+      .from("comparison_items")
+      .select("id")
+      .eq("comparison_id", comparisonId)
+      .eq("programme_id", programmeId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data != null;
+  }
 }
