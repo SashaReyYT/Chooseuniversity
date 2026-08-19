@@ -17,7 +17,7 @@ Language, Location, Admission), each with human-readable reasons
 - `messages.ts` — `MatchMessage`, the structured type reasons/concerns are
   made of: either `{ type: "translated", key, params }` (UI copy, resolved
   against the `Matching` namespace in `messages/{locale}.json` at render
-  time — see `src/app/[locale]/matches/match-card.tsx`) or
+  time — see `src/components/match-display.tsx`) or
   `{ type: "raw", text }` (DB-sourced content, e.g. a programme's own
   `entrance_exam_notes`, rendered verbatim — not this layer's job to
   translate arbitrary source data). Numbers and dates go into `params` as

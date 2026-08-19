@@ -12,7 +12,7 @@ import { getCurrentUser } from "@/lib/auth/session";
  */
 export default async function Home() {
   const user = await getCurrentUser();
-  const primaryHref = user ? "/dashboard" : "/sign-up";
+  const primaryHref = user ? "/discover" : "/sign-up";
 
   return (
     <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-12">

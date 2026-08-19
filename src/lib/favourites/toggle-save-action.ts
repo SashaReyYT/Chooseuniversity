@@ -8,7 +8,7 @@ import { FavouritesService } from "@/lib/services/favourites.service";
  * plain `<form action={toggleSaveAction}>` — Next.js automatically
  * refreshes the invoking page's Server Components after a form action
  * completes (as long as it doesn't redirect), so the "Saved" state on
- * /matches updates without any client-side state management here.
+ * /saved updates without any client-side state management here.
  */
 export async function toggleSaveAction(formData: FormData): Promise<void> {
   const supabase = await createServerSupabaseClient();

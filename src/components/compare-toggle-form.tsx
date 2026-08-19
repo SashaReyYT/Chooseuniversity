@@ -3,10 +3,10 @@ import { toggleComparisonAction } from "@/lib/comparison/actions";
 /**
  * Plain form-action toggle for "add/remove this programme to/from
  * comparison" — mirrors the save button's `<form action={toggleSaveAction}>`
- * pattern in `src/app/[locale]/matches/match-card.tsx` rather than a
- * client component with its own state, so it works identically wherever
- * it's dropped (catalog grid, match card, compare page) without needing
- * a comparison id passed down.
+ * pattern in `src/components/programme-card.tsx` rather than a client
+ * component with its own state, so it works identically wherever it's
+ * dropped (discover grid, programme detail, compare page) without
+ * needing a comparison id passed down.
  */
 export function CompareToggleForm({
   programmeId,

@@ -3,8 +3,8 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { signOut } from "@/lib/auth/actions";
 
 const NAV_LINKS = [
-  { href: "/dashboard", label: "Matches" },
-  { href: "/favourites", label: "Shortlist" },
+  { href: "/discover", label: "Discover" },
+  { href: "/saved", label: "Saved" },
   { href: "/compare", label: "Compare" },
 ];
 

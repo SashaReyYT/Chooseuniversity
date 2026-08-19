@@ -163,5 +163,5 @@ export async function submitOnboardingAction(
     return { error: "Something went wrong saving your profile. Please try again." };
   }
 
-  redirect(`/${locale}/matches`);
+  redirect(`/${locale}/discover`);
 }
