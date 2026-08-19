@@ -1,6 +1,0 @@
-▲ Next.js 16.3.1
-- Local:         http://localhost:3999
-- Network:       http://26.140.21.164:3999
-✓ Ready in 311ms
-✓ Running next.config.ts took 98ms
-⚠ Missing `origin` header from a forwarded Server Actions request.
