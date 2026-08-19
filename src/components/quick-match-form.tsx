@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { quickMatchAction } from "@/lib/quick-match/quick-match-action";
-import { initialQuickMatchActionState } from "@/lib/quick-match/quick-match-action";
+import { initialQuickMatchActionState } from "@/lib/quick-match/quick-match-state";
 import type { Database } from "@/types/database";
 import {
   formInputClassName,

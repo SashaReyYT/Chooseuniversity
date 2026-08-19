@@ -3,10 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-
-export interface AuthFormState {
-  error: string | null;
-}
+import type { AuthFormState } from "@/lib/auth/types";
 
 /**
  * Supabase Auth is used directly (not through a repository/service) —

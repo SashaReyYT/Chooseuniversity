@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { signUp, type AuthFormState } from "@/lib/auth/actions";
+import { signUp } from "@/lib/auth/actions";
+import type { AuthFormState } from "@/lib/auth/types";
 
 const initialState: AuthFormState = { error: null };
 

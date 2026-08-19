@@ -10,6 +10,7 @@ const NAV_LINKS = [
 
 export async function Header() {
   const user = await getCurrentUser();
+  const isAnonymous = user?.is_anonymous === true;
 
   return (
     <header className="border-b border-outline-variant/40 bg-surface-container-lowest">
@@ -21,7 +22,7 @@ export async function Header() {
           Unifind
         </Link>
 
-        {user ? (
+        {user && !isAnonymous ? (
           <nav className="flex items-center gap-6">
             <ul className="hidden sm:flex items-center gap-6">
               {NAV_LINKS.map((link) => (

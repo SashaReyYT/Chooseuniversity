@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { saveOnboardingProfile, type ProfileFormState } from "@/lib/actions/profile.actions";
+import { saveOnboardingProfile } from "@/lib/actions/profile.actions";
+import type { ProfileFormState } from "@/lib/actions/types";
 
 type Option = { value: string; label: string };
 

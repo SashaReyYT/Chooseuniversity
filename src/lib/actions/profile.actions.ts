@@ -5,10 +5,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/session";
 import { ProfileService } from "@/lib/services/profile.service";
 import type { Database } from "@/types/database";
-
-export interface ProfileFormState {
-  error: string | null;
-}
+import type { ProfileFormState } from "@/lib/actions/types";
 
 type DegreeLevel = Database["public"]["Enums"]["degree_level"];
 type EducationLevel = Database["public"]["Enums"]["education_level"];

@@ -1,7 +1,20 @@
-import Link from "next/link";
+import { hasLocale } from "next-intl";
+import { setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
+import { routing } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { SignUpForm } from "@/components/sign-up-form";
 
-export default function SignUpPage() {
+export default async function SignUpPage({
+  params,
+}: PageProps<"/[locale]/sign-up">) {
+  const { locale } = await params;
+
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+  setRequestLocale(locale);
+
   return (
     <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-8">
       <div className="max-w-sm space-y-2">
