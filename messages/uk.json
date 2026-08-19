@@ -102,7 +102,8 @@
     "labelGoodFit": "Гарна відповідність",
     "labelPotentialFit": "Потенційна відповідність",
     "labelWeakFit": "Слабка відповідність",
-    "dimensionSupport": "Міжнародна підтримка студентів"
+    "dimensionSupport": "Міжнародна підтримка студентів",
+    "tuitionUnknown": "Оплата не опублікована"
   },
   "ProgrammeDetails": {
     "notFound": "Програму не знайдено",
@@ -433,7 +434,8 @@
       "fitsBudgetRange": "Вписується у ваш бюджет (~{amountMin, number}–{amountMax, number} {currency}/рік).",
       "partiallyFitsBudget": "Найдешевший варіант вписується у ваш бюджет ({amountMin, number}–{amountMax, number} {currency}/рік), але найдорожчий перевищує {budgetMax, number}.",
       "overBudget": "Коштує більше за ваш бюджет (~{amount, number} проти {budgetMax, number} {currency}/рік).",
-      "significantlyOverBudget": "Суттєво перевищує ваш бюджет (~{amount, number} проти {budgetMax, number} {currency}/рік)."
+      "significantlyOverBudget": "Суттєво перевищує ваш бюджет (~{amount, number} проти {budgetMax, number} {currency}/рік).",
+      "tuitionUnknown": "Офіційна сума оплати не опублікована — бюджет не оцінюється."
     },
     "language": {
       "addTestScore": "Додайте результат тесту {testTypes}, щоб перевірити відповідність мовній вимозі.",

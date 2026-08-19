@@ -212,9 +212,14 @@ export function sortRankedMatches(
 ): void {
   switch (sortBy) {
     case "lowest_tuition":
-      // tuition_min is NOT NULL in the schema — every programme has one,
-      // so no null-handling is needed here (unlike living cost below).
-      ranked.sort((a, b) => a.programme.tuition_min - b.programme.tuition_min);
+      // tuition_min may be NULL only for programmes whose official pages
+      // state no public figure — those sort last, exactly like unknown
+      // living costs below.
+      ranked.sort(
+        (a, b) =>
+          (a.programme.tuition_min ?? Number.POSITIVE_INFINITY) -
+          (b.programme.tuition_min ?? Number.POSITIVE_INFINITY),
+      );
       return;
     case "lowest_cost":
       ranked.sort(

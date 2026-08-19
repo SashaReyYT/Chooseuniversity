@@ -78,6 +78,26 @@ export function scoreBudgetFit(
     concerns.push(translated("budget.approximateFromMode"));
   }
 
+  // Tuition unknown (a programme is catalogued only when its tuition is
+  // confirmed — except the Czech pass-2 programmes, whose official pages
+  // state no public figure): the cost side of Budget Fit cannot be
+  // computed, so the dimension degrades to UNKNOWN (spec §29) instead of
+  // pretending a number exists.
+  if (
+    programme.tuition_min == null ||
+    programme.tuition_max == null ||
+    programme.tuition_currency == null
+  ) {
+    return {
+      key: "budget",
+      label: MATCH_DIMENSION_LABELS.budget,
+      score: null,
+      applicable: false,
+      reasons,
+      concerns: [...concerns, translated("budget.tuitionUnknown")],
+    };
+  }
+
   const annualLiving = annualLivingCost(programme);
   const programmeCurrency = programme.tuition_currency;
   // The qualitative ceilings (`BUDGET_MODE_CEILINGS_EUR`) are internally

@@ -284,10 +284,13 @@ function buildRows(
     {
       label: t("attrTuition"),
       render: (p) => {
-        const money = (amount: number) => formatMoney(amount, p.tuition_currency);
+        if (p.tuition_min == null || p.tuition_currency == null) {
+          return tDiscover("tuitionUnknown");
+        }
+        const money = (amount: number) => formatMoney(amount, p.tuition_currency!);
         const amount =
-          p.tuition_max > p.tuition_min
-            ? `${money(p.tuition_min)}–${money(p.tuition_max)}`
+          (p.tuition_max ?? p.tuition_min) > p.tuition_min
+            ? `${money(p.tuition_min)}–${money(p.tuition_max ?? p.tuition_min)}`
             : money(p.tuition_min);
         return `${amount} ${tDiscover("perYear")}`;
       },
@@ -310,14 +313,15 @@ function buildRows(
       label: t("attrTotalCostYearly"),
       render: (p) =>
         p.estimated_living_cost_monthly != null &&
-        p.living_cost_currency === p.tuition_currency
+        p.living_cost_currency === p.tuition_currency &&
+        p.tuition_min != null
           ? (() => {
               const living = annualLivingCost(p);
-              const min = p.tuition_min + living;
-              const max = p.tuition_max + living;
+              const min = p.tuition_min! + living;
+              const max = p.tuition_max! + living;
               return max > min
-                ? `${formatMoney(min, p.tuition_currency)}–${formatMoney(max, p.tuition_currency)}`
-                : formatMoney(min, p.tuition_currency);
+                ? `${formatMoney(min, p.tuition_currency!)}–${formatMoney(max, p.tuition_currency!)}`
+                : formatMoney(min, p.tuition_currency!);
             })()
           : null,
     },

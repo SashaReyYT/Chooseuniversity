@@ -67,32 +67,38 @@ export function renderMatchMessage(
 }
 
 interface TuitionFields {
-  tuition_min: number;
-  tuition_max: number;
-  tuition_currency: string;
+  tuition_min: number | null;
+  tuition_max: number | null;
+  tuition_currency: string | null;
 }
 
 /**
  * Shared by the programme card and the programme detail page so tuition
  * always reads the same way ("€8,000 / year" or "€8,000–€12,000 / year",
  * spec §49) everywhere it appears. Programme-level tuition is a range in
- * a canonical annual unit.
+ * a canonical annual unit. Tuition is null only for the Czech pass-2
+ * programmes whose official pages state no public figure — those render
+ * as an honest "tuition not published" instead of a fabricated number.
  */
 export function formatTuition(
   programme: TuitionFields,
   locale: string,
   t: DiscoverTranslator,
 ): string {
+  if (programme.tuition_min == null || programme.tuition_currency == null) {
+    return t("tuitionUnknown");
+  }
+
   const money = (amount: number) =>
     new Intl.NumberFormat(locale, {
       style: "currency",
-      currency: programme.tuition_currency,
+      currency: programme.tuition_currency!,
       maximumFractionDigits: 0,
     }).format(amount);
 
   const amount =
-    programme.tuition_max > programme.tuition_min
-      ? `${money(programme.tuition_min)}–${money(programme.tuition_max)}`
+    (programme.tuition_max ?? programme.tuition_min) > programme.tuition_min
+      ? `${money(programme.tuition_min)}–${money(programme.tuition_max ?? programme.tuition_min)}`
       : money(programme.tuition_min);
 
   return `${amount} ${t("perYear")}`;

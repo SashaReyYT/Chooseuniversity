@@ -131,11 +131,14 @@ export async function createProgrammeAction(formData: FormData): Promise<void> {
   const name = String(formData.get("name") ?? "");
   if (!name) return;
 
-  const tuitionMin = nullableNumber(formData.get("tuition_min")) ?? 0;
-  const tuitionMax = Math.max(
-    nullableNumber(formData.get("tuition_max")) ?? tuitionMin,
-    tuitionMin,
-  );
+  const tuitionMin = nullableNumber(formData.get("tuition_min"));
+  const tuitionMax =
+    tuitionMin == null
+      ? null
+      : Math.max(
+          nullableNumber(formData.get("tuition_max")) ?? tuitionMin,
+          tuitionMin,
+        );
 
   const input: ProgrammeInsert = {
     university_id: String(formData.get("university_id") ?? ""),
@@ -150,7 +153,7 @@ export async function createProgrammeAction(formData: FormData): Promise<void> {
     study_mode: nullableText(formData.get("study_mode")) as ProgrammeInsert["study_mode"] ?? "full_time",
     tuition_min: tuitionMin,
     tuition_max: tuitionMax,
-    tuition_currency: nullableText(formData.get("tuition_currency")) ?? "",
+    tuition_currency: nullableText(formData.get("tuition_currency")),
     application_fee_amount: nullableNumber(formData.get("application_fee_amount")),
     application_fee_currency: nullableText(formData.get("application_fee_currency")),
     estimated_living_cost_monthly: nullableNumber(formData.get("estimated_living_cost_monthly")),
@@ -179,11 +182,14 @@ export async function updateProgrammeAction(formData: FormData): Promise<void> {
   const name = String(formData.get("name") ?? "");
   if (!name) return;
 
-  const tuitionMin = nullableNumber(formData.get("tuition_min")) ?? 0;
-  const tuitionMax = Math.max(
-    nullableNumber(formData.get("tuition_max")) ?? tuitionMin,
-    tuitionMin,
-  );
+  const tuitionMin = nullableNumber(formData.get("tuition_min"));
+  const tuitionMax =
+    tuitionMin == null
+      ? null
+      : Math.max(
+          nullableNumber(formData.get("tuition_max")) ?? tuitionMin,
+          tuitionMin,
+        );
 
   const changes: ProgrammeUpdate = {
     university_id: String(formData.get("university_id") ?? ""),
@@ -198,7 +204,7 @@ export async function updateProgrammeAction(formData: FormData): Promise<void> {
     study_mode: nullableText(formData.get("study_mode")) as ProgrammeUpdate["study_mode"] ?? "full_time",
     tuition_min: tuitionMin,
     tuition_max: tuitionMax,
-    tuition_currency: nullableText(formData.get("tuition_currency")) ?? "",
+    tuition_currency: nullableText(formData.get("tuition_currency")),
     application_fee_amount: nullableNumber(formData.get("application_fee_amount")),
     application_fee_currency: nullableText(formData.get("application_fee_currency")),
     estimated_living_cost_monthly: nullableNumber(formData.get("estimated_living_cost_monthly")),

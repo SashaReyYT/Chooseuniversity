@@ -51,7 +51,12 @@ export default async function CatalogPage({
   const programmes = allProgrammes.filter((programme) => {
     if (fieldFilter && programme.field_of_study.id !== fieldFilter) return false;
     if (countryFilter && programme.university.country.code !== countryFilter) return false;
-    if (budgetMaxFilter && programme.tuition_min > budgetMaxFilter) return false;
+    if (
+      budgetMaxFilter &&
+      programme.tuition_min != null &&
+      programme.tuition_min > budgetMaxFilter
+    )
+      return false;
     return true;
   });
 

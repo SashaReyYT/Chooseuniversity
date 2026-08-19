@@ -355,17 +355,18 @@ export default async function ProgrammeDetailsPage({
               )}
             {programme.estimated_living_cost_monthly != null &&
               programme.living_cost_currency &&
-              programme.living_cost_currency === programme.tuition_currency && (
+              programme.living_cost_currency === programme.tuition_currency &&
+              programme.tuition_min != null && (
                 <Fact
                   label={t("factEstimatedTotalCost")}
                   value={(() => {
                     const living = annualLivingCost(programme);
-                    const min = programme.tuition_min + living;
-                    const max = programme.tuition_max + living;
+                    const min = programme.tuition_min! + living;
+                    const max = programme.tuition_max! + living;
                     const money = (amount: number) =>
                       new Intl.NumberFormat(uiLocale, {
                         style: "currency",
-                        currency: programme.tuition_currency,
+                        currency: programme.tuition_currency!,
                         maximumFractionDigits: 0,
                       }).format(amount);
                     return max > min

@@ -276,9 +276,9 @@ export type Database = {
           language_code: string;
           duration_months: number;
           study_mode: ProgrammeStudyMode | null;
-          tuition_min: number;
-          tuition_max: number;
-          tuition_currency: string;
+          tuition_min: number | null;
+          tuition_max: number | null;
+          tuition_currency: string | null;
           estimated_living_cost_monthly: number | null;
           living_cost_currency: string | null;
           application_deadline: string | null;
@@ -307,9 +307,9 @@ export type Database = {
           language_code: string;
           duration_months: number;
           study_mode?: ProgrammeStudyMode | null;
-          tuition_min: number;
-          tuition_max: number;
-          tuition_currency: string;
+          tuition_min?: number | null;
+          tuition_max?: number | null;
+          tuition_currency?: string | null;
           estimated_living_cost_monthly?: number | null;
           living_cost_currency?: string | null;
           application_deadline?: string | null;
@@ -338,9 +338,9 @@ export type Database = {
           language_code?: string;
           duration_months?: number;
           study_mode?: ProgrammeStudyMode | null;
-          tuition_min?: number;
-          tuition_max?: number;
-          tuition_currency?: string;
+          tuition_min?: number | null;
+          tuition_max?: number | null;
+          tuition_currency?: string | null;
           estimated_living_cost_monthly?: number | null;
           living_cost_currency?: string | null;
           application_deadline?: string | null;

@@ -47,6 +47,13 @@ export class QuickMatchService {
       }
 
       if (query.budgetMaxYearly != null) {
+        // Tuition unknown → the programme can't be budget-checked; it
+        // still "may fit" until the figure is researched, matching the
+        // engine's UNKNOWN treatment rather than counting it as free.
+        if (programme.tuition_min == null) {
+          return true;
+        }
+
         const totalAnnualCost =
           programme.tuition_min + annualLivingCost(programme);
 

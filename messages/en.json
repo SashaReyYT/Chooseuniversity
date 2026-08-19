@@ -102,7 +102,8 @@
     "labelGoodFit": "Good Fit",
     "labelPotentialFit": "Potential Fit",
     "labelWeakFit": "Weak Fit",
-    "dimensionSupport": "International Support Fit"
+    "dimensionSupport": "International Support Fit",
+    "tuitionUnknown": "Tuition not published"
   },
   "ProgrammeDetails": {
     "notFound": "Programme not found",
@@ -433,7 +434,8 @@
       "fitsBudgetRange": "Fits your budget (~{amountMin, number}–{amountMax, number} {currency}/year).",
       "partiallyFitsBudget": "The cheapest option fits your budget ({amountMin, number}–{amountMax, number} {currency}/year), but the most expensive exceeds {budgetMax, number}.",
       "overBudget": "Costs more than your budget (~{amount, number} vs {budgetMax, number} {currency}/year).",
-      "significantlyOverBudget": "Significantly exceeds your budget (~{amount, number} vs {budgetMax, number} {currency}/year)."
+      "significantlyOverBudget": "Significantly exceeds your budget (~{amount, number} vs {budgetMax, number} {currency}/year).",
+      "tuitionUnknown": "No public tuition figure — Budget Fit not scored."
     },
     "language": {
       "addTestScore": "Add a {testTypes} score to check whether you meet the language requirement.",
