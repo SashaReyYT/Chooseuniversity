@@ -47,7 +47,7 @@ export default async function SavedPage({
 
   const favouritesService = new FavouritesService(supabase);
   const comparisonService = new ComparisonService(supabase);
-  const profile = await new ProfileService(supabase).getForUser(user.id);
+  const profileData = await new ProfileService(supabase).getFullProfileForUser(user.id);
 
   const [saved, comparisons, matchesById] = await Promise.all([
     favouritesService.listSavedProgrammesForUser(user.id),
@@ -55,7 +55,7 @@ export default async function SavedPage({
     // Only compute matches when a profile exists — matching against no
     // profile data is meaningless, and ProgrammeCard already renders
     // gracefully with `match: null` (see its "no score" hint).
-    profile
+    profileData?.profile
       ? new MatchingService(supabase)
           .listMatchesForUser(user.id)
           .then((ranked) => new Map(ranked.map((r) => [r.programme.id, r.match])))
@@ -68,23 +68,37 @@ export default async function SavedPage({
   const defaultComparisonName = tDiscover("heading");
 
   // Build match profile for Best For labels
-  const matchProfile = profile
+  const matchProfile = profileData?.profile
     ? {
-        current_education_level: profile.current_education_level,
-        current_gpa: profile.current_gpa,
-        current_gpa_scale: profile.current_gpa_scale,
-        budget_min: profile.budget_min,
-        budget_max: profile.budget_max,
-        budget_currency: profile.budget_currency,
-        budget_mode: profile.budget_mode,
-        preferred_degree_level: profile.preferred_degree_level,
-        preferred_country_codes: profile.preferred_country_codes,
-        preferred_cities: profile.preferred_cities,
-        preferred_field_of_study_ids: profile.preferred_field_of_study_ids,
-        preferred_language_codes: profile.preferred_language_codes,
-        english_level: profile.english_level,
-        math_background: profile.math_background,
-        testScores: [],
+        current_education_level: profileData.profile.current_education_level,
+        current_gpa: profileData.profile.current_gpa,
+        current_gpa_scale: profileData.profile.current_gpa_scale,
+        budget_min: profileData.profile.budget_min,
+        budget_max: profileData.profile.budget_max,
+        budget_currency: profileData.profile.budget_currency,
+        budget_mode: profileData.profile.budget_mode,
+        preferred_degree_level: profileData.profile.preferred_degree_level,
+        preferred_country_codes: profileData.profile.preferred_country_codes,
+        preferred_cities: profileData.profile.preferred_cities,
+        preferred_field_of_study_ids: profileData.profile.preferred_field_of_study_ids,
+        preferred_language_codes: profileData.profile.preferred_language_codes,
+        english_level: profileData.profile.english_level,
+        math_background: profileData.profile.math_background,
+        testScores: profileData.testScores.map((s) => ({
+          test_type: s.test_type,
+          qualification_id: s.qualification_id,
+          score: s.score,
+          cefr_equivalent: s.cefr_equivalent,
+        })),
+        nmtScores: profileData.nmtScores.map((s) => ({
+          subject_code: s.subject_code,
+          score: s.score,
+          max_score: s.max_score,
+        })),
+        qualifications: profileData.qualifications.map((q) => ({
+          qualification_id: q.qualification_id,
+          year: q.year,
+        })),
       }
     : null;
 

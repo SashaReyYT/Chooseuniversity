@@ -30,7 +30,10 @@ export async function toggleComparisonAction(formData: FormData): Promise<void> 
 
   const inComparison = formData.get("inComparison") === "true";
   const service = new ComparisonService(supabase);
-  const comparison = await service.getOrCreateDefaultComparison(user.id);
+  const comparison = await service.getOrCreateDefaultComparison(
+    user.id,
+    "My comparison",
+  );
 
   if (inComparison) {
     await service.removeProgramme(comparison.id, programmeId);

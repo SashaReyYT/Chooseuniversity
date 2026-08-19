@@ -14,18 +14,21 @@ type MatchingTranslator = Awaited<ReturnType<typeof getTranslations<"Matching">>
 
 const LABEL_KEYS: Record<MatchLabel, MatchesKey> = {
   "Excellent Fit": "labelExcellentFit",
-  "Great Fit": "labelGreatFit",
+  "Strong Fit": "labelStrongFit",
   "Good Fit": "labelGoodFit",
-  "Fair Fit": "labelFairFit",
-  "Limited Fit": "labelLimitedFit",
+  "Potential Fit": "labelPotentialFit",
+  "Weak Fit": "labelWeakFit",
 };
 
 const DIMENSION_KEYS: Record<MatchDimensionKey, MatchesKey> = {
   academic: "dimensionAcademic",
+  admission: "dimensionAdmission",
   budget: "dimensionBudget",
   language: "dimensionLanguage",
   location: "dimensionLocation",
-  admission: "dimensionAdmission",
+  career: "dimensionCareer",
+  format: "dimensionFormat",
+  lifestyle: "dimensionLifestyle",
 };
 
 /**

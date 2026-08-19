@@ -27,7 +27,10 @@ export async function addToComparison(programmeId: string): Promise<ComparisonAc
   const supabase = await createServerSupabaseClient();
   try {
     const service = new ComparisonService(supabase);
-    const comparison = await service.getOrCreateDefaultComparison(user.id);
+    const comparison = await service.getOrCreateDefaultComparison(
+      user.id,
+      "My comparison",
+    );
     await service.addProgramme(comparison.id, programmeId);
     revalidatePath("/dashboard");
     revalidatePath("/compare");

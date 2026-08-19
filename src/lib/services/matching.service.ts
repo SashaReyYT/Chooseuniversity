@@ -4,6 +4,8 @@ import { ProgrammesRepository } from "@/lib/repositories/programmes.repository";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import { UserProfileRepository } from "@/lib/repositories/user-profile.repository";
 import { UserTestScoresRepository } from "@/lib/repositories/user-test-scores.repository";
+import { UserNmtScoresRepository } from "@/lib/repositories/user-nmt-scores.repository";
+import { UserQualificationsRepository } from "@/lib/repositories/user-qualifications.repository";
 import { UserMatchWeightsRepository } from "@/lib/repositories/user-match-weights.repository";
 import { computeMatchScore } from "@/lib/matching/engine";
 import type { CurrencyRateTable } from "@/lib/matching/currency";
@@ -47,6 +49,8 @@ export class MatchingService {
   private readonly referenceData: ReferenceDataRepository;
   private readonly userProfile: UserProfileRepository;
   private readonly userTestScores: UserTestScoresRepository;
+  private readonly userNmtScores: UserNmtScoresRepository;
+  private readonly userQualifications: UserQualificationsRepository;
   private readonly userMatchWeights: UserMatchWeightsRepository;
 
   constructor(supabase: SupabaseClient<Database>) {
@@ -54,6 +58,8 @@ export class MatchingService {
     this.referenceData = new ReferenceDataRepository(supabase);
     this.userProfile = new UserProfileRepository(supabase);
     this.userTestScores = new UserTestScoresRepository(supabase);
+    this.userNmtScores = new UserNmtScoresRepository(supabase);
+    this.userQualifications = new UserQualificationsRepository(supabase);
     this.userMatchWeights = new UserMatchWeightsRepository(supabase);
   }
 
@@ -71,20 +77,26 @@ export class MatchingService {
     return rates;
   }
 
-  private async buildMatchUserProfile(userId: string): Promise<{
-    profile: MatchUserProfile;
+  /**
+   * Loads the user's profile row, test scores, NMT scores, held
+   * qualifications and match weights, mapped into the engine's
+   * `MatchUserProfile` shape. Returns `profile: null` when the user
+   * hasn't completed onboarding — callers decide how to handle that.
+   */
+  private async loadMatchData(userId: string): Promise<{
+    profile: MatchUserProfile | null;
     weights: import("@/lib/matching/match-types").MatchWeights;
   }> {
-    const [profileRow, testScores, weights] = await Promise.all([
+    const [profileRow, testScores, nmtScores, qualifications, weights] = await Promise.all([
       this.userProfile.findByUserId(userId),
       this.userTestScores.listByUserId(userId),
+      this.userNmtScores.listByUserId(userId),
+      this.userQualifications.listByUserId(userId),
       this.userMatchWeights.findByUserId(userId),
     ]);
 
     if (!profileRow) {
-      throw new Error(
-        `No profile found for user ${userId} — complete onboarding before requesting matches.`,
-      );
+      return { profile: null, weights: {} };
     }
 
     const profile: MatchUserProfile = {
@@ -107,6 +119,15 @@ export class MatchingService {
         qualification_id: s.qualification_id,
         score: s.score,
         cefr_equivalent: s.cefr_equivalent,
+      })),
+      nmtScores: nmtScores.map((s) => ({
+        subject_code: s.subject_code,
+        score: s.score,
+        max_score: s.max_score,
+      })),
+      qualifications: qualifications.map((q) => ({
+        qualification_id: q.qualification_id,
+        year: q.year,
       })),
     };
 
@@ -132,46 +153,21 @@ export class MatchingService {
     userId: string,
     filters: MatchSearchFilters = {},
   ): Promise<RankedMatch[]> {
-    const [profileRow, testScores, programmes, weights, currencyRates] = await Promise.all([
-      this.userProfile.findByUserId(userId),
-      this.userTestScores.listByUserId(userId),
+    const [programmes, currencyRates, { profile, weights }] = await Promise.all([
       this.programmes.search(filters),
-      this.userMatchWeights.findByUserId(userId),
       this.loadCurrencyRates(),
+      this.loadMatchData(userId),
     ]);
 
-    if (!profileRow) {
+    if (!profile) {
       throw new Error(
         `No profile found for user ${userId} — complete onboarding before requesting matches.`,
       );
     }
 
-    const profile: MatchUserProfile = {
-      current_education_level: profileRow.current_education_level,
-      current_gpa: profileRow.current_gpa,
-      current_gpa_scale: profileRow.current_gpa_scale,
-      budget_min: profileRow.budget_min,
-      budget_max: profileRow.budget_max,
-      budget_currency: profileRow.budget_currency,
-      budget_mode: profileRow.budget_mode,
-      preferred_degree_level: profileRow.preferred_degree_level,
-      preferred_country_codes: profileRow.preferred_country_codes,
-      preferred_cities: profileRow.preferred_cities,
-      preferred_field_of_study_ids: profileRow.preferred_field_of_study_ids,
-      preferred_language_codes: profileRow.preferred_language_codes,
-      english_level: profileRow.english_level,
-      math_background: profileRow.math_background,
-      testScores: testScores.map((s) => ({
-        test_type: s.test_type,
-        qualification_id: s.qualification_id,
-        score: s.score,
-        cefr_equivalent: s.cefr_equivalent,
-      })),
-    };
-
     const ranked = programmes.map((programme) => ({
       programme,
-      match: computeMatchScore(profile, programme, new Date(), weights ?? {}, currencyRates),
+      match: computeMatchScore(profile, programme, new Date(), weights, currencyRates),
     }));
 
     sortRankedMatches(ranked, filters.sortBy);
@@ -184,42 +180,17 @@ export class MatchingService {
     userId: string,
     programmeId: string,
   ): Promise<RankedMatch | null> {
-    const [profileRow, testScores, programme, weights, currencyRates] = await Promise.all([
-      this.userProfile.findByUserId(userId),
-      this.userTestScores.listByUserId(userId),
+    const [programme, currencyRates, { profile, weights }] = await Promise.all([
       this.programmes.findById(programmeId),
-      this.userMatchWeights.findByUserId(userId),
       this.loadCurrencyRates(),
+      this.loadMatchData(userId),
     ]);
 
-    if (!profileRow || !programme) return null;
-
-    const profile: MatchUserProfile = {
-      current_education_level: profileRow.current_education_level,
-      current_gpa: profileRow.current_gpa,
-      current_gpa_scale: profileRow.current_gpa_scale,
-      budget_min: profileRow.budget_min,
-      budget_max: profileRow.budget_max,
-      budget_currency: profileRow.budget_currency,
-      budget_mode: profileRow.budget_mode,
-      preferred_degree_level: profileRow.preferred_degree_level,
-      preferred_country_codes: profileRow.preferred_country_codes,
-      preferred_cities: profileRow.preferred_cities,
-      preferred_field_of_study_ids: profileRow.preferred_field_of_study_ids,
-      preferred_language_codes: profileRow.preferred_language_codes,
-      english_level: profileRow.english_level,
-      math_background: profileRow.math_background,
-      testScores: testScores.map((s) => ({
-        test_type: s.test_type,
-        qualification_id: s.qualification_id,
-        score: s.score,
-        cefr_equivalent: s.cefr_equivalent,
-      })),
-    };
+    if (!profile || !programme) return null;
 
     return {
       programme,
-      match: computeMatchScore(profile, programme, new Date(), weights ?? {}, currencyRates),
+      match: computeMatchScore(profile, programme, new Date(), weights, currencyRates),
     };
   }
 }

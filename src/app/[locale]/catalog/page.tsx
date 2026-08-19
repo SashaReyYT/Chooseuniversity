@@ -34,6 +34,7 @@ export default async function CatalogPage({
     typeof sp.budgetMax === "string" && sp.budgetMax ? Number(sp.budgetMax) : null;
 
   const t = await getTranslations("Catalog");
+  const tDiscover = await getTranslations("Discover");
   const supabase = await createServerSupabaseClient();
 
   const {
@@ -50,7 +51,7 @@ export default async function CatalogPage({
   const programmes = allProgrammes.filter((programme) => {
     if (fieldFilter && programme.field_of_study.id !== fieldFilter) return false;
     if (countryFilter && programme.university.country.code !== countryFilter) return false;
-    if (budgetMaxFilter && programme.tuition_fee_amount > budgetMaxFilter) return false;
+    if (budgetMaxFilter && programme.tuition_min > budgetMaxFilter) return false;
     return true;
   });
 
@@ -80,7 +81,10 @@ export default async function CatalogPage({
         </p>
       </div>
 
-      <form action="/catalog" className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+      <form
+        action={`/${locale}/catalog`}
+        className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end"
+      >
         <div className="space-y-1">
           <label htmlFor="field" className={formLabelClassName}>
             {t("filterFieldLabel")}
@@ -148,23 +152,26 @@ export default async function CatalogPage({
         {t("resultsCount", { count: programmes.length })}
       </p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {programmes.map((programme) => (
-          <ProgrammeCard
-            key={programme.id}
-            programme={programme}
-            isSaved={savedIds.has(programme.id)}
-            inComparison={comparisonIds.has(programme.id)}
-            labels={{
-              save: t("save"),
-              unsave: t("unsave"),
-              compareAdd: t("compareAdd"),
-              compareRemove: t("compareRemove"),
-              viewDetails: t("viewDetails"),
-            }}
-          />
-        ))}
-      </div>
+      {programmes.length === 0 ? (
+        <p className="font-body-md text-body-md text-on-surface-variant">
+          {t("empty")}
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {programmes.map((programme) => (
+            <ProgrammeCard
+              key={programme.id}
+              programme={programme}
+              match={null}
+              profile={null}
+              isSaved={savedIds.has(programme.id)}
+              isInComparison={comparisonIds.has(programme.id)}
+              t={tDiscover}
+              defaultComparisonName={t("heading")}
+            />
+          ))}
+        </div>
+      )}
     </main>
   );
 }

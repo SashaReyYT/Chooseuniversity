@@ -29,6 +29,16 @@ export type MatchUserProfile = Pick<
     Database["public"]["Tables"]["user_test_scores"]["Row"],
     "test_type" | "qualification_id" | "score" | "cefr_equivalent"
   >[];
+  /** Per-subject NMT results (Czech national exam) — checked against NMT test requirements. */
+  nmtScores: Pick<
+    Database["public"]["Tables"]["user_nmt_scores"]["Row"],
+    "subject_code" | "score" | "max_score"
+  >[];
+  /** Certificates/qualifications the user holds (A-levels, IB, SAT, ...). */
+  qualifications: Pick<
+    Database["public"]["Tables"]["user_qualifications"]["Row"],
+    "qualification_id" | "year"
+  >[];
 };
 
 export type { ProgrammeWithDetails };

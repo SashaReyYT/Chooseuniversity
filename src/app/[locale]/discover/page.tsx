@@ -36,29 +36,43 @@ export default async function DiscoverPage({
     return;
   }
 
-  const profile = await new ProfileService(supabase).getForUser(user.id);
+  const profileData = await new ProfileService(supabase).getFullProfileForUser(user.id);
 
   const favouritesService = new FavouritesService(supabase);
   const comparisonService = new ComparisonService(supabase);
 
   // Build match user profile for Best For labels
-  const matchProfile = profile
+  const matchProfile = profileData?.profile
     ? {
-        current_education_level: profile.current_education_level,
-        current_gpa: profile.current_gpa,
-        current_gpa_scale: profile.current_gpa_scale,
-        budget_min: profile.budget_min,
-        budget_max: profile.budget_max,
-        budget_currency: profile.budget_currency,
-        budget_mode: profile.budget_mode,
-        preferred_degree_level: profile.preferred_degree_level,
-        preferred_country_codes: profile.preferred_country_codes,
-        preferred_cities: profile.preferred_cities,
-        preferred_field_of_study_ids: profile.preferred_field_of_study_ids,
-        preferred_language_codes: profile.preferred_language_codes,
-        english_level: profile.english_level,
-        math_background: profile.math_background,
-        testScores: [],
+        current_education_level: profileData.profile.current_education_level,
+        current_gpa: profileData.profile.current_gpa,
+        current_gpa_scale: profileData.profile.current_gpa_scale,
+        budget_min: profileData.profile.budget_min,
+        budget_max: profileData.profile.budget_max,
+        budget_currency: profileData.profile.budget_currency,
+        budget_mode: profileData.profile.budget_mode,
+        preferred_degree_level: profileData.profile.preferred_degree_level,
+        preferred_country_codes: profileData.profile.preferred_country_codes,
+        preferred_cities: profileData.profile.preferred_cities,
+        preferred_field_of_study_ids: profileData.profile.preferred_field_of_study_ids,
+        preferred_language_codes: profileData.profile.preferred_language_codes,
+        english_level: profileData.profile.english_level,
+        math_background: profileData.profile.math_background,
+        testScores: profileData.testScores.map((s) => ({
+          test_type: s.test_type,
+          qualification_id: s.qualification_id,
+          score: s.score,
+          cefr_equivalent: s.cefr_equivalent,
+        })),
+        nmtScores: profileData.nmtScores.map((s) => ({
+          subject_code: s.subject_code,
+          score: s.score,
+          max_score: s.max_score,
+        })),
+        qualifications: profileData.qualifications.map((q) => ({
+          qualification_id: q.qualification_id,
+          year: q.year,
+        })),
       }
     : null;
 
@@ -70,7 +84,7 @@ export default async function DiscoverPage({
   const sortBy = (sp?.sort as "best_match" | "lowest_tuition" | "highest_match" | "lowest_cost") ?? "best_match";
 
   const [entries, saved, comparisons] = await Promise.all([
-    profile
+    profileData?.profile
       ? new MatchingService(supabase)
           .listMatchesForUser(user.id, {
             query: searchQuery || undefined,
@@ -116,14 +130,14 @@ export default async function DiscoverPage({
             {t("heading")}
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant">
-            {profile ? t("description") : t("descriptionNoProfile")}
+            {profileData?.profile ? t("description") : t("descriptionNoProfile")}
           </p>
         </div>
         <Link
           href="/profile"
           className="font-label-caps text-label-caps text-primary border border-primary rounded-full px-6 py-3 hover:bg-surface-container transition-all whitespace-nowrap"
         >
-          {profile ? t("editProfile") : t("buildProfile")}
+          {profileData?.profile ? t("editProfile") : t("buildProfile")}
         </Link>
       </div>
 

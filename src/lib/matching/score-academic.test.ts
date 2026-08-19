@@ -177,4 +177,267 @@ describe("scoreAcademicFit", () => {
     // Score is still purely GPA-derived (0.5 / 0.8 = 0.625 -> 63).
     expect(result.score).toBe(63);
   });
+
+  it("scores 100 when an NMT subject requirement is met by the user's NMT score", () => {
+    const profile = makeProfile({
+      current_gpa: 3.2,
+      current_gpa_scale: 4.0,
+      nmtScores: [{ subject_code: "mathematics", score: 186, max_score: 200 }],
+    });
+    const programme = makeProgramme({
+      test_requirements: [
+        ...makeProgramme().test_requirements,
+        {
+          id: "test-req-nmt",
+          programme_id: "programme-1",
+          qualification_id: "qual-nmt",
+          section: "NMT",
+          subject: "mathematics",
+          minimum_score: 60,
+          minimum_score_display: "60",
+          comparison: "greater_or_equal",
+          notes: null,
+          created_at: "2026-01-01T00:00:00.000Z",
+          updated_at: "2026-01-01T00:00:00.000Z",
+          qualification: {
+            id: "qual-nmt",
+            code: "nmt",
+            name: "NMT",
+            category: "national",
+            description: null,
+            max_score: 200,
+            active: true,
+            sort_order: 1,
+            created_at: "2026-01-01T00:00:00.000Z",
+            updated_at: "2026-01-01T00:00:00.000Z",
+          },
+        },
+      ],
+    });
+
+    const result = scoreAcademicFit(profile, programme);
+
+    expect(result.score).toBe(100);
+    expect(hasMessageKey(result.reasons, "academic.meetsTestRequirement")).toBe(true);
+    expect(
+      paramsForKey(result.reasons, "academic.meetsTestRequirement")?.testType,
+    ).toBe("NMT mathematics");
+  });
+
+  it("lowers the score when the user's NMT subject score is below the requirement, and adds a concern", () => {
+    const profile = makeProfile({
+      current_gpa: 3.2,
+      current_gpa_scale: 4.0,
+      nmtScores: [{ subject_code: "mathematics", score: 45, max_score: 200 }],
+    });
+    const programme = makeProgramme({
+      test_requirements: [
+        ...makeProgramme().test_requirements,
+        {
+          id: "test-req-nmt",
+          programme_id: "programme-1",
+          qualification_id: "qual-nmt",
+          section: "NMT",
+          subject: "mathematics",
+          minimum_score: 60,
+          minimum_score_display: "60",
+          comparison: "greater_or_equal",
+          notes: null,
+          created_at: "2026-01-01T00:00:00.000Z",
+          updated_at: "2026-01-01T00:00:00.000Z",
+          qualification: {
+            id: "qual-nmt",
+            code: "nmt",
+            name: "NMT",
+            category: "national",
+            description: null,
+            max_score: 200,
+            active: true,
+            sort_order: 1,
+            created_at: "2026-01-01T00:00:00.000Z",
+            updated_at: "2026-01-01T00:00:00.000Z",
+          },
+        },
+      ],
+    });
+
+    const result = scoreAcademicFit(profile, programme);
+
+    expect(result.score).toBe(65); // (100 GPA + 30 below) / 2
+    expect(hasMessageKey(result.concerns, "academic.belowTestRequirement")).toBe(true);
+  });
+
+  it("adds a concern (without a score penalty) when the user has no evidence for a required test", () => {
+    const profile = makeProfile({
+      current_gpa: 3.2,
+      current_gpa_scale: 4.0,
+      nmtScores: [{ subject_code: "czech_language", score: 90, max_score: 100 }],
+    });
+    const programme = makeProgramme({
+      test_requirements: [
+        ...makeProgramme().test_requirements,
+        {
+          id: "test-req-nmt",
+          programme_id: "programme-1",
+          qualification_id: "qual-nmt",
+          section: "NMT",
+          subject: "mathematics",
+          minimum_score: 60,
+          minimum_score_display: "60",
+          comparison: "greater_or_equal",
+          notes: null,
+          created_at: "2026-01-01T00:00:00.000Z",
+          updated_at: "2026-01-01T00:00:00.000Z",
+          qualification: {
+            id: "qual-nmt",
+            code: "nmt",
+            name: "NMT",
+            category: "national",
+            description: null,
+            max_score: 200,
+            active: true,
+            sort_order: 1,
+            created_at: "2026-01-01T00:00:00.000Z",
+            updated_at: "2026-01-01T00:00:00.000Z",
+          },
+        },
+      ],
+    });
+
+    const result = scoreAcademicFit(profile, programme);
+
+    expect(result.score).toBe(100); // GPA only — missing evidence isn't a penalty
+    expect(hasMessageKey(result.concerns, "academic.missingTestRequirement")).toBe(true);
+  });
+
+  it("meets an SAT requirement via a recorded test score", () => {
+    const profile = makeProfile({
+      current_gpa: 3.2,
+      current_gpa_scale: 4.0,
+      testScores: [
+        { test_type: "SAT", qualification_id: "qual-sat", score: 1350, cefr_equivalent: null },
+      ],
+    });
+    const programme = makeProgramme({
+      test_requirements: [
+        ...makeProgramme().test_requirements,
+        {
+          id: "test-req-sat",
+          programme_id: "programme-1",
+          qualification_id: "qual-sat",
+          section: null,
+          subject: null,
+          minimum_score: 1200,
+          minimum_score_display: "1200",
+          comparison: "greater_or_equal",
+          notes: null,
+          created_at: "2026-01-01T00:00:00.000Z",
+          updated_at: "2026-01-01T00:00:00.000Z",
+          qualification: {
+            id: "qual-sat",
+            code: "sat",
+            name: "SAT",
+            category: "academic",
+            description: null,
+            max_score: 1600,
+            active: true,
+            sort_order: 5,
+            created_at: "2026-01-01T00:00:00.000Z",
+            updated_at: "2026-01-01T00:00:00.000Z",
+          },
+        },
+      ],
+    });
+
+    const result = scoreAcademicFit(profile, programme);
+
+    expect(result.score).toBe(100);
+    expect(hasMessageKey(result.reasons, "academic.meetsTestRequirement")).toBe(true);
+  });
+
+  it("counts a held qualification without a published threshold as meeting the requirement", () => {
+    const profile = makeProfile({
+      current_gpa: 3.2,
+      current_gpa_scale: 4.0,
+      qualifications: [{ qualification_id: "qual-a", year: 2025 }],
+    });
+    const programme = makeProgramme({
+      test_requirements: [
+        ...makeProgramme().test_requirements,
+        {
+          id: "test-req-a",
+          programme_id: "programme-1",
+          qualification_id: "qual-a",
+          section: null,
+          subject: null,
+          minimum_score: null,
+          minimum_score_display: null,
+          comparison: "greater_or_equal",
+          notes: null,
+          created_at: "2026-01-01T00:00:00.000Z",
+          updated_at: "2026-01-01T00:00:00.000Z",
+          qualification: {
+            id: "qual-a",
+            code: "a_levels",
+            name: "A-Levels",
+            category: "academic",
+            description: null,
+            max_score: null,
+            active: true,
+            sort_order: 8,
+            created_at: "2026-01-01T00:00:00.000Z",
+            updated_at: "2026-01-01T00:00:00.000Z",
+          },
+        },
+      ],
+    });
+
+    const result = scoreAcademicFit(profile, programme);
+
+    expect(result.score).toBe(100);
+    expect(hasMessageKey(result.reasons, "academic.hasQualification")).toBe(true);
+  });
+
+  it("treats a held qualification as unverified (score penalty, no silent pass) when a threshold is published", () => {
+    const profile = makeProfile({
+      current_gpa: 3.2,
+      current_gpa_scale: 4.0,
+      qualifications: [{ qualification_id: "qual-a", year: 2025 }],
+    });
+    const programme = makeProgramme({
+      test_requirements: [
+        ...makeProgramme().test_requirements,
+        {
+          id: "test-req-a",
+          programme_id: "programme-1",
+          qualification_id: "qual-a",
+          section: null,
+          subject: null,
+          minimum_score: 120,
+          minimum_score_display: "120 UCAS points",
+          comparison: "greater_or_equal",
+          notes: null,
+          created_at: "2026-01-01T00:00:00.000Z",
+          updated_at: "2026-01-01T00:00:00.000Z",
+          qualification: {
+            id: "qual-a",
+            code: "a_levels",
+            name: "A-Levels",
+            category: "academic",
+            description: null,
+            max_score: null,
+            active: true,
+            sort_order: 8,
+            created_at: "2026-01-01T00:00:00.000Z",
+            updated_at: "2026-01-01T00:00:00.000Z",
+          },
+        },
+      ],
+    });
+
+    const result = scoreAcademicFit(profile, programme);
+
+    expect(result.score).toBe(65); // (100 GPA + 30 unverified) / 2
+    expect(hasMessageKey(result.concerns, "academic.qualificationUnverified")).toBe(true);
+  });
 });

@@ -1257,6 +1257,15 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Update: {
+          id?: string;
+          url?: string;
+          name?: string;
+          type?: SourceType;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
         Relationships: [];
       };
 

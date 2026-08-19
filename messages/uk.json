@@ -4,7 +4,9 @@
     "navDiscover": "Знайти",
     "navSaved": "Збережене",
     "navCompare": "Порівняти",
-    "navProfile": "Профіль"
+    "navProfile": "Профіль",
+    "navCatalog": "Каталог",
+    "navMatches": "Матчі"
   },
   "HomePage": {
     "heading": "Знайди університет, який підходить саме тобі",
@@ -367,7 +369,31 @@
     "qualificationYearLabel": "Рік (необов'язково)",
     "englishTestTakenLabel": "Ви складали тест на знання англійської мови?",
     "englishTestNoneOption": "Без тесту",
-    "englishTestScoreLabel": "Бал"
+    "englishTestScoreLabel": "Бал",
+    "back": "Назад",
+    "stepIndicator": "Крок {step} з {total}",
+    "step1Title": "Ваше ім'я",
+    "step1Subtitle": "Щоб ми могли звертатися до вас — це ім'я показане у профілі.",
+    "step2Title": "Напрями навчання",
+    "step2Subtitle": "Оберіть напрями, які вас цікавлять — можна обрати кілька.",
+    "step3Title": "Країни",
+    "step3Subtitle": "Де ви хотіли б навчатися? Оберіть усі, що приваблюють.",
+    "step4Title": "Міста",
+    "step4Subtitle": "Є конкретні міста на прикметі? Необов'язково — уточните пізніше.",
+    "step5Title": "Мови",
+    "step5Subtitle": "Якими мовами вам було б комфортно навчатися?",
+    "step6Title": "Громадянство",
+    "step6Subtitle": "Допомагає врахувати категорії оплати та візові вимоги.",
+    "step7Title": "Академічна успішність",
+    "step7Subtitle": "Ваш середній бал і шкала допомагають оцінити шанси на вступ.",
+    "step8Title": "Рівень навчання",
+    "step8Subtitle": "Який рівень ви плануєте?",
+    "preferredDegreeLevelLabel": "Бажаний рівень навчання",
+    "degreeLevelFoundation": "Підготовчий",
+    "degreeLevelBachelor": "Бакалавр",
+    "degreeLevelMaster": "Магістр",
+    "degreeLevelPhd": "Доктор філософії",
+    "continue": "Далі"
   },
   "ErrorBoundary": {
     "heading": "Щось пішло не так",
@@ -383,7 +409,12 @@
       "missingGpa": "Додайте свій середній бал, щоб побачити оцінку академічної відповідності для цієї програми.",
       "requiredSubjects": "Потрібна підготовка з предметів: {subjects} — перевірте, чи відповідаєте ви цій вимозі.",
       "entranceExamGeneric": "Для цієї програми потрібен вступний іспит.",
-      "fieldMatch": "Гарна відповідність напряму «{field}»."
+      "fieldMatch": "Гарна відповідність напряму «{field}».",
+      "meetsTestRequirement": "Відповідає вимозі {testType} ({score, number} ≥ {minScore}).",
+      "belowTestRequirement": "Ваш результат {testType} — {score, number}, нижче за вимогу {minScore}.",
+      "hasQualification": "Маєте необхідну кваліфікацію: {qualification}.",
+      "qualificationUnverified": "Маєте {qualification}, але програма публікує мінімальний бал — перевірте, чи відповідаєте вимозі {minScore}.",
+      "missingTestRequirement": "Немає результату {testType} чи документа про кваліфікацію — програма цього вимагає."
     },
     "budget": {
       "missingBudget": "Вкажіть бюджет у профілі, щоб побачити оцінку бюджетної відповідності.",
@@ -687,5 +718,51 @@
     "settingsGrantedAt": "Надано о",
     "settingsNoAdmins": "Адміністраторів поки немає.",
     "settingsGrantHint": "Вставте UUID користувача Supabase (анонімні сесії отримують його автоматично). Доступ діє одразу через RLS."
+  },
+  "Catalog": {
+    "heading": "Каталог програм",
+    "description": "Усі програми, які ми відстежуємо — фільтруйте за напрямом, країною та бюджетом.",
+    "filterFieldLabel": "Напрям навчання",
+    "filterAnyOption": "Будь-який",
+    "filterCountryLabel": "Країна",
+    "filterBudgetLabel": "Максимальна оплата",
+    "filterBudgetUnder5k": "До $5 000 / рік",
+    "filterBudgetUnder10k": "До $10 000 / рік",
+    "filterBudgetUnder15k": "До $15 000 / рік",
+    "filterSubmit": "Застосувати фільтри",
+    "resultsCount": "{count, plural, =0 {Немає програм} one {1 програма} few {# програми} other {# програм}}",
+    "empty": "Жодна програма не відповідає фільтрам. Спробуйте розширити бюджет або прибрати фільтр."
+  },
+  "Matches": {
+    "heading": "Ваші матчі",
+    "description": "Ранжовано за вашим профілем — від «Чудовий» до «Слабкий».",
+    "noProfile": "Заповніть профіль, щоб бачити персональні матчі.",
+    "noProfileCta": "Заповнити профіль",
+    "editProfile": "Редагувати профіль",
+    "empty": "Поки що немає програм — спробуйте оновити профіль або вподобання.",
+    "labelExcellentFit": "Чудовий збіг",
+    "labelStrongFit": "Сильний збіг",
+    "labelGoodFit": "Хороший збіг",
+    "labelPotentialFit": "Ймовірний збіг",
+    "labelWeakFit": "Слабкий збіг",
+    "dimensionAcademic": "Академічний збіг",
+    "dimensionAdmission": "Збіг за вступом",
+    "dimensionBudget": "Бюджетний збіг",
+    "dimensionLanguage": "Мовний збіг",
+    "dimensionLocation": "Збіг за місцем",
+    "dimensionCareer": "Кар'єрний збіг",
+    "dimensionFormat": "Збіг за форматом",
+    "dimensionLifestyle": "Збіг за стилем життя",
+    "whyItMatches": "Чому це підходить",
+    "potentialConcerns": "Можливі застереження",
+    "notApplicable": "Не застосовно",
+    "save": "Зберегти",
+    "unsave": "Збережено"
+  },
+  "Favourites": {
+    "heading": "Збережені програми",
+    "description": "{count, plural, one {1 збережена програма} few {# збережені програми} other {# збережених програм}}",
+    "empty": "Ви ще не зберегли жодної програми.",
+    "emptyCta": "Переглянути каталог"
   }
 }

@@ -150,6 +150,8 @@ export function makeProfile(
     testScores: [
       { test_type: "IELTS", qualification_id: "qual-ielts", score: 7.0, cefr_equivalent: "c1" },
     ],
+    nmtScores: [],
+    qualifications: [],
     ...overrides,
   };
 }

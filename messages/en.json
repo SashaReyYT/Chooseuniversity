@@ -4,7 +4,9 @@
     "navDiscover": "Discover",
     "navSaved": "Saved",
     "navCompare": "Compare",
-    "navProfile": "Profile"
+    "navProfile": "Profile",
+    "navCatalog": "Catalogue",
+    "navMatches": "Matches"
   },
   "HomePage": {
     "heading": "Find your best-fit university",
@@ -367,7 +369,31 @@
     "qualificationYearLabel": "Year (optional)",
     "englishTestTakenLabel": "Have you taken an English proficiency test?",
     "englishTestNoneOption": "No test",
-    "englishTestScoreLabel": "Score"
+    "englishTestScoreLabel": "Score",
+    "back": "Back",
+    "stepIndicator": "Step {step} of {total}",
+    "step1Title": "Your name",
+    "step1Subtitle": "So we can address you properly — this is the name shown on your profile.",
+    "step2Title": "Fields of study",
+    "step2Subtitle": "Pick the fields you're interested in — you can choose more than one.",
+    "step3Title": "Countries",
+    "step3Subtitle": "Where would you like to study? Select all that appeal to you.",
+    "step4Title": "Cities",
+    "step4Subtitle": "Any specific cities in mind? Optional — you can refine this later.",
+    "step5Title": "Languages",
+    "step5Subtitle": "Which languages would you be comfortable studying in?",
+    "step6Title": "Nationality",
+    "step6Subtitle": "Helps us account for tuition tiers and visa requirements.",
+    "step7Title": "Academic background",
+    "step7Subtitle": "Your GPA and its scale help us gauge admission competitiveness.",
+    "step8Title": "Degree level",
+    "step8Subtitle": "What level are you aiming for?",
+    "preferredDegreeLevelLabel": "Preferred degree level",
+    "degreeLevelFoundation": "Foundation",
+    "degreeLevelBachelor": "Bachelor",
+    "degreeLevelMaster": "Master",
+    "degreeLevelPhd": "PhD",
+    "continue": "Continue"
   },
   "ErrorBoundary": {
     "heading": "Something went wrong",
@@ -383,7 +409,12 @@
       "missingGpa": "Add your GPA to see your Academic Fit score for this programme.",
       "requiredSubjects": "Requires background in {subjects} — confirm you meet this.",
       "entranceExamGeneric": "An entrance exam is required for this programme.",
-      "fieldMatch": "Strong {field} match."
+      "fieldMatch": "Strong {field} match.",
+      "meetsTestRequirement": "Meets the {testType} requirement ({score, number} ≥ {minScore}).",
+      "belowTestRequirement": "Your {testType} score of {score, number} is below the required {minScore}.",
+      "hasQualification": "Has the required {qualification}.",
+      "qualificationUnverified": "Holds {qualification}, but this programme publishes a minimum score — confirm you meet {minScore}.",
+      "missingTestRequirement": "No {testType} score or qualification on file — this programme requires one."
     },
     "budget": {
       "missingBudget": "Set a budget in your profile to see your Budget Fit score.",
@@ -687,5 +718,51 @@
     "settingsGrantedAt": "Granted at",
     "settingsNoAdmins": "No admin users yet.",
     "settingsGrantHint": "Paste a Supabase user UUID (anonymous sessions get one automatically). Access is immediate via RLS."
+  },
+  "Catalog": {
+    "heading": "Programme catalogue",
+    "description": "Every programme we track — filter by field, country, and budget.",
+    "filterFieldLabel": "Field of study",
+    "filterAnyOption": "Any",
+    "filterCountryLabel": "Country",
+    "filterBudgetLabel": "Maximum tuition",
+    "filterBudgetUnder5k": "Under $5,000 / year",
+    "filterBudgetUnder10k": "Under $10,000 / year",
+    "filterBudgetUnder15k": "Under $15,000 / year",
+    "filterSubmit": "Apply filters",
+    "resultsCount": "{count, plural, =0 {No programmes} one {1 programme} other {# programmes}}",
+    "empty": "No programmes match these filters. Try widening your budget or clearing a filter."
+  },
+  "Matches": {
+    "heading": "Your matches",
+    "description": "Ranked against your profile — from Excellent to Weak Fit.",
+    "noProfile": "Build your profile to see personalised matches.",
+    "noProfileCta": "Build profile",
+    "editProfile": "Edit profile",
+    "empty": "No programmes matched yet — try adjusting your profile or preferences.",
+    "labelExcellentFit": "Excellent Fit",
+    "labelStrongFit": "Strong Fit",
+    "labelGoodFit": "Good Fit",
+    "labelPotentialFit": "Potential Fit",
+    "labelWeakFit": "Weak Fit",
+    "dimensionAcademic": "Academic Fit",
+    "dimensionAdmission": "Admission Fit",
+    "dimensionBudget": "Budget Fit",
+    "dimensionLanguage": "Language Fit",
+    "dimensionLocation": "Location Fit",
+    "dimensionCareer": "Career Fit",
+    "dimensionFormat": "Study Format Fit",
+    "dimensionLifestyle": "Lifestyle Fit",
+    "whyItMatches": "Why it matches",
+    "potentialConcerns": "Potential concerns",
+    "notApplicable": "Not applicable",
+    "save": "Save",
+    "unsave": "Saved"
+  },
+  "Favourites": {
+    "heading": "Saved programmes",
+    "description": "{count, plural, one {1 saved programme} other {# saved programmes}}",
+    "empty": "You haven't saved any programmes yet.",
+    "emptyCta": "Browse the catalogue"
   }
 }

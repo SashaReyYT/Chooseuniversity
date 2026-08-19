@@ -70,8 +70,6 @@ export async function saveOnboardingProfile(
     return { error: "Minimum budget can't be higher than maximum budget." };
   }
 
-  const ieltsScore = optionalNumber(formData, "ielts_score");
-
   try {
     await new ProfileService(supabase).upsert(user.id, {
       full_name: optionalText(formData, "full_name"),

@@ -1,5 +1,5 @@
 import { hasLocale } from "next-intl";
-import { setRequestLocale, getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -8,10 +8,9 @@ import { ProfileService } from "@/lib/services/profile.service";
 import { OnboardingForm } from "./onboarding-form";
 
 /**
- * A single-page form, not the multi-step wizard from the
- * `unifind_personalized_matching_test` mockup ("Questionnaire Step 3") —
- * that's a later, dedicated UI stage. This exists to get real profile
- * data flowing end-to-end into the matching engine and the /matches page.
+ * Multi-step profile wizard: every fieldset stays mounted (hidden via
+ * CSS), so the single form POST collects every step's values regardless
+ * of which step was last visible — see `OnboardingForm`.
  */
 export default async function OnboardingPage({
   params,
