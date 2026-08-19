@@ -463,7 +463,14 @@
       "missingData": "Programmes don't carry career data yet — this dimension is excluded until they do."
     },
     "format": {
-      "missingData": "Programmes don't carry study-format data yet — this dimension is excluded until they do."
+      "missingData": "This programme doesn't publish its study format — this dimension is excluded.",
+      "missingPreference": "Add your preferred study format in your profile to score this dimension.",
+      "either": "You're flexible on study format — any delivery mode fits.",
+      "fullTimeMatch": "Full-time delivery matches your preference.",
+      "partTimeMatch": "Part-time delivery matches your preference.",
+      "partialMatch": "Delivered {mode, select, full_time {full-time} part_time {part-time} distance {distance} online {online} hybrid {hybrid} other {in another format}} — a partial match for your preferred format.",
+      "mismatch": "This programme runs {mode, select, full_time {full-time} part_time {part-time} distance {distance} online {online} hybrid {hybrid} other {in another format}}, but your preference is {preferred, select, full_time {full-time} part_time {part-time} other {a different format}}.",
+      "modeConcern": "Review how {mode, select, full_time {full-time} part_time {part-time} distance {distance} online {online} hybrid {hybrid} other {another format}} delivery fits your schedule and study needs."
     },
     "lifestyle": {
       "missingData": "Programmes don't carry lifestyle data yet — this dimension is excluded until they do."

@@ -84,6 +84,7 @@ export default async function SavedPage({
         preferred_language_codes: profileData.profile.preferred_language_codes,
         location_preference_type: profileData.profile.location_preference_type,
         preferred_ownership_type: profileData.profile.preferred_ownership_type,
+        preferred_study_format: profileData.profile.preferred_study_format,
         support_preference: profileData.profile.support_preference,
         english_level: profileData.profile.english_level,
         math_background: profileData.profile.math_background,

@@ -151,6 +151,7 @@ export function makeProfile(
     preferred_language_codes: ["en"],
     location_preference_type: null,
     preferred_ownership_type: null,
+    preferred_study_format: "either",
     support_preference: null,
     english_level: "b2",
     math_background: "good",
