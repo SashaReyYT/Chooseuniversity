@@ -164,17 +164,44 @@ export function OnboardingForm({
       </div>
 
       {/* Step 4 — cities */}
-      <div className={step === 4 ? "space-y-1" : "hidden"}>
-        <label htmlFor="preferred_cities" className={formLabelClassName}>
-          {t("citiesLabel")}
-        </label>
-        <input
-          id="preferred_cities"
-          name="preferred_cities"
-          type="text"
-          placeholder={t("citiesPlaceholder")}
-          defaultValue={existingProfile?.preferred_cities?.join(", ") ?? ""}
-          className={formInputClassName}
+      <div className={step === 4 ? "space-y-4" : "hidden"}>
+        <div className="space-y-1">
+          <label htmlFor="preferred_cities" className={formLabelClassName}>
+            {t("citiesLabel")}
+          </label>
+          <input
+            id="preferred_cities"
+            name="preferred_cities"
+            type="text"
+            placeholder={t("citiesPlaceholder")}
+            defaultValue={existingProfile?.preferred_cities?.join(", ") ?? ""}
+            className={formInputClassName}
+          />
+        </div>
+
+        <RadioCardGroup
+          name="location_preference_type"
+          label={t("locationPreferenceLabel")}
+          options={[
+            { value: "capital_or_large_city", label: t("locationCapitalOrLargeCity") },
+            { value: "medium_city", label: t("locationMediumCity") },
+            { value: "small_city", label: t("locationSmallCity") },
+            { value: "student_city", label: t("locationStudentCity") },
+            { value: "any_city", label: t("locationAnyCity") },
+            { value: "flexible", label: t("locationFlexible") },
+          ]}
+          defaultValue={existingProfile?.location_preference_type ?? ""}
+        />
+
+        <RadioCardGroup
+          name="preferred_ownership_type"
+          label={t("preferredOwnershipLabel")}
+          options={[
+            { value: "public", label: t("ownershipPublic") },
+            { value: "private", label: t("ownershipPrivate") },
+            { value: "no_preference", label: t("ownershipNoPreference") },
+          ]}
+          defaultValue={existingProfile?.preferred_ownership_type ?? ""}
         />
       </div>
 
@@ -350,5 +377,48 @@ export function OnboardingForm({
         )}
       </div>
     </form>
+  );
+}
+
+/**
+ * Card-styled radio group (single select) — the same look as
+ * `ToggleCardGroup` but with radio semantics: exactly one value under
+ * `name`, submitted with the surrounding form like any native input.
+ */
+function RadioCardGroup({
+  name,
+  label,
+  options,
+  defaultValue,
+}: {
+  name: string;
+  label: string;
+  options: { value: string; label: string }[];
+  defaultValue: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <span className={formLabelClassName}>{label}</span>
+      <div className="grid grid-cols-2 gap-3">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className="group relative flex items-center justify-center gap-2 rounded-lg border-2 border-outline-variant bg-surface-container-lowest px-4 py-3 text-center cursor-pointer transition-colors has-checked:border-primary has-checked:bg-primary-fixed/20"
+          >
+            <input
+              type="radio"
+              name={name}
+              value={option.value}
+              defaultChecked={defaultValue === option.value}
+              className="peer sr-only"
+            />
+            <span className="w-4 h-4 rounded-full border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary" />
+            <span className="font-headline-sm text-headline-sm text-primary">
+              {option.label}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
   );
 }

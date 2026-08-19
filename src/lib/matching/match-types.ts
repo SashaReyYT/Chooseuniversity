@@ -22,6 +22,8 @@ export type MatchUserProfile = Pick<
   | "preferred_cities"
   | "preferred_field_of_study_ids"
   | "preferred_language_codes"
+  | "location_preference_type"
+  | "preferred_ownership_type"
   | "english_level"
   | "math_background"
 > & {

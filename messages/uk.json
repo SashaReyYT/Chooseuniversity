@@ -393,7 +393,11 @@
     "degreeLevelBachelor": "Бакалавр",
     "degreeLevelMaster": "Магістр",
     "degreeLevelPhd": "Доктор філософії",
-    "continue": "Далі"
+    "continue": "Далі",
+    "preferredOwnershipLabel": "Тип університету",
+    "ownershipPublic": "Державний",
+    "ownershipPrivate": "Приватний",
+    "ownershipNoPreference": "Без різниці"
   },
   "ErrorBoundary": {
     "heading": "Щось пішло не так",
@@ -438,7 +442,11 @@
       "inPreferredCountry": "Розташована в одній із бажаних вами країн ({country}).",
       "notPreferredCountry": "{country} не входить до ваших бажаних країн.",
       "inPreferredCity": "Розташована в одному з бажаних вами міст ({city}).",
-      "missingLocationPreference": "Вкажіть бажані країни або міста, щоб побачити оцінку відповідності локації."
+      "missingLocationPreference": "Вкажіть бажані країни або міста, щоб побачити оцінку відповідності локації.",
+      "ownershipMatches": "{name} — {type} університет, як ви й хотіли.",
+      "ownershipMismatch": "{name} — {type} університет, а ви вподобали інший тип.",
+      "citySizeMatches": "{city} — {size} місто, відповідає вашому вподобанню за розміром.",
+      "citySizeMismatch": "{city} — {size} місто, а ваше вподобання інше."
     },
     "admission": {
       "entranceExamRequired": "Для вступу потрібен вступний іспит.",

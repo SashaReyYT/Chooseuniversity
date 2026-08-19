@@ -7,10 +7,21 @@ import type { OnboardingActionState } from "@/lib/onboarding/types";
 import type {
   DegreeLevel,
   EducationLevel,
+  LocationPreferenceType,
 } from "@/types/database";
 
 const DEGREE_LEVELS: DegreeLevel[] = ["foundation", "bachelor", "master", "phd"];
 const EDUCATION_LEVELS: EducationLevel[] = ["high_school", "bachelor", "master"];
+const LOCATION_PREFERENCES: LocationPreferenceType[] = [
+  "specific_city",
+  "any_city",
+  "capital_or_large_city",
+  "medium_city",
+  "small_city",
+  "student_city",
+  "flexible",
+];
+const OWNERSHIP_PREFERENCES = ["public", "private", "no_preference"] as const;
 
 function parseOptionalNumber(
   formData: FormData,
@@ -42,6 +53,22 @@ function parseCities(value: FormDataEntryValue | null): string[] {
     .split(",")
     .map((city) => city.trim())
     .filter(Boolean);
+}
+
+function parseLocationPreference(
+  value: FormDataEntryValue | null,
+): LocationPreferenceType | null {
+  return LOCATION_PREFERENCES.includes(value as LocationPreferenceType)
+    ? (value as LocationPreferenceType)
+    : null;
+}
+
+function parseOwnershipPreference(
+  value: FormDataEntryValue | null,
+): (typeof OWNERSHIP_PREFERENCES)[number] | null {
+  return OWNERSHIP_PREFERENCES.includes(value as (typeof OWNERSHIP_PREFERENCES)[number])
+    ? (value as (typeof OWNERSHIP_PREFERENCES)[number])
+    : null;
 }
 
 export async function submitOnboardingAction(
@@ -112,6 +139,12 @@ export async function submitOnboardingAction(
       preferred_language_codes: formData
         .getAll("preferred_language_codes")
         .map(String),
+      location_preference_type: parseLocationPreference(
+        formData.get("location_preference_type"),
+      ),
+      preferred_ownership_type: parseOwnershipPreference(
+        formData.get("preferred_ownership_type"),
+      ),
     });
   } catch (error) {
     console.error("Failed to save profile:", error);

@@ -56,6 +56,8 @@ export default async function DiscoverPage({
         preferred_cities: profileData.profile.preferred_cities,
         preferred_field_of_study_ids: profileData.profile.preferred_field_of_study_ids,
         preferred_language_codes: profileData.profile.preferred_language_codes,
+        location_preference_type: profileData.profile.location_preference_type,
+        preferred_ownership_type: profileData.profile.preferred_ownership_type,
         english_level: profileData.profile.english_level,
         math_background: profileData.profile.math_background,
         testScores: profileData.testScores.map((s) => ({

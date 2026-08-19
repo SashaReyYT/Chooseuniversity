@@ -190,6 +190,8 @@ export type Database = {
           logo_url: string | null;
           description: string | null;
           founded_year: number | null;
+          ownership_type: string | null;
+          city_size: string | null;
           slug: string | null;
           short_description: string | null;
           cover_image_url: string | null;
@@ -212,6 +214,8 @@ export type Database = {
           logo_url?: string | null;
           description?: string | null;
           founded_year?: number | null;
+          ownership_type?: string | null;
+          city_size?: string | null;
           slug?: string | null;
           short_description?: string | null;
           cover_image_url?: string | null;
@@ -234,6 +238,8 @@ export type Database = {
           logo_url?: string | null;
           description?: string | null;
           founded_year?: number | null;
+          ownership_type?: string | null;
+          city_size?: string | null;
           slug?: string | null;
           short_description?: string | null;
           cover_image_url?: string | null;
@@ -1020,6 +1026,7 @@ export type Database = {
           preferred_language_codes: string[];
           preferred_study_format: StudyFormat | null;
           location_preference_type: LocationPreferenceType | null;
+          preferred_ownership_type: string | null;
           open_to_other_cities: boolean | null;
           budget_mode: BudgetMode;
           primary_field_of_study_id: string | null;
@@ -1049,6 +1056,7 @@ export type Database = {
           preferred_language_codes?: string[];
           preferred_study_format?: StudyFormat | null;
           location_preference_type?: LocationPreferenceType | null;
+          preferred_ownership_type?: string | null;
           open_to_other_cities?: boolean | null;
           budget_mode?: BudgetMode;
           primary_field_of_study_id?: string | null;
@@ -1078,6 +1086,7 @@ export type Database = {
           preferred_language_codes?: string[];
           preferred_study_format?: StudyFormat | null;
           location_preference_type?: LocationPreferenceType | null;
+          preferred_ownership_type?: string | null;
           open_to_other_cities?: boolean | null;
           budget_mode?: BudgetMode;
           primary_field_of_study_id?: string | null;

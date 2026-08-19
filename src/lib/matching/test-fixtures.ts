@@ -67,6 +67,8 @@ export function makeProgramme(
       logo_url: null,
       description: null,
       founded_year: 1842,
+      ownership_type: null,
+      city_size: null,
       created_at: "2026-01-01T00:00:00.000Z",
       updated_at: "2026-01-01T00:00:00.000Z",
       country: { code: "NL", name: "Netherlands", supported: false, sort_order: 100 },
@@ -145,6 +147,8 @@ export function makeProfile(
     preferred_cities: [],
     preferred_field_of_study_ids: ["field-cs"],
     preferred_language_codes: ["en"],
+    location_preference_type: null,
+    preferred_ownership_type: null,
     english_level: "b2",
     math_background: "good",
     testScores: [

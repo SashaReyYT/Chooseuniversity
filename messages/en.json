@@ -393,7 +393,11 @@
     "degreeLevelBachelor": "Bachelor",
     "degreeLevelMaster": "Master",
     "degreeLevelPhd": "PhD",
-    "continue": "Continue"
+    "continue": "Continue",
+    "preferredOwnershipLabel": "University type",
+    "ownershipPublic": "Public",
+    "ownershipPrivate": "Private",
+    "ownershipNoPreference": "No preference"
   },
   "ErrorBoundary": {
     "heading": "Something went wrong",
@@ -438,7 +442,11 @@
       "inPreferredCountry": "In one of your preferred countries ({country}).",
       "notPreferredCountry": "{country} isn't among your preferred countries.",
       "inPreferredCity": "In one of your preferred cities ({city}).",
-      "missingLocationPreference": "Set your preferred countries or cities to see your Location Fit score."
+      "missingLocationPreference": "Set your preferred countries or cities to see your Location Fit score.",
+      "ownershipMatches": "{name} is a {type} university — matches your preference.",
+      "ownershipMismatch": "{name} is {type} — you'd prefer the other type.",
+      "citySizeMatches": "{city} is a {size} city — matches your city-size preference.",
+      "citySizeMismatch": "{city} is a {size} city — your preference was different."
     },
     "admission": {
       "entranceExamRequired": "An entrance exam is required as part of admission.",
