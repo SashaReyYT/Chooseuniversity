@@ -6,6 +6,7 @@ import { AdminCatalogRepository } from "@/lib/repositories/admin/admin-catalog.r
 import { AdminCostsRepository } from "@/lib/repositories/admin/admin-costs.repository";
 import { AdminSourcesRepository } from "@/lib/repositories/admin/admin-sources.repository";
 import { AdminImportsRepository } from "@/lib/repositories/admin/admin-imports.repository";
+import { syncEcbRates } from "@/lib/services/currency-sync.service";
 import {
   runImportPipeline,
   type ImportLookups,
@@ -615,6 +616,14 @@ export async function runImportAction(formData: FormData): Promise<void> {
     })
     .eq("id", importRow.id);
 
+  revalidatePath("/[locale]/admin", "layout");
+}
+
+// ---- Currency rates (live ECB sync) ----
+
+export async function syncCurrencyRatesAction(): Promise<void> {
+  const supabase = await requireAdminForAction();
+  await syncEcbRates(supabase);
   revalidatePath("/[locale]/admin", "layout");
 }
 

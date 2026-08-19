@@ -506,6 +506,7 @@
     "navCosts": "Costs",
     "navAccommodation": "Accommodation",
     "navSources": "Sources",
+    "navCurrency": "Currency rates",
     "navImports": "Imports",
     "navSettings": "Settings",
     "commonAdd": "Add",
@@ -744,7 +745,16 @@
     "settingsRevoke": "Revoke",
     "settingsGrantedAt": "Granted at",
     "settingsNoAdmins": "No admin users yet.",
-    "settingsGrantHint": "Paste a Supabase user UUID (anonymous sessions get one automatically). Access is immediate via RLS."
+    "settingsGrantHint": "Paste a Supabase user UUID (anonymous sessions get one automatically). Access is immediate via RLS.",
+    "currencyHeading": "Currency rates",
+    "currencyDescription": "EUR-based rates used for cross-currency budget comparisons. Synced from the European Central Bank's free daily feed.",
+    "currencySync": "Sync from ECB",
+    "currencyLastSynced": "Last synced: {date, date, medium} {date, time, short}",
+    "currencyNeverSynced": "Never synced.",
+    "currencyColumn": "Currency",
+    "currencyRate": "1 unit =",
+    "currencyUpdated": "Updated",
+    "currencyNote": "EUR is fixed at 1 (the feed's base currency). Rates absent from the ECB feed keep their last value; the table is public-read/admin-write via RLS."
   },
   "Catalog": {
     "heading": "Programme catalogue",

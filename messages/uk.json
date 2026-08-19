@@ -506,6 +506,7 @@
     "navCosts": "Витрати",
     "navAccommodation": "Проживання",
     "navSources": "Джерела",
+    "navCurrency": "Курси валют",
     "navImports": "Імпорти",
     "navSettings": "Налаштування",
     "commonAdd": "Додати",
@@ -744,7 +745,16 @@
     "settingsRevoke": "Забрати",
     "settingsGrantedAt": "Надано о",
     "settingsNoAdmins": "Адміністраторів поки немає.",
-    "settingsGrantHint": "Вставте UUID користувача Supabase (анонімні сесії отримують його автоматично). Доступ діє одразу через RLS."
+    "settingsGrantHint": "Вставте UUID користувача Supabase (анонімні сесії отримують його автоматично). Доступ діє одразу через RLS.",
+    "currencyHeading": "Курси валют",
+    "currencyDescription": "Курси на основі євро, що використовуються для порівняння бюджету в різних валютах. Оновлюються з безкоштовного щоденного джерела Європейського центрального банку.",
+    "currencySync": "Синхронізувати з ЄЦБ",
+    "currencyLastSynced": "Остання синхронізація: {date, date, medium} {date, time, short}",
+    "currencyNeverSynced": "Ще не синхронізовано.",
+    "currencyColumn": "Валюта",
+    "currencyRate": "1 одиниця =",
+    "currencyUpdated": "Оновлено",
+    "currencyNote": "Євро зафіксовано як 1 (базова валюта джерела). Валюти, відсутні в джерелі ЄЦБ, зберігають попереднє значення; таблиця доступна для читання всім, для запису — лише адмінам через RLS."
   },
   "Catalog": {
     "heading": "Каталог програм",

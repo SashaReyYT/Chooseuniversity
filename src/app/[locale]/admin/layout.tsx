@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: "/admin/costs", key: "navCosts" },
   { href: "/admin/accommodation", key: "navAccommodation" },
   { href: "/admin/sources", key: "navSources" },
+  { href: "/admin/currency", key: "navCurrency" },
   { href: "/admin/imports", key: "navImports" },
   { href: "/admin/settings", key: "navSettings" },
 ] as const;
