@@ -8,6 +8,10 @@ type UniversityWithCountry =
     country: Database["public"]["Tables"]["countries"]["Row"];
     sources: ProgrammeSourceLink[];
     resources: Database["public"]["Tables"]["university_resources"]["Row"][];
+    accommodation:
+      | Database["public"]["Tables"]["university_accommodation"]["Row"]
+      | Database["public"]["Tables"]["university_accommodation"]["Row"][]
+      | null;
   };
 
 export type ProgrammeSourceLink = {
@@ -41,14 +45,13 @@ export type ProgrammeWithDetails =
   };
 
 const SELECT_WITH_DETAILS = `*,
-  university:universities(*, country:countries(*), sources:university_sources(source:sources(*)), resources:university_resources(*)),
+  university:universities(*, country:countries(*), sources:university_sources(source:sources(*)), resources:university_resources(*), accommodation:university_accommodation(*)),
   faculty:faculties(*),
   field_of_study:fields_of_study(*),
   language:languages(*),
   academic_requirements:programme_academic_requirements(*),
   test_requirements:programme_test_requirements(qualification:qualifications(*)),
   tuition_variants:programme_tuition_variants(*),
-  accommodation:university_accommodation(*),
   living_cost_estimates:programme_living_cost_estimates(*),
   sources:programme_sources(source:sources(*))`;
 
@@ -79,10 +82,6 @@ function normalizeProgrammeRow(row: {
   tuition_variants:
     | Database["public"]["Tables"]["programme_tuition_variants"]["Row"][]
     | null;
-  accommodation:
-    | Database["public"]["Tables"]["university_accommodation"]["Row"]
-    | Database["public"]["Tables"]["university_accommodation"]["Row"][]
-    | null;
   living_cost_estimates:
     | Database["public"]["Tables"]["programme_living_cost_estimates"]["Row"]
     | Database["public"]["Tables"]["programme_living_cost_estimates"]["Row"][]
@@ -93,6 +92,10 @@ function normalizeProgrammeRow(row: {
   const university = Array.isArray(row.university)
     ? row.university[0]
     : row.university;
+
+  const accommodation = Array.isArray(university?.accommodation)
+    ? (university?.accommodation[0] ?? null)
+    : (university?.accommodation ?? null);
 
   return {
     ...row,
@@ -119,9 +122,7 @@ function normalizeProgrammeRow(row: {
       : row.academic_requirements,
     test_requirements: row.test_requirements ?? [],
     tuition_variants: row.tuition_variants ?? [],
-    accommodation: Array.isArray(row.accommodation)
-      ? (row.accommodation[0] ?? null)
-      : row.accommodation,
+    accommodation,
     living_cost_estimates: Array.isArray(row.living_cost_estimates)
       ? (row.living_cost_estimates[0] ?? null)
       : row.living_cost_estimates,
