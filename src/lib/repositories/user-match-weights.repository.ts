@@ -31,6 +31,7 @@ export class UserMatchWeightsRepository {
       career: data.career,
       format: data.format,
       lifestyle: data.lifestyle,
+      support: data.support,
     };
   }
 
@@ -50,6 +51,7 @@ export class UserMatchWeightsRepository {
         career: weights.career ?? 1,
         format: weights.format ?? 1,
         lifestyle: weights.lifestyle ?? 1,
+        support: weights.support ?? 1,
       })
       .select("*")
       .single();

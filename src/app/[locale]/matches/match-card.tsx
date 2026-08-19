@@ -29,6 +29,7 @@ const DIMENSION_KEYS: Record<MatchDimensionKey, MatchesKey> = {
   career: "dimensionCareer",
   format: "dimensionFormat",
   lifestyle: "dimensionLifestyle",
+  support: "dimensionSupport",
 };
 
 /**

@@ -72,6 +72,8 @@ export function makeProgramme(
       created_at: "2026-01-01T00:00:00.000Z",
       updated_at: "2026-01-01T00:00:00.000Z",
       country: { code: "NL", name: "Netherlands", supported: false, sort_order: 100 },
+      sources: [],
+      resources: [],
     },
     faculty: null,
     field_of_study: {
@@ -149,6 +151,7 @@ export function makeProfile(
     preferred_language_codes: ["en"],
     location_preference_type: null,
     preferred_ownership_type: null,
+    support_preference: null,
     english_level: "b2",
     math_background: "good",
     testScores: [

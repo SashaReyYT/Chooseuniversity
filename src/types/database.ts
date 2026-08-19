@@ -972,6 +972,7 @@ export type Database = {
           career: number;
           format: number;
           lifestyle: number;
+          support: number;
           updated_at: string;
         };
         Insert: {
@@ -984,6 +985,7 @@ export type Database = {
           career?: number;
           format?: number;
           lifestyle?: number;
+          support?: number;
           updated_at?: string;
         };
         Update: {
@@ -996,6 +998,7 @@ export type Database = {
           career?: number;
           format?: number;
           lifestyle?: number;
+          support?: number;
           updated_at?: string;
         };
         Relationships: [
@@ -1027,6 +1030,7 @@ export type Database = {
           preferred_study_format: StudyFormat | null;
           location_preference_type: LocationPreferenceType | null;
           preferred_ownership_type: string | null;
+          support_preference: string | null;
           open_to_other_cities: boolean | null;
           budget_mode: BudgetMode;
           primary_field_of_study_id: string | null;
@@ -1057,6 +1061,7 @@ export type Database = {
           preferred_study_format?: StudyFormat | null;
           location_preference_type?: LocationPreferenceType | null;
           preferred_ownership_type?: string | null;
+          support_preference?: string | null;
           open_to_other_cities?: boolean | null;
           budget_mode?: BudgetMode;
           primary_field_of_study_id?: string | null;
@@ -1087,6 +1092,7 @@ export type Database = {
           preferred_study_format?: StudyFormat | null;
           location_preference_type?: LocationPreferenceType | null;
           preferred_ownership_type?: string | null;
+          support_preference?: string | null;
           open_to_other_cities?: boolean | null;
           budget_mode?: BudgetMode;
           primary_field_of_study_id?: string | null;

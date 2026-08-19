@@ -52,6 +52,7 @@ export const DIMENSION_KEYS: Record<MatchDimensionKey, DiscoverKey> = {
   career: "dimensionCareer",
   format: "dimensionFormat",
   lifestyle: "dimensionLifestyle",
+  support: "dimensionSupport",
 };
 
 export function renderMatchMessage(

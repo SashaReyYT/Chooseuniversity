@@ -203,6 +203,16 @@ export function OnboardingForm({
           ]}
           defaultValue={existingProfile?.preferred_ownership_type ?? ""}
         />
+
+        <RadioCardGroup
+          name="support_preference"
+          label={t("supportPreferenceLabel")}
+          options={[
+            { value: "wants_support", label: t("supportWantsSupport") },
+            { value: "no_preference", label: t("supportNoPreference") },
+          ]}
+          defaultValue={existingProfile?.support_preference ?? ""}
+        />
       </div>
 
       {/* Step 5 — languages */}

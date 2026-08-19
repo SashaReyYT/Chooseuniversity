@@ -7,6 +7,7 @@ type UniversityWithCountry =
   Database["public"]["Tables"]["universities"]["Row"] & {
     country: Database["public"]["Tables"]["countries"]["Row"];
     sources: ProgrammeSourceLink[];
+    resources: Database["public"]["Tables"]["university_resources"]["Row"][];
   };
 
 export type ProgrammeSourceLink = {
@@ -40,7 +41,7 @@ export type ProgrammeWithDetails =
   };
 
 const SELECT_WITH_DETAILS = `*,
-  university:universities(*, country:countries(*), sources:university_sources(source:sources(*))),
+  university:universities(*, country:countries(*), sources:university_sources(source:sources(*)), resources:university_resources(*)),
   faculty:faculties(*),
   field_of_study:fields_of_study(*),
   language:languages(*),

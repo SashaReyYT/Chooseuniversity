@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { scoreSupportFit } from "./score-support";
 import type { UniversityResourceRow } from "./score-support";
-import { makeProgramme } from "./test-fixtures";
+import { makeProgramme, makeProfile } from "./test-fixtures";
 
 function makeResource(
   category: UniversityResourceRow["category"],
@@ -24,11 +24,42 @@ function makeResource(
   };
 }
 
-describe("scoreSupportFit", () => {
-  it("is not applicable when none of the three facts are known", () => {
-    const programme = makeProgramme();
+function programmeWithResources(
+  resources: UniversityResourceRow[],
+  overrides: Partial<ReturnType<typeof makeProgramme>> = {},
+) {
+  return makeProgramme({
+    ...overrides,
+    university: {
+      ...makeProgramme().university,
+      resources,
+    },
+  });
+}
 
-    const result = scoreSupportFit(programme, []);
+/** The translated message keys a result produced, in order. */
+function translatedKeys(messages: { type: "translated" | "raw"; key?: string }[]) {
+  return messages
+    .filter((m) => m.type === "translated")
+    .map((m) => m.key);
+}
+
+describe("scoreSupportFit", () => {
+  it("is not applicable when the user hasn't stated a support preference", () => {
+    const result = scoreSupportFit(
+      makeProfile({ support_preference: null }),
+      programmeWithResources([makeResource("erasmus")]),
+    );
+
+    expect(result.applicable).toBe(false);
+    expect(result.score).toBeNull();
+  });
+
+  it("is not applicable when the user explicitly opted out", () => {
+    const result = scoreSupportFit(
+      makeProfile({ support_preference: "no_preference" }),
+      programmeWithResources([makeResource("erasmus")]),
+    );
 
     expect(result.applicable).toBe(false);
     expect(result.score).toBeNull();
@@ -62,10 +93,17 @@ describe("scoreSupportFit", () => {
       makeResource("erasmus"),
     ];
 
-    const result = scoreSupportFit(programme, resources);
+    const result = scoreSupportFit(
+      makeProfile({ support_preference: "wants_support" }),
+      programmeWithResources(resources, programme),
+    );
 
     expect(result.score).toBe(100);
-    expect(result.reasons.length).toBe(3);
+    expect(translatedKeys(result.reasons)).toEqual([
+      "support.internationalOffice",
+      "support.erasmus",
+      "support.dormitory",
+    ]);
     expect(result.concerns.length).toBe(0);
   });
 
@@ -94,32 +132,39 @@ describe("scoreSupportFit", () => {
     });
     const resources = [makeResource("international_office")]; // 100, erasmus unknown -> excluded
 
-    const result = scoreSupportFit(programme, resources);
+    const result = scoreSupportFit(
+      makeProfile({ support_preference: "wants_support" }),
+      programmeWithResources(resources, programme),
+    );
 
     expect(result.score).toBe(65); // (100 + 30) / 2
-    expect(result.reasons.length).toBe(1);
-    expect(result.concerns.length).toBe(1);
+    expect(translatedKeys(result.reasons)).toEqual(["support.internationalOffice"]);
+    expect(translatedKeys(result.concerns)).toEqual(["support.noDormitory"]);
   });
 
-  it("surfaces supporting-service descriptions as reasons without affecting the score", () => {
-    const programme = makeProgramme();
-    const resources = [
-      makeResource("buddy_program", "Runs a buddy-system for incoming students."),
-    ];
-
-    const result = scoreSupportFit(programme, resources);
+  it("surfaces supporting-service descriptions as raw reasons without affecting the score", () => {
+    const result = scoreSupportFit(
+      makeProfile({ support_preference: "wants_support" }),
+      programmeWithResources([
+        makeResource("buddy_program", "Runs a buddy-system for incoming students."),
+      ]),
+    );
 
     // Descriptions alone don't make the dimension applicable — no boolean fact is known.
     expect(result.applicable).toBe(false);
-    expect(result.reasons).toContain(
-      "Runs a buddy-system for incoming students.",
-    );
+    expect(result.reasons).toContainEqual({
+      type: "raw",
+      text: "Runs a buddy-system for incoming students.",
+    });
   });
 
-  it("doesn't depend on the user profile", () => {
-    const programme = makeProgramme();
-    const resources = [makeResource("erasmus")];
+  it("stays inapplicable with no researched facts even when support is wanted", () => {
+    const result = scoreSupportFit(
+      makeProfile({ support_preference: "wants_support" }),
+      programmeWithResources([]),
+    );
 
-    expect(scoreSupportFit(programme, resources).applicable).toBe(true);
+    expect(result.applicable).toBe(false);
+    expect(result.score).toBeNull();
   });
 });

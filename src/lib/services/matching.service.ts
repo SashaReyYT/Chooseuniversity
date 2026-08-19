@@ -114,6 +114,7 @@ export class MatchingService {
       preferred_language_codes: profileRow.preferred_language_codes,
       location_preference_type: profileRow.location_preference_type,
       preferred_ownership_type: profileRow.preferred_ownership_type,
+      support_preference: profileRow.support_preference,
       english_level: profileRow.english_level,
       math_background: profileRow.math_background,
       testScores: testScores.map((s) => ({

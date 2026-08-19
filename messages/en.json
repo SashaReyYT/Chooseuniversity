@@ -101,7 +101,8 @@
     "labelStrongFit": "Strong Fit",
     "labelGoodFit": "Good Fit",
     "labelPotentialFit": "Potential Fit",
-    "labelWeakFit": "Weak Fit"
+    "labelWeakFit": "Weak Fit",
+    "dimensionSupport": "International Support Fit"
   },
   "ProgrammeDetails": {
     "notFound": "Programme not found",
@@ -397,7 +398,10 @@
     "preferredOwnershipLabel": "University type",
     "ownershipPublic": "Public",
     "ownershipPrivate": "Private",
-    "ownershipNoPreference": "No preference"
+    "ownershipNoPreference": "No preference",
+    "supportPreferenceLabel": "International student support",
+    "supportWantsSupport": "I want strong support",
+    "supportNoPreference": "No preference"
   },
   "ErrorBoundary": {
     "heading": "Something went wrong",
@@ -471,6 +475,14 @@
       "mathBackgroundUnknown": "Add your mathematics background to check the admission requirement for this programme.",
       "languageFail": "Does not meet the current English proficiency requirement.",
       "languageUnknown": "Add an English test score or proficiency level to check the admission requirement for this programme."
+    },
+    "support": {
+      "internationalOffice": "Has a dedicated international student office.",
+      "noInternationalOffice": "No dedicated international student office found.",
+      "erasmus": "Participates in Erasmus+ exchange.",
+      "noErasmus": "Doesn't appear to participate in Erasmus+.",
+      "dormitory": "Offers dormitory housing.",
+      "noDormitory": "No university dormitory housing found."
     }
   },
   "Admin": {
@@ -765,7 +777,8 @@
     "potentialConcerns": "Potential concerns",
     "notApplicable": "Not applicable",
     "save": "Save",
-    "unsave": "Saved"
+    "unsave": "Saved",
+    "dimensionSupport": "International Support Fit"
   },
   "Favourites": {
     "heading": "Saved programmes",

@@ -24,6 +24,7 @@ export type MatchUserProfile = Pick<
   | "preferred_language_codes"
   | "location_preference_type"
   | "preferred_ownership_type"
+  | "support_preference"
   | "english_level"
   | "math_background"
 > & {
@@ -54,6 +55,7 @@ export const MATCH_DIMENSION_KEYS = [
   "career",
   "format",
   "lifestyle",
+  "support",
 ] as const;
 
 export type MatchDimensionKey = (typeof MATCH_DIMENSION_KEYS)[number];
@@ -67,6 +69,7 @@ export const MATCH_DIMENSION_LABELS: Record<MatchDimensionKey, string> = {
   career: "Career Fit",
   format: "Study Format Fit",
   lifestyle: "Lifestyle Fit",
+  support: "International Support Fit",
 };
 
 export interface MatchDimensionResult {

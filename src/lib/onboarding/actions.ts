@@ -22,6 +22,7 @@ const LOCATION_PREFERENCES: LocationPreferenceType[] = [
   "flexible",
 ];
 const OWNERSHIP_PREFERENCES = ["public", "private", "no_preference"] as const;
+const SUPPORT_PREFERENCES = ["wants_support", "no_preference"] as const;
 
 function parseOptionalNumber(
   formData: FormData,
@@ -68,6 +69,14 @@ function parseOwnershipPreference(
 ): (typeof OWNERSHIP_PREFERENCES)[number] | null {
   return OWNERSHIP_PREFERENCES.includes(value as (typeof OWNERSHIP_PREFERENCES)[number])
     ? (value as (typeof OWNERSHIP_PREFERENCES)[number])
+    : null;
+}
+
+function parseSupportPreference(
+  value: FormDataEntryValue | null,
+): (typeof SUPPORT_PREFERENCES)[number] | null {
+  return SUPPORT_PREFERENCES.includes(value as (typeof SUPPORT_PREFERENCES)[number])
+    ? (value as (typeof SUPPORT_PREFERENCES)[number])
     : null;
 }
 
@@ -144,6 +153,9 @@ export async function submitOnboardingAction(
       ),
       preferred_ownership_type: parseOwnershipPreference(
         formData.get("preferred_ownership_type"),
+      ),
+      support_preference: parseSupportPreference(
+        formData.get("support_preference"),
       ),
     });
   } catch (error) {

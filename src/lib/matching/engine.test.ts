@@ -13,7 +13,10 @@ describe("computeMatchScore", () => {
     expect(result.overallScore).not.toBeNull();
     expect(result.overallScore!).toBeGreaterThanOrEqual(90);
     expect(result.overallLabel).toBe("Excellent Fit");
-    expect(result.dimensions).toHaveLength(8);
+    // All nine dimensions, including the gated Support Fit — the fixture
+    // programme carries no researched support facts, so support is scored
+    // but inapplicable.
+    expect(result.dimensions).toHaveLength(9);
     expect(result.reasons.length).toBeGreaterThan(0);
   });
 

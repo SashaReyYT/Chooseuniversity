@@ -5,6 +5,7 @@ import { scoreBudgetFit } from "./score-budget";
 import { scoreCareerFit, scoreFormatFit, scoreLifestyleFit } from "./score-extended";
 import { scoreLanguageFit } from "./score-language";
 import { scoreLocationFit } from "./score-location";
+import { scoreSupportFit } from "./score-support";
 import type {
   MatchDimensionResult,
   MatchResult,
@@ -74,6 +75,7 @@ export function computeMatchScore(
     scoreCareerFit(profile, programme),
     scoreFormatFit(profile, programme),
     scoreLifestyleFit(profile, programme),
+    scoreSupportFit(profile, programme),
   ];
 
   const applicableDimensions = dimensions.filter(

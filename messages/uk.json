@@ -101,7 +101,8 @@
     "labelStrongFit": "Сильна відповідність",
     "labelGoodFit": "Гарна відповідність",
     "labelPotentialFit": "Потенційна відповідність",
-    "labelWeakFit": "Слабка відповідність"
+    "labelWeakFit": "Слабка відповідність",
+    "dimensionSupport": "Міжнародна підтримка студентів"
   },
   "ProgrammeDetails": {
     "notFound": "Програму не знайдено",
@@ -397,7 +398,10 @@
     "preferredOwnershipLabel": "Тип університету",
     "ownershipPublic": "Державний",
     "ownershipPrivate": "Приватний",
-    "ownershipNoPreference": "Без різниці"
+    "ownershipNoPreference": "Без різниці",
+    "supportPreferenceLabel": "Підтримка іноземних студентів",
+    "supportWantsSupport": "Хочу сильну підтримку",
+    "supportNoPreference": "Без різниці"
   },
   "ErrorBoundary": {
     "heading": "Щось пішло не так",
@@ -471,6 +475,14 @@
       "mathBackgroundUnknown": "Вкажіть вашу математичну підготовку, щоб перевірити вступну вимогу цієї програми.",
       "languageFail": "Не відповідає поточній вимозі до рівня англійської мови.",
       "languageUnknown": "Додайте результат тесту з англійської або рівень володіння мовою, щоб перевірити вступну вимогу цієї програми."
+    },
+    "support": {
+      "internationalOffice": "Має спеціалізований офіс для іноземних студентів.",
+      "noInternationalOffice": "Спеціалізованого офісу для іноземних студентів не знайдено.",
+      "erasmus": "Бере участь у програмі обміну Erasmus+.",
+      "noErasmus": "Не бере участі в програмі Erasmus+.",
+      "dormitory": "Має власний студентський гуртожиток.",
+      "noDormitory": "Власного гуртожитку не знайдено."
     }
   },
   "Admin": {
@@ -765,7 +777,8 @@
     "potentialConcerns": "Можливі застереження",
     "notApplicable": "Не застосовно",
     "save": "Зберегти",
-    "unsave": "Збережено"
+    "unsave": "Збережено",
+    "dimensionSupport": "Міжнародна підтримка студентів"
   },
   "Favourites": {
     "heading": "Збережені програми",
