@@ -1144,6 +1144,39 @@ export type Database = {
           },
         ]
       }
+      user_language_proficiency: {
+        Row: {
+          language_code: string
+          level: string
+          user_id: string
+        }
+        Insert: {
+          language_code: string
+          level: string
+          user_id: string
+        }
+        Update: {
+          language_code?: string
+          level?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_language_proficiency_language_code_fkey"
+            columns: ["language_code"]
+            isOneToOne: false
+            referencedRelation: "languages"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "user_language_proficiency_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_match_weights: {
         Row: {
           academic: number
@@ -1192,6 +1225,7 @@ export type Database = {
           id: string
           max_score: number
           score: number
+          score_is_expected: boolean
           subject_code: string
           test_year: number | null
           user_id: string
@@ -1201,6 +1235,7 @@ export type Database = {
           id?: string
           max_score?: number
           score: number
+          score_is_expected?: boolean
           subject_code: string
           test_year?: number | null
           user_id: string
@@ -1210,6 +1245,7 @@ export type Database = {
           id?: string
           max_score?: number
           score?: number
+          score_is_expected?: boolean
           subject_code?: string
           test_year?: number | null
           user_id?: string
@@ -1250,6 +1286,8 @@ export type Database = {
             | null
           math_background: Database["public"]["Enums"]["math_background"] | null
           nationality_country_code: string | null
+          national_exam_type: string | null
+          open_to_additional_exams: boolean | null
           open_to_other_cities: boolean | null
           preferred_cities: string[]
           preferred_country_codes: string[]
@@ -1263,8 +1301,17 @@ export type Database = {
             | Database["public"]["Enums"]["study_format"]
             | null
           primary_field_of_study_id: string | null
+          residence_city: string | null
+          residence_country_code: string | null
+          start_year: number | null
           support_preference: string | null
           updated_at: string
+          wants_dormitory: boolean | null
+          wants_scholarship: boolean | null
+          wants_stay_after_graduation: boolean | null
+          wants_work_during_study: boolean | null
+          education_stage: Database["public"]["Enums"]["education_stage"] | null
+          living_cost_mode: Database["public"]["Enums"]["budget_mode"]
         }
         Insert: {
           admission_preference?:
@@ -1293,6 +1340,8 @@ export type Database = {
             | Database["public"]["Enums"]["math_background"]
             | null
           nationality_country_code?: string | null
+          national_exam_type?: string | null
+          open_to_additional_exams?: boolean | null
           open_to_other_cities?: boolean | null
           preferred_cities?: string[]
           preferred_country_codes?: string[]
@@ -1306,8 +1355,19 @@ export type Database = {
             | Database["public"]["Enums"]["study_format"]
             | null
           primary_field_of_study_id?: string | null
+          residence_city?: string | null
+          residence_country_code?: string | null
+          start_year?: number | null
           support_preference?: string | null
           updated_at?: string
+          wants_dormitory?: boolean | null
+          wants_scholarship?: boolean | null
+          wants_stay_after_graduation?: boolean | null
+          wants_work_during_study?: boolean | null
+          education_stage?:
+            | Database["public"]["Enums"]["education_stage"]
+            | null
+          living_cost_mode?: Database["public"]["Enums"]["budget_mode"]
         }
         Update: {
           admission_preference?:
@@ -1336,6 +1396,8 @@ export type Database = {
             | Database["public"]["Enums"]["math_background"]
             | null
           nationality_country_code?: string | null
+          national_exam_type?: string | null
+          open_to_additional_exams?: boolean | null
           open_to_other_cities?: boolean | null
           preferred_cities?: string[]
           preferred_country_codes?: string[]
@@ -1349,8 +1411,19 @@ export type Database = {
             | Database["public"]["Enums"]["study_format"]
             | null
           primary_field_of_study_id?: string | null
+          residence_city?: string | null
+          residence_country_code?: string | null
+          start_year?: number | null
           support_preference?: string | null
           updated_at?: string
+          wants_dormitory?: boolean | null
+          wants_scholarship?: boolean | null
+          wants_stay_after_graduation?: boolean | null
+          wants_work_during_study?: boolean | null
+          education_stage?:
+            | Database["public"]["Enums"]["education_stage"]
+            | null
+          living_cost_mode?: Database["public"]["Enums"]["budget_mode"]
         }
         Relationships: [
           {
@@ -1403,6 +1476,32 @@ export type Database = {
             columns: ["qualification_id"]
             isOneToOne: false
             referencedRelation: "qualifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_subject_strengths: {
+        Row: {
+          level: string
+          subject_code: string
+          user_id: string
+        }
+        Insert: {
+          level: string
+          subject_code: string
+          user_id: string
+        }
+        Update: {
+          level?: string
+          subject_code?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subject_strengths_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -1476,6 +1575,13 @@ export type Database = {
         | "not_sure"
       degree_level: "foundation" | "bachelor" | "master" | "phd"
       education_level: "high_school" | "bachelor" | "master"
+      education_stage:
+        | "grade_9"
+        | "grade_10"
+        | "grade_11"
+        | "finished_school"
+        | "college"
+        | "other"
       location_preference_type:
         | "specific_city"
         | "any_city"
@@ -1680,4 +1786,5 @@ export type MathBackground = Enums<"math_background">;
 export type AdmissionPreference = Enums<"admission_preference">;
 export type ProgrammeStudyMode = Enums<"programme_study_mode">;
 export type SourceType = Enums<"source_type">;
+export type EducationStage = Enums<"education_stage">;
 export type ImportFormat = "json" | "csv";

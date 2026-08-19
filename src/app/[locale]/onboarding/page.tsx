@@ -34,7 +34,7 @@ export default async function OnboardingPage({
       referenceData.listCountries(),
       referenceData.listLanguages(),
       referenceData.listFieldsOfStudy(),
-      user ? new ProfileService(supabase).getForUser(user.id) : null,
+      user ? new ProfileService(supabase).getFullProfileForUser(user.id) : null,
     ]);
 
   return (

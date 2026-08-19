@@ -4,81 +4,27 @@ import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ProfileService } from "@/lib/services/profile.service";
 import type { OnboardingActionState } from "@/lib/onboarding/types";
-import type {
-  DegreeLevel,
-  EducationLevel,
-  LocationPreferenceType,
-} from "@/types/database";
-
-const DEGREE_LEVELS: DegreeLevel[] = ["foundation", "bachelor", "master", "phd"];
-const EDUCATION_LEVELS: EducationLevel[] = ["high_school", "bachelor", "master"];
-const LOCATION_PREFERENCES: LocationPreferenceType[] = [
-  "specific_city",
-  "any_city",
-  "capital_or_large_city",
-  "medium_city",
-  "small_city",
-  "student_city",
-  "flexible",
-];
-const OWNERSHIP_PREFERENCES = ["public", "private", "no_preference"] as const;
-const SUPPORT_PREFERENCES = ["wants_support", "no_preference"] as const;
-
-function parseOptionalNumber(
-  formData: FormData,
-  key: string,
-): number | null | typeof Number.NaN {
-  const raw = formData.get(key);
-  if (raw == null || String(raw).trim() === "") return null;
-  const num = Number(raw);
-  return Number.isFinite(num) ? num : Number.NaN;
-}
-
-function parseDegreeLevel(value: FormDataEntryValue | null): DegreeLevel | null {
-  return DEGREE_LEVELS.includes(value as DegreeLevel)
-    ? (value as DegreeLevel)
-    : null;
-}
-
-function parseEducationLevel(
-  value: FormDataEntryValue | null,
-): EducationLevel | null {
-  return EDUCATION_LEVELS.includes(value as EducationLevel)
-    ? (value as EducationLevel)
-    : null;
-}
-
-function parseCities(value: FormDataEntryValue | null): string[] {
-  if (typeof value !== "string" || value.trim() === "") return [];
-  return value
-    .split(",")
-    .map((city) => city.trim())
-    .filter(Boolean);
-}
-
-function parseLocationPreference(
-  value: FormDataEntryValue | null,
-): LocationPreferenceType | null {
-  return LOCATION_PREFERENCES.includes(value as LocationPreferenceType)
-    ? (value as LocationPreferenceType)
-    : null;
-}
-
-function parseOwnershipPreference(
-  value: FormDataEntryValue | null,
-): (typeof OWNERSHIP_PREFERENCES)[number] | null {
-  return OWNERSHIP_PREFERENCES.includes(value as (typeof OWNERSHIP_PREFERENCES)[number])
-    ? (value as (typeof OWNERSHIP_PREFERENCES)[number])
-    : null;
-}
-
-function parseSupportPreference(
-  value: FormDataEntryValue | null,
-): (typeof SUPPORT_PREFERENCES)[number] | null {
-  return SUPPORT_PREFERENCES.includes(value as (typeof SUPPORT_PREFERENCES)[number])
-    ? (value as (typeof SUPPORT_PREFERENCES)[number])
-    : null;
-}
+import {
+  EDUCATION_STAGES,
+  LANG_PROFICIENCY_PREFIX,
+  NATIONAL_EXAM_TYPES,
+  NMT_SUBJECTS,
+  NMT_SUBJECT_PREFIX,
+  PROFICIENCY_LEVELS,
+  START_YEARS,
+  STRENGTH_LEVELS,
+  SUBJECT_CODES,
+  SUBJECT_STRENGTH_PREFIX,
+  isGraduateStage,
+  listField,
+  mapEnglishLevel,
+  mapMathStrength,
+  mapStage,
+  optionalNumber,
+  optionalText,
+  parseBudgetMode,
+  parseEnum,
+} from "@/lib/onboarding/profile-mapping";
 
 export async function submitOnboardingAction(
   locale: string,
@@ -91,75 +37,146 @@ export async function submitOnboardingAction(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    // Shouldn't happen — src/proxy.ts establishes an anonymous session for
+    // Shouldn't happen — `src/proxy.ts` establishes an anonymous session for
     // every visitor — but fail loudly rather than silently no-op if it
     // somehow does.
     return { error: "No active session. Please reload the page and try again." };
   }
 
-  const currentGpa = parseOptionalNumber(formData, "current_gpa");
-  const currentGpaScale = parseOptionalNumber(formData, "current_gpa_scale");
-  const budgetMin = parseOptionalNumber(formData, "budget_min");
-  const budgetMax = parseOptionalNumber(formData, "budget_max");
+  const residenceCountryCode = optionalText(formData, "residence_country_code");
+  const residenceCity = optionalText(formData, "residence_city");
+  const educationStage = parseEnum(formData.get("education_stage"), EDUCATION_STAGES);
+  const stageMapping = mapStage(educationStage);
 
-  if (
-    Number.isNaN(currentGpa) ||
-    Number.isNaN(currentGpaScale) ||
-    Number.isNaN(budgetMin) ||
-    Number.isNaN(budgetMax)
-  ) {
-    return { error: "Please enter valid numbers." };
-  }
-  if (currentGpa != null && currentGpaScale != null && currentGpa > currentGpaScale) {
-    return { error: "Your GPA can't be higher than the scale it's out of." };
-  }
-  if (budgetMin != null && budgetMax != null && budgetMin > budgetMax) {
-    return { error: "Minimum budget can't be higher than maximum budget." };
-  }
+  const startYearRaw = parseEnum(formData.get("start_year"), START_YEARS);
+  const startYear = startYearRaw ? Number(startYearRaw) : null;
 
-  const budgetCurrency = String(formData.get("budget_currency") ?? "").trim().toUpperCase();
-  if (budgetCurrency && !/^[A-Z]{3}$/.test(budgetCurrency)) {
-    return { error: "Currency should be a 3-letter code, e.g. EUR." };
-  }
+  const budgetMode = parseBudgetMode(formData.get("budget_mode"));
+  const livingCostMode = parseBudgetMode(formData.get("living_cost_mode"));
+
+  const preferredCountries = listField(formData, "preferred_country_codes");
+  const preferredFields = listField(formData, "preferred_field_of_study_ids");
+  // The first selected field is the primary one (the UI marks it).
+  const primaryField = preferredFields[0] ?? null;
+  const preferredLanguages = listField(formData, "preferred_language_codes");
+
+  // Q7 — one proficiency per chosen language: `lang_<code>`.
+  const languageProficiency = preferredLanguages.flatMap((code) => {
+    const level = parseEnum(
+      formData.get(`${LANG_PROFICIENCY_PREFIX}${code}`),
+      PROFICIENCY_LEVELS,
+    );
+    return level != null
+      ? [{ languageCode: code, level }]
+      : [];
+  });
+
+  // Q9 — per-subject strength: `subject_<code>`.
+  const subjectStrengths = SUBJECT_CODES.flatMap((code) => {
+    const level = parseEnum(
+      formData.get(`${SUBJECT_STRENGTH_PREFIX}${code}`),
+      STRENGTH_LEVELS,
+    );
+    return level != null ? [{ subjectCode: code, level }] : [];
+  });
+
+  const mathStrength =
+    subjectStrengths.find((s) => s.subjectCode === "math")?.level ?? null;
+  const englishProficiency =
+    languageProficiency.find((l) => l.languageCode === "en")?.level ?? null;
+
+  // Q8 — national exams. Only asked for graduates (finished_school/college);
+  // in-school stages (grade_9..grade_11) answer subject strengths instead.
+  const showExamStep = isGraduateStage(educationStage);
+
+  const nationalExamType = showExamStep
+    ? parseEnum(formData.get("national_exam_type"), NATIONAL_EXAM_TYPES)
+    : null;
+
+  const nmtTaken = showExamStep
+    ? formData.get("nmt_taken") === "taken"
+    : null;
+
+  // NMT subject scores: `nmt_<subject_code>` (0–200). For "not yet taken"
+  // answers these are expected results (honestly flagged as such).
+  const nmtScores = showExamStep
+    ? NMT_SUBJECTS.flatMap((subjectCode) => {
+        const score = optionalNumber(
+          formData,
+          `${NMT_SUBJECT_PREFIX}${subjectCode}`,
+        );
+        return score != null
+          ? [{ subjectCode, score, scoreIsExpected: !nmtTaken }]
+          : [];
+      })
+    : [];
+
+  // Non-NMT national exams (Matura, Abitur, ...) → a single overall result
+  // stored as a test score the Admission Fit scorer can compare against
+  // programme requirements.
+  const nationalExamScore = showExamStep
+    ? optionalNumber(formData, "national_exam_score")
+    : null;
+
+  // Q11 — additional requirements.
+  const requirements = listField(formData, "requirements");
+  const wantsScholarship = requirements.includes("scholarship");
+  const wantsDormitory = requirements.includes("dormitory");
+  const wantsWorkDuringStudy = requirements.includes("work");
+  const wantsStayAfterGraduation = requirements.includes("stay");
+  const openToAdditionalExams = !requirements.includes("no_extra_exams");
 
   const profileService = new ProfileService(supabase);
 
   try {
     await profileService.upsert(user.id, {
-      full_name: String(formData.get("full_name") ?? "").trim() || null,
-      nationality_country_code:
-        String(formData.get("nationality_country_code") ?? "") || null,
-      current_education_level: parseEducationLevel(
-        formData.get("current_education_level"),
-      ),
-      current_gpa: currentGpa,
-      current_gpa_scale: currentGpaScale,
-      budget_min: budgetMin,
-      budget_max: budgetMax,
-      budget_currency: budgetCurrency || null,
-      preferred_degree_level: parseDegreeLevel(
-        formData.get("preferred_degree_level"),
-      ),
-      preferred_country_codes: formData.getAll("preferred_country_codes").map(String),
-      preferred_cities: parseCities(formData.get("preferred_cities")),
-      preferred_field_of_study_ids: formData
-        .getAll("preferred_field_of_study_ids")
-        .map(String),
-      preferred_language_codes: formData
-        .getAll("preferred_language_codes")
-        .map(String),
-      location_preference_type: parseLocationPreference(
-        formData.get("location_preference_type"),
-      ),
-      preferred_ownership_type: parseOwnershipPreference(
-        formData.get("preferred_ownership_type"),
-      ),
-      support_preference: parseSupportPreference(
-        formData.get("support_preference"),
-      ),
+      full_name: null,
+      residence_country_code: residenceCountryCode,
+      residence_city: residenceCity,
+      education_stage: educationStage,
+      current_education_level: stageMapping.currentEducationLevel,
+      has_graduated: stageMapping.hasGraduated,
+      preferred_degree_level: stageMapping.preferredDegreeLevel,
+      start_year: startYear,
+      preferred_country_codes: preferredCountries,
+      preferred_field_of_study_ids: preferredFields,
+      primary_field_of_study_id: primaryField,
+      preferred_language_codes: preferredLanguages,
+      budget_mode: budgetMode ?? "unknown",
+      budget_currency: "EUR",
+      living_cost_mode: livingCostMode ?? "unknown",
+      national_exam_type: nationalExamType,
+      wants_scholarship: wantsScholarship,
+      wants_dormitory: wantsDormitory,
+      wants_work_during_study: wantsWorkDuringStudy,
+      wants_stay_after_graduation: wantsStayAfterGraduation,
+      open_to_additional_exams: openToAdditionalExams,
+      math_background: mapMathStrength(mathStrength),
+      english_level: mapEnglishLevel(englishProficiency),
     });
+
+    await profileService.replaceLanguageProficiency(user.id, languageProficiency);
+    await profileService.replaceSubjectStrengths(user.id, subjectStrengths);
+    await profileService.replaceNmtScores(user.id, nmtScores);
+
+    if (showExamStep && nationalExamType && nationalExamType !== "nmt") {
+      await profileService.setEnglishTestScore(
+        user.id,
+        nationalExamScore != null
+          ? {
+              qualificationId: null,
+              testType: nationalExamType,
+              score: nationalExamScore,
+              scoreDisplay: String(nationalExamScore),
+            }
+          : null,
+        null,
+      );
+    } else {
+      await profileService.setEnglishTestScore(user.id, null, null);
+    }
   } catch (error) {
-    console.error("Failed to save profile:", error);
+    console.error("Failed to save onboarding profile:", error);
     return { error: "Something went wrong saving your profile. Please try again." };
   }
 

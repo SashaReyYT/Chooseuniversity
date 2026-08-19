@@ -4,6 +4,8 @@ import { UserProfileRepository } from "@/lib/repositories/user-profile.repositor
 import { UserNmtScoresRepository } from "@/lib/repositories/user-nmt-scores.repository";
 import { UserQualificationsRepository } from "@/lib/repositories/user-qualifications.repository";
 import { UserTestScoresRepository } from "@/lib/repositories/user-test-scores.repository";
+import { UserLanguageProficiencyRepository } from "@/lib/repositories/user-language-proficiency.repository";
+import { UserSubjectStrengthsRepository } from "@/lib/repositories/user-subject-strengths.repository";
 import type { CefrLevel } from "@/types/database";
 
 type UserProfileInsert =
@@ -14,6 +16,7 @@ type UserProfileUpdate =
 export interface NmtScoreInput {
   subjectCode: string;
   score: number;
+  scoreIsExpected?: boolean;
 }
 
 export interface QualificationScoreInput {
@@ -23,7 +26,7 @@ export interface QualificationScoreInput {
 }
 
 export interface EnglishTestScoreInput {
-  qualificationId: string;
+  qualificationId: string | null;
   testType: string;
   score: number;
   scoreDisplay: string;
@@ -45,12 +48,16 @@ export class ProfileService {
   private readonly nmtScores: UserNmtScoresRepository;
   private readonly qualifications: UserQualificationsRepository;
   private readonly testScores: UserTestScoresRepository;
+  private readonly languageProficiency: UserLanguageProficiencyRepository;
+  private readonly subjectStrengths: UserSubjectStrengthsRepository;
 
   constructor(supabase: SupabaseClient<Database>) {
     this.userProfile = new UserProfileRepository(supabase);
     this.nmtScores = new UserNmtScoresRepository(supabase);
     this.qualifications = new UserQualificationsRepository(supabase);
     this.testScores = new UserTestScoresRepository(supabase);
+    this.languageProficiency = new UserLanguageProficiencyRepository(supabase);
+    this.subjectStrengths = new UserSubjectStrengthsRepository(supabase);
   }
 
   getForUser(userId: string) {
@@ -63,13 +70,16 @@ export class ProfileService {
    * outside `user_profiles`.
    */
   async getFullProfileForUser(userId: string) {
-    const [profile, nmtScores, qualifications, testScores] = await Promise.all([
-      this.userProfile.findByUserId(userId),
-      this.nmtScores.listByUserId(userId),
-      this.qualifications.listByUserId(userId),
-      this.testScores.listByUserId(userId),
-    ]);
-    return { profile, nmtScores, qualifications, testScores };
+    const [profile, nmtScores, qualifications, testScores, languageProficiency, subjectStrengths] =
+      await Promise.all([
+        this.userProfile.findByUserId(userId),
+        this.nmtScores.listByUserId(userId),
+        this.qualifications.listByUserId(userId),
+        this.testScores.listByUserId(userId),
+        this.languageProficiency.listByUserId(userId),
+        this.subjectStrengths.listByUserId(userId),
+      ]);
+    return { profile, nmtScores, qualifications, testScores, languageProficiency, subjectStrengths };
   }
 
   async upsert(
@@ -100,6 +110,7 @@ export class ProfileService {
           user_id: userId,
           subject_code: entry.subjectCode,
           score: entry.score,
+          score_is_expected: entry.scoreIsExpected ?? false,
         }),
       ),
     );
@@ -107,6 +118,22 @@ export class ProfileService {
       userId,
       scores.map((entry) => entry.subjectCode),
     );
+  }
+
+  /** Replaces the user's per-language proficiency answers (onboarding Q7). */
+  async replaceLanguageProficiency(
+    userId: string,
+    entries: { languageCode: string; level: "good" | "average" | "poor" | "not_sure" }[],
+  ) {
+    await this.languageProficiency.replace(userId, entries);
+  }
+
+  /** Replaces the user's per-subject strength answers (onboarding Q9). */
+  async replaceSubjectStrengths(
+    userId: string,
+    entries: { subjectCode: string; level: "good" | "average" | "poor" }[],
+  ) {
+    await this.subjectStrengths.replace(userId, entries);
   }
 
   /**
