@@ -8,17 +8,19 @@ import { ComparisonService, type ComparisonWithProgrammes } from "@/lib/services
 import { MatchingService } from "@/lib/services/matching.service";
 import { ProfileService } from "@/lib/services/profile.service";
 import { toggleCompareAction } from "@/lib/compare/toggle-compare-action";
+import { addComparisonProgrammeAction } from "@/lib/compare/add-programme-action";
 import {
   createComparisonSetAction,
   deleteComparisonSetAction,
   renameComparisonSetAction,
 } from "@/lib/compare/comparison-set-actions";
-import type { ProgrammeWithDetails } from "@/lib/repositories/programmes.repository";
+import { ProgrammesRepository, type ProgrammeWithDetails } from "@/lib/repositories/programmes.repository";
 import type { MatchResult } from "@/lib/matching/engine";
 import type { MatchDimensionKey } from "@/lib/matching/match-types";
 import { DIMENSION_KEYS, type DiscoverTranslator } from "@/components/match-display";
 import { annualLivingCost } from "@/lib/matching/utils";
 import { formDangerButtonClassName, formInputClassName, formSecondaryButtonClassName } from "@/components/form-styles";
+import { AppShell } from "@/components/app-shell";
 
 export default async function ComparePage({
   params,
@@ -83,8 +85,20 @@ export default async function ComparePage({
 
   const showMaxReachedNotice = sp?.notice === "compare-limit";
 
+  // Programmes available to add to the comparison set (the picker flow:
+  // land here from a card with one programme, choose the second/third
+  // university right on this page). Loaded only while there's room left.
+  const programmesRepository = new ProgrammesRepository(supabase);
+  const addableProgrammes =
+    programmes.length < 3
+      ? (await programmesRepository.search({})).filter(
+          (p) => !programmes.some((cp) => cp.id === p.id),
+        )
+      : [];
+
   return (
-    <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-8">
+    <AppShell>
+      <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-8">
       <div className="space-y-1">
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
           {t("heading")}
@@ -132,7 +146,64 @@ export default async function ComparePage({
           tDiscover={tDiscover}
         />
       )}
-    </main>
+
+      {addableProgrammes.length > 0 && (
+        <AddProgrammePicker
+          programmes={addableProgrammes}
+          defaultComparisonName={activeComparison?.name ?? t("heading")}
+          t={t}
+        />
+      )}
+      </main>
+    </AppShell>
+  );
+}
+
+/**
+ * "Add a second/third university to compare" — the picker that makes the
+ * card-button → /compare flow work: a programme added from Discover
+ * redirects here, and the next candidate is chosen from this dropdown
+ * instead of having to go back and forth between pages.
+ */
+function AddProgrammePicker({
+  programmes,
+  defaultComparisonName,
+  t,
+}: {
+  programmes: ProgrammeWithDetails[];
+  defaultComparisonName: string;
+  t: Awaited<ReturnType<typeof getTranslations<"Compare">>>;
+}) {
+  return (
+    <section className="space-y-2 border-t border-outline-variant/40 pt-6">
+      <h2 className="font-label-caps text-label-caps uppercase tracking-wide text-on-surface-variant">
+        {t("addProgrammeHint")}
+      </h2>
+      <form action={addComparisonProgrammeAction} className="flex flex-wrap items-center gap-3">
+        <input type="hidden" name="defaultComparisonName" value={defaultComparisonName} />
+        <label className="sr-only" htmlFor="add-programme-select">
+          {t("addProgrammeSelectPlaceholder")}
+        </label>
+        <select
+          id="add-programme-select"
+          name="programmeId"
+          defaultValue=""
+          className={`${formInputClassName} w-full md:w-auto md:min-w-72`}
+        >
+          <option value="" disabled>
+            {t("addProgrammeSelectPlaceholder")}
+          </option>
+          {programmes.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.university.name} — {p.name}
+            </option>
+          ))}
+        </select>
+        <button type="submit" className={formSecondaryButtonClassName}>
+          {t("addProgrammeCta")}
+        </button>
+      </form>
+    </section>
   );
 }
 

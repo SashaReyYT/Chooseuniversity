@@ -1,18 +1,17 @@
 import { hasLocale } from "next-intl";
-import { setRequestLocale, getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import { ProfileService } from "@/lib/services/profile.service";
-import { ProfileForm } from "./profile-form";
+import { OnboardingForm } from "@/components/onboarding-form";
 
 /**
- * The full matching questionnaire (spec §10, §55–§56): a multi-step
- * wizard, not one long form. Serves both roles the product spec's
- * "Profile" nav concept needs: first-time onboarding (empty form) and
- * ongoing preference editing (pre-filled), via the same create-or-update
- * upsert in `ProfileService`.
+ * Profile (spec §10, §55–§56): the same 11-step adaptive questionnaire as
+ * /onboarding, pre-filled from the saved profile so it doubles as
+ * preference editing. One questionnaire, one form — the previous
+ * separate full profile form was removed.
  */
 export default async function ProfilePage({
   params,
@@ -24,7 +23,6 @@ export default async function ProfilePage({
   }
   setRequestLocale(locale);
 
-  const t = await getTranslations("Onboarding");
   const supabase = await createServerSupabaseClient();
 
   const {
@@ -32,58 +30,35 @@ export default async function ProfilePage({
   } = await supabase.auth.getUser();
 
   const referenceData = new ReferenceDataRepository(supabase);
-  const [
-    countries,
-    supportedCountries,
-    languages,
-    fieldsOfStudy,
-    nmtSubjects,
-    qualifications,
-    fullProfile,
-  ] = await Promise.all([
-    referenceData.listCountries(),
-    referenceData.listSupportedCountries(),
-    referenceData.listLanguages(),
-    referenceData.listFieldsOfStudy(),
-    referenceData.listNmtSubjects(),
-    referenceData.listQualifications(),
-    user
-      ? new ProfileService(supabase).getFullProfileForUser(user.id)
-      : {
-          profile: null,
-          nmtScores: [],
-          qualifications: [],
-          testScores: [],
-          subjectStrengths: [],
-          languageProficiency: [],
-        },
-  ]);
+  const [countries, supportedCountries, languages, fieldsOfStudy, nmtSubjects, fullProfile] =
+    await Promise.all([
+      referenceData.listCountries(),
+      referenceData.listSupportedCountries(),
+      referenceData.listLanguages(),
+      referenceData.listFieldsOfStudy(),
+      referenceData.listNmtSubjects(),
+      user
+        ? new ProfileService(supabase).getFullProfileForUser(user.id)
+        : {
+            profile: null,
+            nmtScores: [],
+            subjectStrengths: [],
+            languageProficiency: [],
+          },
+    ]);
 
   return (
-    <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-8">
-      <div className="space-y-2 max-w-2xl">
-        <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
-          {t("heading")}
-        </h1>
-        <p className="font-body-md text-body-md text-on-surface-variant">
-          {t("description")}
-        </p>
-      </div>
-
-      <ProfileForm
-        locale={locale}
-        countries={countries}
-        supportedCountries={supportedCountries}
-        languages={languages}
-        fieldsOfStudy={fieldsOfStudy}
-        nmtSubjects={nmtSubjects}
-        qualifications={qualifications}
-        existingProfile={fullProfile.profile}
-        existingNmtScores={fullProfile.nmtScores}
-        existingQualifications={fullProfile.qualifications}
-        existingTestScores={fullProfile.testScores}
-        existingSubjectStrengths={fullProfile.subjectStrengths}
-      />
-    </main>
+    <OnboardingForm
+      locale={locale}
+      countries={countries}
+      supportedCountries={supportedCountries}
+      languages={languages}
+      fieldsOfStudy={fieldsOfStudy}
+      nmtSubjects={nmtSubjects}
+      existingProfile={fullProfile.profile}
+      existingNmtScores={fullProfile.nmtScores}
+      existingSubjectStrengths={fullProfile.subjectStrengths}
+      existingLanguageProficiency={fullProfile.languageProficiency}
+    />
   );
 }

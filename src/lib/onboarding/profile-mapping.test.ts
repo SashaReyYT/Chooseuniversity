@@ -59,11 +59,11 @@ describe("mapStage", () => {
 });
 
 describe("isExamStage", () => {
-  it("is true for any stage past grade 10", () => {
-    expect(isExamStage("grade_11")).toBe(true);
+  it("is true only once school is finished (no NMT for grades 9–11)", () => {
     expect(isExamStage("finished_school")).toBe(true);
     expect(isExamStage("college")).toBe(true);
     expect(isExamStage("other")).toBe(true);
+    expect(isExamStage("grade_11")).toBe(false);
     expect(isExamStage("grade_10")).toBe(false);
     expect(isExamStage("grade_9")).toBe(false);
     expect(isExamStage(null)).toBe(false);
@@ -82,12 +82,18 @@ describe("mapMathStrength", () => {
 });
 
 describe("mapEnglishLevel", () => {
-  it("derives the engine's english_level from the Q7 'en' proficiency", () => {
-    expect(mapEnglishLevel("good")).toBe("b2");
-    expect(mapEnglishLevel("average")).toBe("b1");
-    expect(mapEnglishLevel("poor")).toBe("a2");
-    expect(mapEnglishLevel("not_sure")).toBe("not_sure");
+  it("passes CEFR levels through to the engine's english_level", () => {
+    expect(mapEnglishLevel("c2")).toBe("c2");
+    expect(mapEnglishLevel("c1")).toBe("c1");
+    expect(mapEnglishLevel("b2")).toBe("b2");
+    expect(mapEnglishLevel("b1")).toBe("b1");
+    expect(mapEnglishLevel("a2")).toBe("a2");
+    expect(mapEnglishLevel("a1")).toBe("a1");
     expect(mapEnglishLevel(null)).toBeNull();
+  });
+
+  it("degrades A0 to not_sure (below the engine's lowest CEFR value)", () => {
+    expect(mapEnglishLevel("a0")).toBe("not_sure");
   });
 });
 

@@ -9,6 +9,7 @@ import { MatchingService } from "@/lib/services/matching.service";
 import { FavouritesService } from "@/lib/services/favourites.service";
 import { ComparisonService } from "@/lib/services/comparison.service";
 import { ProgrammeCard } from "@/components/programme-card";
+import { AppShell } from "@/components/app-shell";
 import type { MatchResult } from "@/lib/matching/engine";
 
 export default async function SavedPage({
@@ -134,7 +135,8 @@ export default async function SavedPage({
   );
 
   return (
-    <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-8">
+    <AppShell>
+      <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-8">
       <div className="space-y-1">
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
           {t("heading")}
@@ -196,6 +198,7 @@ export default async function SavedPage({
           )}
         </div>
       )}
-    </main>
+      </main>
+    </AppShell>
   );
 }

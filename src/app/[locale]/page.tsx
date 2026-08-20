@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { AppNav } from "@/components/app-nav";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ProfileService } from "@/lib/services/profile.service";
 import { MatchingService, type RankedMatch } from "@/lib/services/matching.service";
@@ -69,7 +70,9 @@ export default async function Home({
   ]);
 
   return (
-    <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-8 pb-16 space-y-section-gap overflow-hidden">
+    <div className="pb-16 md:pb-0">
+      <AppNav />
+      <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-8 pb-16 space-y-section-gap overflow-hidden">
       <header className="flex items-center justify-between gap-4">
         <span className="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">
           {tNav("brand")}
@@ -127,7 +130,8 @@ export default async function Home({
       />
 
       <HowItWorks t={t} />
-    </main>
+      </main>
+    </div>
   );
 }
 

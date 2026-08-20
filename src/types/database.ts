@@ -1255,14 +1255,10 @@ export type Database = {
       }
       user_profiles: {
         Row: {
-          admission_preference:
-            | Database["public"]["Enums"]["admission_preference"]
-            | null
           budget_currency: string | null
           budget_max: number | null
           budget_min: number | null
           budget_mode: Database["public"]["Enums"]["budget_mode"]
-          career_priorities: string[]
           created_at: string
           current_education_level:
             | Database["public"]["Enums"]["education_level"]
@@ -1272,7 +1268,6 @@ export type Database = {
           education_stage: Database["public"]["Enums"]["education_stage"] | null
           english_level: Database["public"]["Enums"]["cefr_level"] | null
           full_name: string | null
-          graduation_year: number | null
           has_graduated: boolean | null
           id: string
           living_cost_mode: Database["public"]["Enums"]["budget_mode"]
@@ -1281,9 +1276,7 @@ export type Database = {
             | null
           math_background: Database["public"]["Enums"]["math_background"] | null
           national_exam_type: string | null
-          nationality_country_code: string | null
           open_to_additional_exams: boolean | null
-          open_to_other_cities: boolean | null
           preferred_cities: string[]
           preferred_country_codes: string[]
           preferred_degree_level:
@@ -1307,14 +1300,10 @@ export type Database = {
           wants_work_during_study: boolean | null
         }
         Insert: {
-          admission_preference?:
-            | Database["public"]["Enums"]["admission_preference"]
-            | null
           budget_currency?: string | null
           budget_max?: number | null
           budget_min?: number | null
           budget_mode?: Database["public"]["Enums"]["budget_mode"]
-          career_priorities?: string[]
           created_at?: string
           current_education_level?:
             | Database["public"]["Enums"]["education_level"]
@@ -1326,7 +1315,6 @@ export type Database = {
             | null
           english_level?: Database["public"]["Enums"]["cefr_level"] | null
           full_name?: string | null
-          graduation_year?: number | null
           has_graduated?: boolean | null
           id: string
           living_cost_mode?: Database["public"]["Enums"]["budget_mode"]
@@ -1337,9 +1325,7 @@ export type Database = {
             | Database["public"]["Enums"]["math_background"]
             | null
           national_exam_type?: string | null
-          nationality_country_code?: string | null
           open_to_additional_exams?: boolean | null
-          open_to_other_cities?: boolean | null
           preferred_cities?: string[]
           preferred_country_codes?: string[]
           preferred_degree_level?:
@@ -1363,14 +1349,10 @@ export type Database = {
           wants_work_during_study?: boolean | null
         }
         Update: {
-          admission_preference?:
-            | Database["public"]["Enums"]["admission_preference"]
-            | null
           budget_currency?: string | null
           budget_max?: number | null
           budget_min?: number | null
           budget_mode?: Database["public"]["Enums"]["budget_mode"]
-          career_priorities?: string[]
           created_at?: string
           current_education_level?:
             | Database["public"]["Enums"]["education_level"]
@@ -1382,7 +1364,6 @@ export type Database = {
             | null
           english_level?: Database["public"]["Enums"]["cefr_level"] | null
           full_name?: string | null
-          graduation_year?: number | null
           has_graduated?: boolean | null
           id?: string
           living_cost_mode?: Database["public"]["Enums"]["budget_mode"]
@@ -1393,9 +1374,7 @@ export type Database = {
             | Database["public"]["Enums"]["math_background"]
             | null
           national_exam_type?: string | null
-          nationality_country_code?: string | null
           open_to_additional_exams?: boolean | null
-          open_to_other_cities?: boolean | null
           preferred_cities?: string[]
           preferred_country_codes?: string[]
           preferred_degree_level?:
@@ -1419,13 +1398,6 @@ export type Database = {
           wants_work_during_study?: boolean | null
         }
         Relationships: [
-          {
-            foreignKeyName: "user_profiles_nationality_country_code_fkey"
-            columns: ["nationality_country_code"]
-            isOneToOne: false
-            referencedRelation: "countries"
-            referencedColumns: ["code"]
-          },
           {
             foreignKeyName: "user_profiles_primary_field_of_study_id_fkey"
             columns: ["primary_field_of_study_id"]

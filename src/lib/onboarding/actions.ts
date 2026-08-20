@@ -5,11 +5,11 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ProfileService } from "@/lib/services/profile.service";
 import type { OnboardingActionState } from "@/lib/onboarding/types";
 import {
+  CEFR_LEVELS,
   EDUCATION_STAGES,
   LANG_PROFICIENCY_PREFIX,
   NMT_BRANCHES,
   NMT_SCORE_PREFIX,
-  PROFICIENCY_LEVELS,
   START_YEAR_CHOICES,
   STRENGTH_LEVELS,
   SUBJECT_STRENGTH_PREFIX,
@@ -139,19 +139,19 @@ export async function submitOnboardingAction(
         ? "small_city"
         : null;
 
-  // Q7 — per-language proficiency, one row per selected language.
+  // Q7 — per-language proficiency, one row per selected language (CEFR levels).
   const languageProficiency = preferredLanguageCodes
     .map((code) => {
       const level = parseEnum(
         formData.get(`${LANG_PROFICIENCY_PREFIX}${code}`),
-        PROFICIENCY_LEVELS,
+        CEFR_LEVELS,
       );
       return level
         ? { languageCode: code, level }
         : null;
     })
     .filter(
-      (entry): entry is { languageCode: string; level: (typeof PROFICIENCY_LEVELS)[number] } =>
+      (entry): entry is { languageCode: string; level: (typeof CEFR_LEVELS)[number] } =>
         entry != null,
     );
   // English proficiency is what the matching engine's Language scorer and
@@ -161,19 +161,19 @@ export async function submitOnboardingAction(
   );
 
   // Q8 — national exam. Only meaningful when the residence country maps
-  // to a known exam and the user is past grade 10; the wizard doesn't
+  // to a known exam and the user has finished school (grades 9–11 never
+  // see this step — subject strengths take its place); the wizard doesn't
   // even render the step otherwise, but re-derive the gate server-side
   // rather than trusting the client.
   const examType = residenceCountryCode ? RESIDENCE_EXAM_MAP[residenceCountryCode] : undefined;
   const examStepVisible = examType === "nmt" && isExamStage(educationStage);
   const nmtBranch = parseEnum(formData.get("nmt_branch"), NMT_BRANCHES);
-  const nmtIsExpected = nmtBranch === "planning" || nmtBranch === "grade11_taking";
+  const nmtIsExpected = nmtBranch === "planning";
 
   // Collect any NMT scores actually filled in (branch selection alone
-  // doesn't guarantee it — e.g. a grade-11 student can pick "taking it
-  // this year" and still leave every score blank). Q9 (subject
-  // strengths) then falls back in for anyone who ends up with zero
-  // scores here, exactly mirroring the client-side visibility rule.
+  // doesn't guarantee it). Q9 (subject strengths) then falls back in for
+  // anyone who ends up with zero scores here, exactly mirroring the
+  // client-side visibility rule.
   const nmtScores: { subjectCode: string; score: number; isExpected: boolean }[] = [];
   if (examStepVisible) {
     for (const [key, value] of formData.entries()) {
@@ -192,8 +192,8 @@ export async function submitOnboardingAction(
   const nmtScoreEntered = nmtScores.length > 0;
 
   // Q9 — subject strengths, collected whenever no NMT score was entered
-  // above (grade 9/10, non-mapped country, or the user declined/hasn't
-  // got a score yet).
+  // above (school students, residents of non-mapped countries, or the
+  // user declined/hasn't got a score yet).
   const subjectStrengths: {
     subjectCode: string;
     level: (typeof STRENGTH_LEVELS)[number];

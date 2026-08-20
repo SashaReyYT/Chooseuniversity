@@ -7,8 +7,8 @@ type ProficiencyRow =
 
 export interface LanguageProficiencyInput {
   languageCode: string;
-  /** Must match the `user_language_proficiency.level` check constraint — `average`, not `medium`. */
-  level: "good" | "average" | "poor" | "not_sure";
+  /** Must match the `user_language_proficiency.level` check constraint — CEFR levels C2 → A0. */
+  level: "c2" | "c1" | "b2" | "b1" | "a2" | "a1" | "a0";
 }
 
 export class UserLanguageProficiencyRepository {

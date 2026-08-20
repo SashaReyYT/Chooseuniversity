@@ -9,20 +9,14 @@ import {
 import { redirect } from "@/i18n/navigation";
 
 /**
- * Toggles a programme's presence in the current user's comparison set.
- * V1 has exactly one implicit comparison per user (see
- * `ComparisonService.getOrCreateDefaultComparison`) — no UI here for
- * naming or managing multiple comparisons.
- *
- * Adding a programme sends the user straight to /compare (the compare
- * tab), where they pick the second/third university to compare against —
- * see the picker on the compare page. Removing stays put.
- *
- * Enforces the spec's 3-programme comparison limit (§38): adding a 4th
- * programme redirects back to /compare with a notice instead of silently
- * dropping the request.
+ * Adds a programme picked from the /compare page's picker (the "add a
+ * second/third university" flow after landing here from a programme
+ * card). Redirects back to /compare; on hitting the 3-programme cap
+ * redirects with a notice instead of failing silently.
  */
-export async function toggleCompareAction(formData: FormData): Promise<void> {
+export async function addComparisonProgrammeAction(
+  formData: FormData,
+): Promise<void> {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -33,7 +27,6 @@ export async function toggleCompareAction(formData: FormData): Promise<void> {
   const programmeId = String(formData.get("programmeId") ?? "");
   if (!programmeId) return;
 
-  const isInComparison = formData.get("isInComparison") === "true";
   const defaultComparisonName = String(
     formData.get("defaultComparisonName") ?? "Comparison",
   );
@@ -44,11 +37,6 @@ export async function toggleCompareAction(formData: FormData): Promise<void> {
     user.id,
     defaultComparisonName,
   );
-
-  if (isInComparison) {
-    await comparisonService.removeProgramme(comparison.id, programmeId);
-    return;
-  }
 
   try {
     await comparisonService.addProgrammeWithinLimit(

@@ -20,11 +20,11 @@ export const BUDGET_MODES = ["low", "medium", "high", "unknown"] as const;
 export const START_YEAR_CHOICES = ["2026", "2027", "2028", "later", "not_sure"] as const;
 
 /**
- * Per-language self-rated proficiency (Q7). Values must match the
- * `user_language_proficiency.level` check constraint in the database —
- * `average`, not `medium`.
+ * Per-language proficiency (Q7) — CEFR levels C2 → A0, stored verbatim
+ * in `user_language_proficiency.level` (the check constraint allows
+ * exactly these values).
  */
-export const PROFICIENCY_LEVELS = ["good", "average", "poor", "not_sure"] as const;
+export const CEFR_LEVELS = ["c2", "c1", "b2", "b1", "a2", "a1", "a0"] as const;
 
 /**
  * Subject-strength self-rating (Q9). Values must match the
@@ -39,8 +39,6 @@ export const NMT_BRANCHES = [
   "planning",
   "no",
   "other",
-  "grade11_taking",
-  "grade11_skip",
 ] as const;
 
 export const LANG_PROFICIENCY_PREFIX = "language_level__";
@@ -105,30 +103,40 @@ export function mapMathStrength(level: string | null) {
   }
 }
 
-/** Per-language proficiency (Q7, English) → the engine's CEFR `english_level`. */
+/**
+ * Per-language proficiency (Q7, English) → the engine's CEFR
+ * `english_level`. CEFR levels pass through as-is; A0 is below the
+ * engine's lowest enum value (A1), so it degrades to "not sure" — the
+ * engine's lenient signal for "no usable level on record".
+ */
 export function mapEnglishLevel(level: string | null) {
   switch (level) {
-    case "good":
+    case "c2":
+      return "c2" as const;
+    case "c1":
+      return "c1" as const;
+    case "b2":
       return "b2" as const;
-    case "average":
+    case "b1":
       return "b1" as const;
-    case "poor":
+    case "a2":
       return "a2" as const;
-    case "not_sure":
+    case "a1":
+      return "a1" as const;
+    case "a0":
       return "not_sure" as const;
     default:
       return null;
   }
 }
 
-/** The exam step (Q8) only applies once the user is past grade 10. */
+/**
+ * The exam step (Q8) only applies once school is finished — grades 9–11
+ * don't get an NMT question at all, and subject strengths (Q9) take its
+ * place.
+ */
 export function isExamStage(stage: string | null): boolean {
-  return (
-    stage !== null &&
-    stage !== "" &&
-    stage !== "grade_9" &&
-    stage !== "grade_10"
-  );
+  return stage === "finished_school" || stage === "college" || stage === "other";
 }
 
 export function optionalText(

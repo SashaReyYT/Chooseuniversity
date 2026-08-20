@@ -30,6 +30,7 @@ import {
 } from "@/components/match-display";
 import { annualLivingCost } from "@/lib/matching/utils";
 import type { ProgrammeStudyMode, SourceType } from "@/types/database";
+import { AppShell } from "@/components/app-shell";
 
 /** Compile-time checked message keys of the ProgrammeDetails namespace (mirrors DiscoverKey in match-display). */
 type ProgrammeDetailsKey = Parameters<
@@ -189,7 +190,8 @@ export default async function ProgrammeDetailsPage({
       : [];
 
   return (
-    <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-10">
+    <AppShell>
+      <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-10">
       <Link
         href="/discover"
         className="font-label-caps text-label-caps text-primary underline"
@@ -965,7 +967,8 @@ export default async function ProgrammeDetailsPage({
           )}
         </section>
       </div>
-    </main>
+      </main>
+    </AppShell>
   );
 }
 

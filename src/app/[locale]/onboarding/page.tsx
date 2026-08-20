@@ -58,19 +58,17 @@ export default async function OnboardingPage({
   ]);
 
   return (
-    <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-10 md:py-16">
-      <OnboardingForm
-        locale={locale}
-        countries={countries}
-        supportedCountries={supportedCountries}
-        languages={languages}
-        fieldsOfStudy={fieldsOfStudy}
-        nmtSubjects={nmtSubjects}
-        existingProfile={fullProfile.profile}
-        existingNmtScores={fullProfile.nmtScores}
-        existingSubjectStrengths={fullProfile.subjectStrengths}
-        existingLanguageProficiency={fullProfile.languageProficiency}
-      />
-    </main>
+    <OnboardingForm
+      locale={locale}
+      countries={countries}
+      supportedCountries={supportedCountries}
+      languages={languages}
+      fieldsOfStudy={fieldsOfStudy}
+      nmtSubjects={nmtSubjects}
+      existingProfile={fullProfile.profile}
+      existingNmtScores={fullProfile.nmtScores}
+      existingSubjectStrengths={fullProfile.subjectStrengths}
+      existingLanguageProficiency={fullProfile.languageProficiency}
+    />
   );
 }

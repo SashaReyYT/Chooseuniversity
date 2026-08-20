@@ -8,8 +8,6 @@ import type { Database } from "@/types/database";
 import {
   formInputClassName,
   formLabelClassName,
-  formPrimaryButtonClassName,
-  formSelectClassName,
 } from "@/components/form-styles";
 import { ToggleCardGroup } from "@/components/toggle-card-group";
 
@@ -72,6 +70,29 @@ const COUNTRY_LANGUAGES: Record<string, string[]> = {
   NO: ["en"],
 };
 const DEFAULT_COUNTRY_LANGUAGES = ["en"];
+
+/** Country code → flag emoji shown on the Q2 cards (mockup treatment). */
+const FLAG_EMOJI: Record<string, string> = {
+  UA: "🇺🇦",
+  CZ: "🇨🇿",
+  DE: "🇩🇪",
+  AT: "🇦🇹",
+  CH: "🇨🇭",
+  PL: "🇵🇱",
+  NL: "🇳🇱",
+  FR: "🇫🇷",
+  ES: "🇪🇸",
+  IT: "🇮🇹",
+  PT: "🇵🇹",
+  GB: "🇬🇧",
+  IE: "🇮🇪",
+  US: "🇺🇸",
+  CA: "🇨🇦",
+  SE: "🇸🇪",
+  DK: "🇩🇰",
+  FI: "🇫🇮",
+  NO: "🇳🇴",
+};
 
 /**
  * Field-of-study category → the subjects offered in Q9 for that category
@@ -137,19 +158,12 @@ function useStepDefinitions(ctx: {
 /**
  * Re-derives which Q8 branch was previously chosen, purely to pre-select
  * the right radio option when a user revisits the wizard. Best-effort —
- * expected vs. real scores plus the education stage at save time are
- * enough signal to guess correctly in the common cases.
+ * expected vs. real scores are enough signal to guess in the common cases.
  */
-function deriveInitialNmtBranch(
-  scores: UserNmtScoreRow[],
-  educationStageAtLoad: string | null | undefined,
-): string {
+function deriveInitialNmtBranch(scores: UserNmtScoreRow[]): string {
   if (scores.length === 0) return "";
-  const hasExpected = scores.some((s) => s.score_is_expected);
   const hasReal = scores.some((s) => !s.score_is_expected);
-  if (educationStageAtLoad === "grade_11") {
-    return hasExpected || hasReal ? "grade11_taking" : "";
-  }
+  const hasExpected = scores.some((s) => s.score_is_expected);
   if (hasReal) return "yes";
   if (hasExpected) return "planning";
   return "";
@@ -178,6 +192,17 @@ const REQUIREMENT_OPTIONS = [
   { value: "big_city", labelKey: "reqBigCity" },
   { value: "small_city", labelKey: "reqSmallCity" },
   { value: "nothing", labelKey: "reqNothing" },
+] as const;
+
+/** Q7 — CEFR levels (C2 → A0), stored verbatim in `user_language_proficiency.level`. */
+const CEFR_OPTIONS = [
+  { value: "c2", labelKey: "proficiencyC2", captionKey: "proficiencyC2Caption" },
+  { value: "c1", labelKey: "proficiencyC1", captionKey: "proficiencyC1Caption" },
+  { value: "b2", labelKey: "proficiencyB2", captionKey: "proficiencyB2Caption" },
+  { value: "b1", labelKey: "proficiencyB1", captionKey: "proficiencyB1Caption" },
+  { value: "a2", labelKey: "proficiencyA2", captionKey: "proficiencyA2Caption" },
+  { value: "a1", labelKey: "proficiencyA1", captionKey: "proficiencyA1Caption" },
+  { value: "a0", labelKey: "proficiencyA0", captionKey: "proficiencyA0Caption" },
 ] as const;
 
 export function OnboardingForm({
@@ -224,7 +249,7 @@ export function OnboardingForm({
     existingProfile?.primary_field_of_study_id ?? "",
   );
   const [nmtBranch, setNmtBranch] = useState<string>(() =>
-    deriveInitialNmtBranch(existingNmtScores, existingProfile?.education_stage),
+    deriveInitialNmtBranch(existingNmtScores),
   );
   const [nmtScoreCount, setNmtScoreCount] = useState(
     existingNmtScores.filter((s) => s.score != null).length,
@@ -233,12 +258,11 @@ export function OnboardingForm({
     deriveInitialRequirements(existingProfile),
   );
 
+  // Q8 (national exam) only makes sense for residents of a mapped country
+  // who have finished school — grades 9–11 skip it entirely (no NMT
+  // question at all), and subject strengths (Q9) take its place.
   const examVisible =
-    residenceCountry in RESIDENCE_EXAM_MAP &&
-    educationStage !== "grade_9" &&
-    educationStage !== "grade_10" &&
-    educationStage !== "";
-  const isGrade11 = educationStage === "grade_11";
+    residenceCountry in RESIDENCE_EXAM_MAP && isPastSchoolStage(educationStage);
   const subjectsVisible = !(examVisible && nmtScoreCount > 0);
   const proficiencyVisible = selectedLanguages.length > 0;
 
@@ -309,7 +333,7 @@ export function OnboardingForm({
   const supportedCountryOptions = supportedCountries.map((c) => ({
     value: c.code,
     label: c.name,
-    caption: c.code,
+    caption: FLAG_EMOJI[c.code] ?? c.code,
   }));
 
   const nmtScoreContainerRef = useRef<HTMLDivElement>(null);
@@ -359,221 +383,219 @@ export function OnboardingForm({
     ? String(existingProfile.start_year)
     : "";
 
+  const showContinue = stepIndex < stepCount - 1;
+
   return (
-    <form action={formAction} className="max-w-2xl mx-auto space-y-8">
-      {/* Progress header */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          {stepIndex > 0 ? (
+    <form
+      action={formAction}
+      className="flex min-h-screen flex-col bg-background"
+    >
+      {/* Top app bar: back + step label, segmented progress underneath */}
+      <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-outline-variant/30">
+        <div className="mx-auto w-full max-w-container-max px-margin-mobile md:px-margin-desktop">
+          <div className="flex h-16 items-center justify-between">
             <button
               type="button"
               onClick={goBack}
+              disabled={stepIndex === 0}
               aria-label={t("back")}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full p-2 text-primary hover:bg-surface-container-low transition-colors duration-200 disabled:cursor-default disabled:opacity-40"
             >
               <span className="material-symbols-outlined" aria-hidden="true">
                 arrow_back
               </span>
             </button>
-          ) : (
-            <span className="w-9 h-9" />
-          )}
-          <p className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wide">
-            {t("stepIndicator", { step: stepIndex + 1, total: stepCount })}
-          </p>
-          <span className="w-9 h-9" />
-        </div>
-        <div className="h-1.5 rounded-full bg-surface-container-high overflow-hidden">
-          <div
-            className="h-full bg-primary transition-all"
-            style={{ width: `${((stepIndex + 1) / stepCount) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary">
-          {t(currentStep.titleKey)}
-        </h1>
-        <p className="font-body-md text-body-md text-on-surface-variant">
-          {t(currentStep.subtitleKey)}
-        </p>
-      </div>
-
-      {/* Q1 — residence */}
-      <div className={currentStep.id === "residence" ? "space-y-4" : "hidden"}>
-        <div className="space-y-1">
-          <label htmlFor="residence_country_code" className={formLabelClassName}>
-            {t("residenceCountryLabel")}
-          </label>
-          <select
-            id="residence_country_code"
-            name="residence_country_code"
-            value={residenceCountry}
-            onChange={(e) => setResidenceCountry(e.target.value)}
-            className={formSelectClassName}
-          >
-            <option value="">{t("selectPlaceholder")}</option>
-            {countryOptions.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
+            <p className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+              {t("stepIndicator", { step: stepIndex + 1, total: stepCount })}
+            </p>
+            <span className="w-10" aria-hidden="true" />
+          </div>
+          {/* Segmented progress bar (mockup treatment: discrete blocks) */}
+          <div className="flex gap-1 pb-2">
+            {visibleSteps.map((step, index) => (
+              <div
+                key={step.id}
+                className={`h-1 flex-1 rounded-full transition-colors ${
+                  index <= stepIndex ? "bg-primary" : "bg-surface-dim"
+                }`}
+              />
             ))}
-          </select>
+          </div>
         </div>
-        <div className="space-y-1">
-          <label htmlFor="residence_city" className={formLabelClassName}>
-            {t("residenceCityLabel")}
-          </label>
-          <input
-            id="residence_city"
-            name="residence_city"
-            type="text"
-            placeholder={t("residenceCityPlaceholder")}
-            defaultValue={existingProfile?.residence_city ?? ""}
-            className={formInputClassName}
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="full_name" className={formLabelClassName}>
-            {t("nameLabel")}
-          </label>
-          <input
-            id="full_name"
-            name="full_name"
-            type="text"
-            defaultValue={existingProfile?.full_name ?? ""}
-            className={formInputClassName}
-          />
-        </div>
-      </div>
+      </header>
 
-      {/* Q2 — target countries */}
-      <div className={currentStep.id === "targetCountries" ? "space-y-2" : "hidden"}>
-        <ToggleCardGroup
-          name="preferred_country_codes"
-          options={supportedCountryOptions}
-          defaultValues={selectedCountries}
-          onChange={setSelectedCountries}
-        />
-        <p className="font-body-sm text-body-sm text-on-surface-variant">
-          {t("countriesComingSoonNote")}
-        </p>
-      </div>
+      {/* Question canvas — only the current step is visible, all stay mounted */}
+      <main className="mx-auto w-full max-w-[800px] flex-grow space-y-8 px-margin-mobile md:px-margin-desktop py-8 pb-36 md:py-10">
+        <section className="space-y-2">
+          <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
+            {t(currentStep.titleKey)}
+          </h1>
+          <p className="font-body-md text-body-md md:font-body-lg md:text-body-lg text-on-surface-variant">
+            {t(currentStep.subtitleKey)}
+          </p>
+        </section>
 
-      {/* Q3 — education stage */}
-      <div className={currentStep.id === "educationStage" ? "" : "hidden"}>
-        <RadioCardGroup
-          name="education_stage"
-          options={[
-            { value: "grade_9", label: t("stageGrade9") },
-            { value: "grade_10", label: t("stageGrade10") },
-            { value: "grade_11", label: t("stageGrade11") },
-            { value: "graduated", label: t("stageGraduated") },
-            { value: "college", label: t("stageCollege") },
-            { value: "other", label: t("stageOther") },
-          ]}
-          value={educationStage}
-          onChange={setEducationStage}
-        />
-      </div>
-
-      {/* Q4 — start year */}
-      <div className={currentStep.id === "startYear" ? "" : "hidden"}>
-        <RadioCardGroup
-          name="start_year_choice"
-          options={[
-            { value: "2026", label: t("startYear2026") },
-            { value: "2027", label: t("startYear2027") },
-            { value: "2028", label: t("startYear2028") },
-            { value: "later", label: t("startYearLater") },
-            { value: "not_sure", label: t("startYearNotSure") },
-          ]}
-          defaultValue={startYearChoice}
-        />
-      </div>
-
-      {/* Q5 — field of study: broad direction first, then the specific programme */}
-      <div className={currentStep.id === "fieldOfStudy" ? "space-y-6" : "hidden"}>
-        <div className="space-y-3">
-          <span className={formLabelClassName}>{t("categoryLabel")}</span>
-          <RadioCardGroup
-            name="field_category"
-            options={[
-              ...Array.from(fieldsByCategory.keys()).map((c) => ({
-                value: c,
-                label: c,
-              })),
-              { value: "not_sure", label: t("notSure") },
-            ]}
-            value={category}
-            onChange={handleCategoryChange}
-          />
-        </div>
-        {fieldsInCategory.length > 0 && (
-          <div className="space-y-3">
-            <span className={formLabelClassName}>{t("primaryFieldLabel")}</span>
-            <RadioCardGroup
-              name="primary_field_of_study_id"
-              options={[
-                ...fieldsInCategory.map((f) => ({ value: f.id, label: f.name })),
-                { value: "not_sure", label: t("notSure") },
-              ]}
-              value={selectedFieldId}
-              onChange={setSelectedFieldId}
+        {/* Q1 — residence */}
+        <div className={currentStep.id === "residence" ? "space-y-4" : "hidden"}>
+          <div className="space-y-1">
+            <label htmlFor="residence_country_code" className={formLabelClassName}>
+              {t("residenceCountryLabel")}
+            </label>
+            <select
+              id="residence_country_code"
+              name="residence_country_code"
+              value={residenceCountry}
+              onChange={(e) => setResidenceCountry(e.target.value)}
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">{t("selectPlaceholder")}</option>
+              {countryOptions.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label htmlFor="residence_city" className={formLabelClassName}>
+              {t("residenceCityLabel")}
+            </label>
+            <input
+              id="residence_city"
+              name="residence_city"
+              type="text"
+              placeholder={t("residenceCityPlaceholder")}
+              defaultValue={existingProfile?.residence_city ?? ""}
+              className={formInputClassName}
             />
           </div>
-        )}
-        {selectedFieldId && selectedFieldId !== "not_sure" && (
-          <input type="hidden" name="preferred_field_of_study_ids" value={selectedFieldId} />
-        )}
-      </div>
-
-      {/* Q6 — language of instruction (only the languages of the countries picked) */}
-      <div className={currentStep.id === "languageInstruction" ? "" : "hidden"}>
-        <ToggleCardGroup
-          name="preferred_language_codes"
-          options={fallbackLanguageOptions}
-          defaultValues={selectedLanguages}
-          onChange={setSelectedLanguages}
-        />
-      </div>
-
-      {/* Q7 — per-language proficiency */}
-      <div className={currentStep.id === "languageProficiency" ? "space-y-6" : "hidden"}>
-        {selectedLanguages.map((code) => {
-          const language = languages.find((l) => l.code === code);
-          return (
-            <RadioCardGroup
-              key={code}
-              name={`language_level__${code}`}
-              label={language?.name ?? code}
-              options={[
-                { value: "good", label: t("proficiencyGood") },
-                { value: "average", label: t("proficiencyMedium") },
-                { value: "poor", label: t("proficiencyPoor") },
-                { value: "not_sure", label: t("proficiencyNotSure") },
-              ]}
-              defaultValue={languageLevelByCode.get(code)?.level ?? ""}
+          <div className="space-y-1">
+            <label htmlFor="full_name" className={formLabelClassName}>
+              {t("nameLabel")}
+            </label>
+            <input
+              id="full_name"
+              name="full_name"
+              type="text"
+              defaultValue={existingProfile?.full_name ?? ""}
+              className={formInputClassName}
             />
-          );
-        })}
-      </div>
+          </div>
+        </div>
 
-      {/* Q8 — national exam (only for residents of a mapped country, past grade 10) */}
-      <div className={currentStep.id === "exam" ? "space-y-5" : "hidden"}>
-        {isGrade11 ? (
-          <RadioCardGroup
-            name="nmt_branch"
-            label={t("nmtGrade11Label")}
-            options={[
-              { value: "grade11_taking", label: t("nmtGrade11Yes") },
-              { value: "grade11_skip", label: t("nmtGrade11No") },
-            ]}
-            value={nmtBranch}
-            onChange={setNmtBranch}
+        {/* Q2 — target countries */}
+        <div className={currentStep.id === "targetCountries" ? "space-y-2" : "hidden"}>
+          <ToggleCardGroup
+            name="preferred_country_codes"
+            options={supportedCountryOptions}
+            defaultValues={selectedCountries}
+            onChange={setSelectedCountries}
           />
-        ) : (
+          <p className="font-body-sm text-body-sm text-on-surface-variant">
+            {t("countriesComingSoonNote")}
+          </p>
+        </div>
+
+        {/* Q3 — education stage */}
+        <div className={currentStep.id === "educationStage" ? "" : "hidden"}>
+          <RadioCardGroup
+            name="education_stage"
+            options={[
+              { value: "grade_9", label: t("stageGrade9") },
+              { value: "grade_10", label: t("stageGrade10") },
+              { value: "grade_11", label: t("stageGrade11") },
+              { value: "finished_school", label: t("stageFinishedSchool") },
+              { value: "college", label: t("stageCollege") },
+              { value: "other", label: t("stageOther") },
+            ]}
+            value={educationStage}
+            onChange={setEducationStage}
+          />
+        </div>
+
+        {/* Q4 — start year */}
+        <div className={currentStep.id === "startYear" ? "" : "hidden"}>
+          <RadioCardGroup
+            name="start_year_choice"
+            options={[
+              { value: "2026", label: t("startYear2026") },
+              { value: "2027", label: t("startYear2027") },
+              { value: "2028", label: t("startYear2028") },
+              { value: "later", label: t("startYearLater") },
+              { value: "not_sure", label: t("startYearNotSure") },
+            ]}
+            defaultValue={startYearChoice}
+          />
+        </div>
+
+        {/* Q5 — field of study: broad direction first, then the specific programme */}
+        <div className={currentStep.id === "fieldOfStudy" ? "space-y-6" : "hidden"}>
+          <div className="space-y-3">
+            <span className={formLabelClassName}>{t("categoryLabel")}</span>
+            <RadioCardGroup
+              name="field_category"
+              options={[
+                ...Array.from(fieldsByCategory.keys()).map((c) => ({
+                  value: c,
+                  label: c,
+                })),
+                { value: "not_sure", label: t("notSure") },
+              ]}
+              value={category}
+              onChange={handleCategoryChange}
+            />
+          </div>
+          {fieldsInCategory.length > 0 && (
+            <div className="space-y-3">
+              <span className={formLabelClassName}>{t("primaryFieldLabel")}</span>
+              <RadioCardGroup
+                name="primary_field_of_study_id"
+                options={[
+                  ...fieldsInCategory.map((f) => ({ value: f.id, label: f.name })),
+                  { value: "not_sure", label: t("notSure") },
+                ]}
+                value={selectedFieldId}
+                onChange={setSelectedFieldId}
+              />
+            </div>
+          )}
+          {selectedFieldId && selectedFieldId !== "not_sure" && (
+            <input type="hidden" name="preferred_field_of_study_ids" value={selectedFieldId} />
+          )}
+        </div>
+
+        {/* Q6 — language of instruction (only the languages of the countries picked) */}
+        <div className={currentStep.id === "languageInstruction" ? "" : "hidden"}>
+          <ToggleCardGroup
+            name="preferred_language_codes"
+            options={fallbackLanguageOptions}
+            defaultValues={selectedLanguages}
+            onChange={setSelectedLanguages}
+          />
+        </div>
+
+        {/* Q7 — per-language proficiency, CEFR levels */}
+        <div className={currentStep.id === "languageProficiency" ? "space-y-6" : "hidden"}>
+          {selectedLanguages.map((code) => {
+            const language = languages.find((l) => l.code === code);
+            return (
+              <RadioCardGroup
+                key={code}
+                name={`language_level__${code}`}
+                label={language?.name ?? code}
+                options={CEFR_OPTIONS.map((option) => ({
+                  value: option.value,
+                  label: t(option.labelKey),
+                  caption: t(option.captionKey),
+                }))}
+                defaultValue={languageLevelByCode.get(code)?.level ?? ""}
+              />
+            );
+          })}
+        </div>
+
+        {/* Q8 — national exam (only for residents of a mapped country who've finished school) */}
+        <div className={currentStep.id === "exam" ? "space-y-5" : "hidden"}>
           <RadioCardGroup
             name="nmt_branch"
             label={t("nmtTakenLabel")}
@@ -586,167 +608,186 @@ export function OnboardingForm({
             value={nmtBranch}
             onChange={setNmtBranch}
           />
-        )}
 
-        {(nmtBranch === "yes" ||
-          nmtBranch === "planning" ||
-          nmtBranch === "grade11_taking") && (
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <span className={formLabelClassName}>{t("nmtSubjectsLabel")}</span>
-              <p className="font-body-sm text-body-sm text-on-surface-variant">
-                {nmtBranch === "yes"
-                  ? t("nmtScoresHelp")
-                  : t("nmtExpectedNote")}
-              </p>
+          {(nmtBranch === "yes" || nmtBranch === "planning") && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <span className={formLabelClassName}>{t("nmtSubjectsLabel")}</span>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  {nmtBranch === "yes"
+                    ? t("nmtScoresHelp")
+                    : t("nmtExpectedNote")}
+                </p>
+              </div>
+              <div ref={nmtScoreContainerRef} className="grid grid-cols-2 gap-3">
+                {nmtSubjects.map((subject) => (
+                  <div key={subject.code} className="space-y-1">
+                    <label htmlFor={`nmt_score_${subject.code}`} className={formLabelClassName}>
+                      {subject.name}
+                    </label>
+                    <input
+                      id={`nmt_score_${subject.code}`}
+                      name={`nmt_score_${subject.code}`}
+                      type="number"
+                      min="0"
+                      max="200"
+                      placeholder={t("nmtScoreLabel")}
+                      defaultValue={nmtScoreByCode.get(subject.code)?.score ?? ""}
+                      onChange={handleNmtScoreChange}
+                      className={formInputClassName}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div ref={nmtScoreContainerRef} className="grid grid-cols-2 gap-3">
-              {nmtSubjects.map((subject) => (
-                <div key={subject.code} className="space-y-1">
-                  <label htmlFor={`nmt_score_${subject.code}`} className={formLabelClassName}>
-                    {subject.name}
-                  </label>
-                  <input
-                    id={`nmt_score_${subject.code}`}
-                    name={`nmt_score_${subject.code}`}
-                    type="number"
-                    min="0"
-                    max="200"
-                    placeholder={t("nmtScoreLabel")}
-                    defaultValue={nmtScoreByCode.get(subject.code)?.score ?? ""}
-                    onChange={handleNmtScoreChange}
-                    className={formInputClassName}
-                  />
-                </div>
-              ))}
-            </div>
+          )}
+        </div>
+
+        {/* Q9 — subject strengths (shown whenever no NMT score has been entered) */}
+        <div className={currentStep.id === "subjects" ? "space-y-5" : "hidden"}>
+          <div className="space-y-1">
+            <span className={formLabelClassName}>{t("subjectStrengthsLabel")}</span>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">
+              {t("subjectStrengthsHelp")}
+            </p>
           </div>
-        )}
-      </div>
-
-      {/* Q9 — subject strengths (shown whenever no NMT score has been entered) */}
-      <div className={currentStep.id === "subjects" ? "space-y-5" : "hidden"}>
-        <div className="space-y-1">
-          <span className={formLabelClassName}>{t("subjectStrengthsLabel")}</span>
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
-            {t("subjectStrengthsHelp")}
-          </p>
+          {relevantSubjects.map((subject) => (
+            <RadioCardGroup
+              key={subject.code}
+              name={`subject_strength_${subject.code}`}
+              label={
+                SUBJECT_LABEL_KEYS[subject.code]
+                  ? t(SUBJECT_LABEL_KEYS[subject.code] as Parameters<typeof t>[0])
+                  : subject.name
+              }
+              options={[
+                { value: "good", label: t("subjectGood") },
+                { value: "average", label: t("subjectAverage") },
+                { value: "poor", label: t("subjectWeak") },
+              ]}
+              defaultValue={subjectStrengthByCode.get(subject.code)?.level ?? ""}
+            />
+          ))}
         </div>
-        {relevantSubjects.map((subject) => (
+
+        {/* Q10 — budget */}
+        <div className={currentStep.id === "budget" ? "space-y-6" : "hidden"}>
           <RadioCardGroup
-            key={subject.code}
-            name={`subject_strength_${subject.code}`}
-            label={
-              SUBJECT_LABEL_KEYS[subject.code]
-                ? t(SUBJECT_LABEL_KEYS[subject.code] as Parameters<typeof t>[0])
-                : subject.name
-            }
+            name="budget_mode"
+            label={t("tuitionLabel")}
             options={[
-              { value: "good", label: t("subjectGood") },
-              { value: "average", label: t("subjectAverage") },
-              { value: "poor", label: t("subjectWeak") },
+              { value: "low", label: t("tuitionLow"), caption: t("tuitionLowHint") },
+              { value: "medium", label: t("tuitionMedium"), caption: t("tuitionMediumHint") },
+              { value: "high", label: t("tuitionHigh"), caption: t("tuitionHighHint") },
+              { value: "unknown", label: t("budgetUnknown") },
             ]}
-            defaultValue={subjectStrengthByCode.get(subject.code)?.level ?? ""}
+            defaultValue={existingProfile?.budget_mode ?? "unknown"}
           />
-        ))}
-      </div>
 
-      {/* Q10 — budget */}
-      <div className={currentStep.id === "budget" ? "space-y-6" : "hidden"}>
-        <RadioCardGroup
-          name="budget_mode"
-          label={t("tuitionLabel")}
-          options={[
-            { value: "low", label: t("tuitionLow"), caption: t("tuitionLowHint") },
-            { value: "medium", label: t("tuitionMedium"), caption: t("tuitionMediumHint") },
-            { value: "high", label: t("tuitionHigh"), caption: t("tuitionHighHint") },
-            { value: "unknown", label: t("budgetUnknown") },
-          ]}
-          defaultValue={existingProfile?.budget_mode ?? "unknown"}
-        />
-
-        <RadioCardGroup
-          name="living_cost_mode"
-          label={t("livingLabel")}
-          options={[
-            { value: "low", label: t("tuitionLow"), caption: t("livingLowHint") },
-            { value: "medium", label: t("tuitionMedium"), caption: t("livingMediumHint") },
-            { value: "high", label: t("tuitionHigh"), caption: t("livingHighHint") },
-            { value: "unknown", label: t("budgetUnknown") },
-          ]}
-          defaultValue={existingProfile?.living_cost_mode ?? "unknown"}
-        />
-      </div>
-
-      {/* Q11 — extra requirements */}
-      <div className={currentStep.id === "extra" ? "space-y-4" : "hidden"}>
-        <p className="font-body-sm text-body-sm text-on-surface-variant">
-          {t("requirementsHelp")}
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {REQUIREMENT_OPTIONS.map((option) => {
-            const checked = requirements.includes(option.value);
-            return (
-              <label
-                key={option.value}
-                className={`group relative flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-center cursor-pointer transition-colors ${
-                  checked
-                    ? "border-primary bg-primary-fixed/20"
-                    : "border-outline-variant bg-surface-container-lowest"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  name={option.value}
-                  value="true"
-                  checked={checked}
-                  onChange={() => toggleRequirement(option.value)}
-                  className="peer sr-only"
-                />
-                <span className="w-4 h-4 rounded border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center text-on-primary">
-                  {checked && (
-                    <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-                      check
-                    </span>
-                  )}
-                </span>
-                <span className="font-headline-sm text-headline-sm text-primary">
-                  {t(option.labelKey)}
-                </span>
-              </label>
-            );
-          })}
+          <RadioCardGroup
+            name="living_cost_mode"
+            label={t("livingLabel")}
+            options={[
+              { value: "low", label: t("tuitionLow"), caption: t("livingLowHint") },
+              { value: "medium", label: t("tuitionMedium"), caption: t("livingMediumHint") },
+              { value: "high", label: t("tuitionHigh"), caption: t("livingHighHint") },
+              { value: "unknown", label: t("budgetUnknown") },
+            ]}
+            defaultValue={existingProfile?.living_cost_mode ?? "unknown"}
+          />
         </div>
-      </div>
 
-      {state.error && (
-        <p role="alert" className="font-body-sm text-body-sm text-error">
-          {state.error}
-        </p>
-      )}
+        {/* Q11 — extra requirements */}
+        <div className={currentStep.id === "extra" ? "space-y-4" : "hidden"}>
+          <p className="font-body-sm text-body-sm text-on-surface-variant">
+            {t("requirementsHelp")}
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {REQUIREMENT_OPTIONS.map((option) => {
+              const checked = requirements.includes(option.value);
+              return (
+                <label
+                  key={option.value}
+                  className={`group relative flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-center cursor-pointer transition-colors ${
+                    checked
+                      ? "border-primary bg-primary-fixed/20"
+                      : "border-outline-variant bg-surface-container-lowest"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    name={option.value}
+                    value="true"
+                    checked={checked}
+                    onChange={() => toggleRequirement(option.value)}
+                    className="peer sr-only"
+                  />
+                  <span className="w-4 h-4 rounded border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center text-on-primary">
+                    {checked && (
+                      <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
+                        check
+                      </span>
+                    )}
+                  </span>
+                  <span className="font-headline-sm text-headline-sm text-primary">
+                    {t(option.labelKey)}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
 
-      <div className="pt-2">
-        {stepIndex < stepCount - 1 ? (
-          <button
-            type="button"
-            onClick={goNext}
-            className={`${formPrimaryButtonClassName} w-full flex items-center justify-center gap-2`}
-          >
-            {t("continue")}
-            <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: 18 }}>
-              arrow_forward
-            </span>
-          </button>
-        ) : (
-          <button
-            type="submit"
-            disabled={pending}
-            className={`${formPrimaryButtonClassName} w-full`}
-          >
-            {pending ? t("submitPending") : t("submit")}
-          </button>
+        {state.error && (
+          <p role="alert" className="font-body-sm text-body-sm text-error">
+            {state.error}
+          </p>
         )}
-      </div>
+      </main>
+
+      {/* Anchored footer CTA */}
+      <footer className="fixed inset-x-0 bottom-0 z-40 border-t border-outline-variant/30 bg-surface/90 backdrop-blur-md py-4 px-margin-mobile md:px-margin-desktop">
+        <div className="mx-auto flex w-full max-w-[800px] flex-col items-center justify-between gap-4 sm:flex-row">
+          <p className="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
+            <span
+              className="material-symbols-outlined text-primary-container text-sm"
+              aria-hidden="true"
+            >
+              tips_and_updates
+            </span>
+            {stepIndex + 1 < Math.ceil(stepCount / 2)
+              ? t("tipHalfway")
+              : t("tipAlmostDone")}
+          </p>
+          {showContinue ? (
+            <button
+              type="button"
+              onClick={goNext}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 font-headline-sm text-headline-sm text-on-primary shadow-md transition-all duration-200 hover:-translate-y-[1px] hover:shadow-lg active:scale-95 sm:w-auto"
+            >
+              {t("continue")}
+              <span className="material-symbols-outlined" aria-hidden="true">
+                arrow_forward
+              </span>
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={pending}
+              aria-busy={pending}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 font-headline-sm text-headline-sm text-on-primary shadow-md transition-all duration-200 hover:-translate-y-[1px] hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              {pending && (
+                <span
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-on-primary/40 border-t-on-primary"
+                  aria-hidden="true"
+                />
+              )}
+              {pending ? t("submitPending") : t("submit")}
+            </button>
+          )}
+        </div>
+      </footer>
     </form>
   );
 }
@@ -763,6 +804,11 @@ function groupBy<T>(items: T[], keyFn: (item: T) => string): Map<string, T[]> {
     }
   }
   return map;
+}
+
+/** The exam step (Q8) applies only once school is finished. */
+function isPastSchoolStage(stage: string | null | undefined): boolean {
+  return stage === "finished_school" || stage === "college" || stage === "other";
 }
 
 /**

@@ -2,12 +2,11 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
 import { signOut } from "@/lib/auth/actions";
 
-const NAV_LINKS = [
-  { href: "/discover", label: "Discover" },
-  { href: "/saved", label: "Saved" },
-  { href: "/compare", label: "Compare" },
-];
-
+/**
+ * Top app bar. Navigation lives in `AppNav` (the single nav concept —
+ * Discover/Saved/Compare/Profile), so this header only carries the brand
+ * and account actions, matching the mockup's minimal top bars.
+ */
 export async function Header() {
   const user = await getCurrentUser();
   const isAnonymous = user?.is_anonymous === true;
@@ -24,18 +23,6 @@ export async function Header() {
 
         {user && !isAnonymous ? (
           <nav className="flex items-center gap-6">
-            <ul className="hidden sm:flex items-center gap-6">
-              {NAV_LINKS.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="font-label-caps text-label-caps uppercase tracking-wide text-on-surface-variant hover:text-primary transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
             <Link
               href="/profile"
               className="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors"

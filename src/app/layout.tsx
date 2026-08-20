@@ -6,7 +6,6 @@ import "@fontsource/playfair-display/600.css";
 import "@fontsource/playfair-display/700.css";
 import "./globals.css";
 import "./fonts.css";
-import { Header } from "@/components/header";
 
 export const metadata: Metadata = {
   title: "Unifind — Find the universities that actually fit you",
@@ -30,7 +29,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="bg-background text-on-background font-body-md min-h-screen">
-        <Header />
         {children}
       </body>
     </html>

@@ -1,5 +1,5 @@
 import { hasLocale } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Link, redirect } from "@/i18n/navigation";
@@ -11,6 +11,7 @@ import { ComparisonService } from "@/lib/services/comparison.service";
 import { ProgrammesRepository } from "@/lib/repositories/programmes.repository";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import { ProgrammeCard } from "@/components/programme-card";
+import { AppShell } from "@/components/app-shell";
 
 export default async function DiscoverPage({
   params,
@@ -25,6 +26,7 @@ export default async function DiscoverPage({
   setRequestLocale(locale);
 
   const t = await getTranslations("Discover");
+  const uiLocale = await getLocale();
   const supabase = await createServerSupabaseClient();
 
   const {
@@ -119,36 +121,120 @@ export default async function DiscoverPage({
 
   // Get filter options
   const referenceDataRepo = new ReferenceDataRepository(supabase);
-  const [fieldsOfStudy, languages] = await Promise.all([
+  const [fieldsOfStudy, languages, countries] = await Promise.all([
     referenceDataRepo.listFieldsOfStudy(),
     referenceDataRepo.listLanguages(),
+    referenceDataRepo.listCountries(),
   ]);
+
+  // Profile summary chips (mockup "27 programmes" header): derived from
+  // the stored profile, shown only when one exists.
+  const profile = profileData?.profile ?? null;
+  const summaryChips = profile
+    ? [
+        profile.preferred_field_of_study_ids?.[0]
+          ? fieldsOfStudy.find((f) => f.id === profile.preferred_field_of_study_ids[0])?.name
+          : null,
+        profile.preferred_degree_level
+          ? {
+              foundation: t("degreeFoundation"),
+              bachelor: t("degreeBachelor"),
+              master: t("degreeMaster"),
+              phd: t("degreePhd"),
+            }[profile.preferred_degree_level] ?? profile.preferred_degree_level
+          : null,
+        profile.preferred_country_codes?.length
+          ? profile.preferred_country_codes
+              .map((code) => countries.find((c) => c.code === code)?.name)
+              .filter(Boolean)
+              .join(" + ")
+          : null,
+        profile.preferred_language_codes?.length
+          ? profile.preferred_language_codes
+              .map((code) => languages.find((l) => l.code === code)?.name)
+              .filter(Boolean)
+              .join(" + ")
+          : null,
+        profile.budget_max != null && profile.budget_currency
+          ? `${new Intl.NumberFormat(uiLocale, {
+              style: "currency",
+              currency: profile.budget_currency,
+              maximumFractionDigits: 0,
+            }).format(profile.budget_max)}/${t("perYear")}`
+          : null,
+      ].filter((chip): chip is string => Boolean(chip))
+    : [];
+
+  // Sort chips (mockup: Best Match / Lowest Cost / Top Academic /
+  // Filters) — plain links preserving the active search & filters.
+  const sortChips: { value: string; label: string }[] = [
+    { value: "best_match", label: t("sortBestMatch") },
+    { value: "lowest_cost", label: t("sortLowestCost") },
+    { value: "highest_match", label: t("sortTopAcademic") },
+  ];
+  const sortHref = (value: string) => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
+    if (fieldOfStudyFilter) params.set("fieldOfStudy", fieldOfStudyFilter);
+    if (degreeFilter) params.set("degree", degreeFilter);
+    if (languageFilter) params.set("language", languageFilter);
+    params.set("sort", value);
+    const qs = params.toString();
+    return `/${locale}/discover${qs ? `?${qs}` : ""}`;
+  };
+  // Highlight the top-scored programme as the "Top Match" card.
+  const topMatchIndex =
+    sortBy === "best_match" && profileData?.profile
+      ? entries.findIndex((e) => e.match?.overallScore != null)
+      : -1;
 
   // For search form action — uses GET to preserve query params (locale-aware)
 
   return (
-    <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-8">
+    <AppShell>
+      <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="space-y-1">
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
             {t("heading")}
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant">
-            {profileData?.profile ? t("description") : t("descriptionNoProfile")}
+            {profile ? t("description") : t("descriptionNoProfile")}
           </p>
         </div>
         <Link
           href="/profile"
           className="font-label-caps text-label-caps text-primary border border-primary rounded-full px-6 py-3 hover:bg-surface-container transition-all whitespace-nowrap"
         >
-          {profileData?.profile ? t("editProfile") : t("buildProfile")}
+          {profile ? t("editProfile") : t("buildProfile")}
         </Link>
       </div>
+
+      {profile && (
+        <section className="space-y-3" aria-label={t("profileSummaryLabel")}>
+          <p className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
+            {t("resultCount", { count: entries.length })}
+          </p>
+          {summaryChips.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {summaryChips.map((chip) => (
+                <span
+                  key={chip}
+                  className="font-label-caps text-label-caps text-on-surface-variant border border-outline-variant rounded-full px-4 py-2"
+                >
+                  {chip}
+                </span>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Search and filters (§35, §36) */}
       <form
         method="GET"
         action={`/${locale}/discover`}
+        id="filters"
         className="flex flex-col md:flex-row gap-3 items-end"
       >
         <div className="flex-1 min-w-0">
@@ -193,15 +279,6 @@ export default async function DiscoverPage({
               <option key={language.code} value={language.code}>{language.name}</option>
             ))}
           </select>
-          <select
-            name="sort"
-            defaultValue={sortBy}
-            className="font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3"
-          >
-            <option value="best_match">{t("sortBestMatch")}</option>
-            <option value="lowest_tuition">{t("sortLowestTuition")}</option>
-            <option value="lowest_cost">{t("sortLowestCost")}</option>
-          </select>
           <button
             type="submit"
             className="font-label-caps text-label-caps text-on-primary bg-primary rounded-full px-6 py-3 hover:bg-primary/90 transition-all active:scale-95"
@@ -210,6 +287,33 @@ export default async function DiscoverPage({
           </button>
         </div>
       </form>
+
+      {/* Sort chips (mockup: Best Match / Lowest Cost / Top Academic / Filters) */}
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t("searchLabel")}>
+        {sortChips.map((chip) => {
+          const active = sortBy === chip.value;
+          return (
+            <Link
+              key={chip.value}
+              href={sortHref(chip.value)}
+              aria-current={active ? "true" : undefined}
+              className={`font-label-caps text-label-caps rounded-full px-4 py-2 border transition-colors ${
+                active
+                  ? "bg-primary text-on-primary border-primary"
+                  : "border-outline-variant text-on-surface hover:border-primary"
+              }`}
+            >
+              {chip.label}
+            </Link>
+          );
+        })}
+        <Link
+          href="#filters"
+          className="font-label-caps text-label-caps rounded-full px-4 py-2 border border-outline-variant text-on-surface hover:border-primary transition-colors"
+        >
+          {t("filtersChip")}
+        </Link>
+      </div>
 
       {entries.length === 0 ? (
         <p className="font-body-md text-body-md text-on-surface-variant">
@@ -221,21 +325,28 @@ export default async function DiscoverPage({
             {t("resultCount", { count: entries.length })}
           </p>
           <div className="space-y-6">
-            {entries.map(({ programme, match }) => (
-              <ProgrammeCard
-                key={programme.id}
-                programme={programme}
-                match={match}
-                profile={matchProfile}
-                isSaved={savedProgrammeIds.has(programme.id)}
-                isInComparison={comparedProgrammeIds.has(programme.id)}
-                t={t}
-                defaultComparisonName={defaultComparisonName}
-              />
+            {entries.map(({ programme, match }, index) => (
+              <div key={programme.id} className="relative">
+                {index === topMatchIndex && (
+                  <span className="absolute -top-3 left-4 z-10 font-label-caps text-label-caps text-on-primary bg-primary rounded-full px-4 py-1">
+                    {t("topMatchLabel")}
+                  </span>
+                )}
+                <ProgrammeCard
+                  programme={programme}
+                  match={match}
+                  profile={matchProfile}
+                  isSaved={savedProgrammeIds.has(programme.id)}
+                  isInComparison={comparedProgrammeIds.has(programme.id)}
+                  t={t}
+                  defaultComparisonName={defaultComparisonName}
+                />
+              </div>
             ))}
           </div>
         </>
       )}
-    </main>
+      </main>
+    </AppShell>
   );
 }

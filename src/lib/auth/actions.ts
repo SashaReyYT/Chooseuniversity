@@ -1,8 +1,9 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { redirect } from "@/i18n/navigation";
 import type { AuthFormState } from "@/lib/auth/types";
 
 /**
@@ -33,7 +34,9 @@ export async function signUp(
     return { error: error.message };
   }
 
-  redirect("/onboarding");
+  const locale = await getLocale();
+  redirect({ href: "/onboarding", locale });
+  return { error: null };
 }
 
 export async function signIn(
@@ -54,12 +57,15 @@ export async function signIn(
     return { error: "Incorrect email or password." };
   }
 
-  redirect("/dashboard");
+  const locale = await getLocale();
+  redirect({ href: "/discover", locale });
+  return { error: null };
 }
 
 export async function signOut(): Promise<void> {
   const supabase = await createServerSupabaseClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
-  redirect("/");
+  const locale = await getLocale();
+  redirect({ href: "/", locale });
 }
