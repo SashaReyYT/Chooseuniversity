@@ -38,6 +38,8 @@ type UserNmtScoreRow = Database["public"]["Tables"]["user_nmt_scores"]["Row"];
 type UserQualificationRow =
   Database["public"]["Tables"]["user_qualifications"]["Row"];
 type UserTestScoreRow = Database["public"]["Tables"]["user_test_scores"]["Row"];
+type UserSubjectStrengthRow =
+  Database["public"]["Tables"]["user_subject_strengths"]["Row"];
 
 interface ProfileFormProps {
   locale: string;
@@ -51,6 +53,7 @@ interface ProfileFormProps {
   existingNmtScores: UserNmtScoreRow[];
   existingQualifications: UserQualificationRow[];
   existingTestScores: UserTestScoreRow[];
+  existingSubjectStrengths: UserSubjectStrengthRow[];
 }
 
 // ---------------------------------------------------------------------------
@@ -117,6 +120,17 @@ const MATH_BACKGROUND_LABEL_KEYS = {
   weak: "mathBackgroundWeak",
   not_sure: "mathBackgroundNotSure",
 } as const satisfies Record<MathBackground, string>;
+
+// Subject self-rating (the section shown while still in school) maps to
+// `user_subject_strengths.level`, whose check constraint only accepts
+// good/average/poor — unlike the profile's own `math_background` column,
+// which takes the full 5-level scale above.
+const SUBJECT_STRENGTH_LEVELS = ["good", "average", "poor"] as const;
+const SUBJECT_STRENGTH_LABEL_KEYS = {
+  good: "subjectGood",
+  average: "subjectAverage",
+  poor: "subjectWeak",
+} as const;
 
 const ADMISSION_PREFERENCES: AdmissionPreference[] = [
   "safest", "balanced", "competitive", "no_preference",
@@ -216,6 +230,8 @@ interface FormValues {
   nmt_taken: NmtTaken;
   nmt_subject_codes: string[];
   nmt_scores: Record<string, string>;
+  subject_strength_codes: string[];
+  subject_strengths: Record<string, MathBackground | "">;
   qualification_ids: string[];
   qualification_scores: Record<string, string>;
   qualification_years: Record<string, string>;
@@ -234,6 +250,13 @@ function buildInitialValues(props: ProfileFormProps): FormValues {
   const nmtScores: Record<string, string> = {};
   for (const row of props.existingNmtScores) {
     nmtScores[row.subject_code] = String(row.score);
+  }
+
+  const subjectStrengths: Record<string, MathBackground | ""> = {};
+  for (const row of props.existingSubjectStrengths) {
+    // Stored levels are always the 3-point subset (good/average/poor),
+    // which is a valid subset of the math_background scale used here.
+    subjectStrengths[row.subject_code] = row.level as MathBackground;
   }
 
   const qualificationScores: Record<string, string> = {};
@@ -279,6 +302,8 @@ function buildInitialValues(props: ProfileFormProps): FormValues {
     nmt_taken: props.existingNmtScores.length > 0 ? "yes" : "",
     nmt_subject_codes: props.existingNmtScores.map((row) => row.subject_code),
     nmt_scores: nmtScores,
+    subject_strength_codes: props.existingSubjectStrengths.map((row) => row.subject_code),
+    subject_strengths: subjectStrengths,
     qualification_ids: props.existingQualifications.map((row) => row.qualification_id),
     qualification_scores: qualificationScores,
     qualification_years: qualificationYears,
@@ -941,77 +966,153 @@ export function ProfileForm(props: ProfileFormProps) {
           {t("sectionTestsQualifications")}
         </legend>
 
-        {/* §20 NMT — conditional flow */}
-        <div className="space-y-3">
-          <label htmlFor="nmt_taken" className={formLabelClassName}>
-            {t("nmtTakenLabel")}
-          </label>
-          <select
-            id="nmt_taken"
-            name="nmt_taken"
-            value={values.nmt_taken}
-            onChange={(event) => setField("nmt_taken", event.target.value as NmtTaken)}
-            className={formSelectClassName}
-          >
-            <option value="">{t("selectPlaceholder")}</option>
-            {NMT_TAKEN_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {t(NMT_TAKEN_LABEL_KEYS[option])}
-              </option>
-            ))}
-          </select>
+        {/* §20 NMT — only relevant once the user has actually finished
+            school and could have sat the exam. Someone still in 9th/10th/
+            11th grade can't report a score they don't have yet, so they get
+            a subject self-rating instead (below) rather than this block. */}
+        {values.has_graduated === "yes" && (
+          <div className="space-y-3">
+            <label htmlFor="nmt_taken" className={formLabelClassName}>
+              {t("nmtTakenLabel")}
+            </label>
+            <select
+              id="nmt_taken"
+              name="nmt_taken"
+              value={values.nmt_taken}
+              onChange={(event) => setField("nmt_taken", event.target.value as NmtTaken)}
+              className={formSelectClassName}
+            >
+              <option value="">{t("selectPlaceholder")}</option>
+              {NMT_TAKEN_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {t(NMT_TAKEN_LABEL_KEYS[option])}
+                </option>
+              ))}
+            </select>
 
-          {values.nmt_taken === "yes" && (
-            <div className="space-y-3 rounded-lg border border-outline-variant/40 p-4">
-              <span className={formLabelClassName}>{t("nmtSubjectsLabel")}</span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {nmtSubjects.map((subject) => {
-                  const checked = values.nmt_subject_codes.includes(subject.code);
-                  return (
-                    <div key={subject.code} className="space-y-1">
-                      <label className={formCheckboxOptionClassName}>
-                        <input
-                          type="checkbox"
-                          name="nmt_subject_codes"
-                          value={subject.code}
-                          checked={checked}
-                          onChange={(event) =>
-                            toggleArrayValue(
-                              "nmt_subject_codes",
-                              subject.code,
-                              event.target.checked,
-                            )
-                          }
-                        />
-                        {subject.name}
-                      </label>
-                      {checked && (
-                        <input
-                          type="number"
-                          min="0"
-                          max="200"
-                          name={`nmt_score__${subject.code}`}
-                          placeholder={t("nmtScoreLabel")}
-                          value={values.nmt_scores[subject.code] ?? ""}
-                          onChange={(event) =>
-                            setValues((current) => ({
-                              ...current,
-                              nmt_scores: {
-                                ...current.nmt_scores,
-                                [subject.code]: event.target.value,
-                              },
-                            }))
-                          }
-                          className={formInputClassName}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
+            {values.nmt_taken === "yes" && (
+              <div className="space-y-3 rounded-lg border border-outline-variant/40 p-4">
+                <span className={formLabelClassName}>{t("nmtSubjectsLabel")}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {nmtSubjects.map((subject) => {
+                    const checked = values.nmt_subject_codes.includes(subject.code);
+                    return (
+                      <div key={subject.code} className="space-y-1">
+                        <label className={formCheckboxOptionClassName}>
+                          <input
+                            type="checkbox"
+                            name="nmt_subject_codes"
+                            value={subject.code}
+                            checked={checked}
+                            onChange={(event) =>
+                              toggleArrayValue(
+                                "nmt_subject_codes",
+                                subject.code,
+                                event.target.checked,
+                              )
+                            }
+                          />
+                          {subject.name}
+                        </label>
+                        {checked && (
+                          <input
+                            type="number"
+                            min="0"
+                            max="200"
+                            name={`nmt_score__${subject.code}`}
+                            placeholder={t("nmtScoreLabel")}
+                            value={values.nmt_scores[subject.code] ?? ""}
+                            onChange={(event) =>
+                              setValues((current) => ({
+                                ...current,
+                                nmt_scores: {
+                                  ...current.nmt_scores,
+                                  [subject.code]: event.target.value,
+                                },
+                              }))
+                            }
+                            className={formInputClassName}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Subject self-rating — shown instead of the NMT question while
+            the user hasn't graduated school yet (has_graduated === "no").
+            Reuses the same subject catalog, with the 3-point good/average/
+            poor scale the `user_subject_strengths.level` column accepts
+            (the 5-level scale is only valid for the profile's own
+            math_background field). */}
+        {values.has_graduated === "no" && (
+          <div className="space-y-3">
+            <span className={formLabelClassName}>{t("subjectStrengthsLabel")}</span>
+            <p className={formHelperTextClassName}>{t("subjectStrengthsHelp")}</p>
+            <div className="space-y-2 rounded-lg border border-outline-variant/40 p-4">
+              {nmtSubjects.map((subject) => (
+                <div
+                  key={subject.code}
+                  className="flex flex-wrap items-center justify-between gap-2"
+                >
+                  <label
+                    htmlFor={`subject_strength__${subject.code}`}
+                    className="font-body-md text-body-md text-primary"
+                  >
+                    {subject.name}
+                  </label>
+                  {values.subject_strength_codes.includes(subject.code) && (
+                    <input
+                      type="hidden"
+                      name="subject_strength_codes"
+                      value={subject.code}
+                    />
+                  )}
+                  <select
+                    id={`subject_strength__${subject.code}`}
+                    name={`subject_strength__${subject.code}`}
+                    value={values.subject_strengths[subject.code] ?? ""}
+                    onChange={(event) => {
+                      const level = event.target.value as MathBackground | "";
+                      setValues((current) => {
+                        const isSelected = current.subject_strength_codes.includes(
+                          subject.code,
+                        );
+                        return {
+                          ...current,
+                          subject_strengths: {
+                            ...current.subject_strengths,
+                            [subject.code]: level,
+                          },
+                          subject_strength_codes:
+                            level === ""
+                              ? current.subject_strength_codes.filter(
+                                  (code) => code !== subject.code,
+                                )
+                              : isSelected
+                                ? current.subject_strength_codes
+                                : [...current.subject_strength_codes, subject.code],
+                        };
+                      });
+                    }}
+                    className={formSelectClassName}
+                  >
+                    <option value="">{t("selectPlaceholder")}</option>
+                    {SUBJECT_STRENGTH_LEVELS.map((option) => (
+                      <option key={option} value={option}>
+                        {t(SUBJECT_STRENGTH_LABEL_KEYS[option])}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* §21 Other qualifications */}
         <div className="space-y-3">

@@ -4,9 +4,18 @@ import { UserProfileRepository } from "@/lib/repositories/user-profile.repositor
 import { UserNmtScoresRepository } from "@/lib/repositories/user-nmt-scores.repository";
 import { UserQualificationsRepository } from "@/lib/repositories/user-qualifications.repository";
 import { UserTestScoresRepository } from "@/lib/repositories/user-test-scores.repository";
-import { UserLanguageProficiencyRepository } from "@/lib/repositories/user-language-proficiency.repository";
 import { UserSubjectStrengthsRepository } from "@/lib/repositories/user-subject-strengths.repository";
+import {
+  UserLanguageProficiencyRepository,
+  type LanguageProficiencyInput,
+} from "@/lib/repositories/user-language-proficiency.repository";
 import type { CefrLevel } from "@/types/database";
+
+/** Matches the `user_subject_strengths.level` check constraint — a plainer
+ * 3-point subset of the `math_background` enum (`poor`, not `weak`), used
+ * for the subject self-rating (onboarding Q9 and the profile form), not the
+ * (currently unused) profile-level field. */
+export type SubjectStrengthLevel = "good" | "average" | "poor";
 
 type UserProfileInsert =
   Database["public"]["Tables"]["user_profiles"]["Insert"];
@@ -16,7 +25,9 @@ type UserProfileUpdate =
 export interface NmtScoreInput {
   subjectCode: string;
   score: number;
-  scoreIsExpected?: boolean;
+  maxScore?: number;
+  testYear?: number | null;
+  isExpected?: boolean;
 }
 
 export interface QualificationScoreInput {
@@ -26,10 +37,15 @@ export interface QualificationScoreInput {
 }
 
 export interface EnglishTestScoreInput {
-  qualificationId: string | null;
+  qualificationId: string;
   testType: string;
   score: number;
   scoreDisplay: string;
+}
+
+export interface SubjectStrengthInput {
+  subjectCode: string;
+  level: SubjectStrengthLevel;
 }
 
 /**
@@ -48,16 +64,16 @@ export class ProfileService {
   private readonly nmtScores: UserNmtScoresRepository;
   private readonly qualifications: UserQualificationsRepository;
   private readonly testScores: UserTestScoresRepository;
-  private readonly languageProficiency: UserLanguageProficiencyRepository;
   private readonly subjectStrengths: UserSubjectStrengthsRepository;
+  private readonly languageProficiency: UserLanguageProficiencyRepository;
 
   constructor(supabase: SupabaseClient<Database>) {
     this.userProfile = new UserProfileRepository(supabase);
     this.nmtScores = new UserNmtScoresRepository(supabase);
     this.qualifications = new UserQualificationsRepository(supabase);
     this.testScores = new UserTestScoresRepository(supabase);
-    this.languageProficiency = new UserLanguageProficiencyRepository(supabase);
     this.subjectStrengths = new UserSubjectStrengthsRepository(supabase);
+    this.languageProficiency = new UserLanguageProficiencyRepository(supabase);
   }
 
   getForUser(userId: string) {
@@ -70,16 +86,29 @@ export class ProfileService {
    * outside `user_profiles`.
    */
   async getFullProfileForUser(userId: string) {
-    const [profile, nmtScores, qualifications, testScores, languageProficiency, subjectStrengths] =
-      await Promise.all([
-        this.userProfile.findByUserId(userId),
-        this.nmtScores.listByUserId(userId),
-        this.qualifications.listByUserId(userId),
-        this.testScores.listByUserId(userId),
-        this.languageProficiency.listByUserId(userId),
-        this.subjectStrengths.listByUserId(userId),
-      ]);
-    return { profile, nmtScores, qualifications, testScores, languageProficiency, subjectStrengths };
+    const [
+      profile,
+      nmtScores,
+      qualifications,
+      testScores,
+      subjectStrengths,
+      languageProficiency,
+    ] = await Promise.all([
+      this.userProfile.findByUserId(userId),
+      this.nmtScores.listByUserId(userId),
+      this.qualifications.listByUserId(userId),
+      this.testScores.listByUserId(userId),
+      this.subjectStrengths.listByUserId(userId),
+      this.languageProficiency.listByUserId(userId),
+    ]);
+    return {
+      profile,
+      nmtScores,
+      qualifications,
+      testScores,
+      subjectStrengths,
+      languageProficiency,
+    };
   }
 
   async upsert(
@@ -110,7 +139,9 @@ export class ProfileService {
           user_id: userId,
           subject_code: entry.subjectCode,
           score: entry.score,
-          score_is_expected: entry.scoreIsExpected ?? false,
+          max_score: entry.maxScore ?? 200,
+          test_year: entry.testYear ?? null,
+          score_is_expected: entry.isExpected ?? false,
         }),
       ),
     );
@@ -120,20 +151,15 @@ export class ProfileService {
     );
   }
 
-  /** Replaces the user's per-language proficiency answers (onboarding Q7). */
+  /**
+   * Replaces the user's per-language self-assessed proficiency (onboarding
+   * Q7) with exactly the set submitted.
+   */
   async replaceLanguageProficiency(
     userId: string,
-    entries: { languageCode: string; level: "good" | "average" | "poor" | "not_sure" }[],
+    entries: LanguageProficiencyInput[],
   ) {
     await this.languageProficiency.replace(userId, entries);
-  }
-
-  /** Replaces the user's per-subject strength answers (onboarding Q9). */
-  async replaceSubjectStrengths(
-    userId: string,
-    entries: { subjectCode: string; level: "good" | "average" | "poor" }[],
-  ) {
-    await this.subjectStrengths.replace(userId, entries);
   }
 
   /**
@@ -183,5 +209,27 @@ export class ProfileService {
       score_display: entry.scoreDisplay,
       cefr_equivalent: cefrEquivalent,
     });
+  }
+
+  /**
+   * Replaces the user's self-assessed subject strengths (asked instead of
+   * NMT scores when `has_graduated` is false — a current school student has
+   * no exam result to report yet, but can say how strong they are in a
+   * subject). Reuses the `math_background` scale for consistency.
+   */
+  async replaceSubjectStrengths(userId: string, strengths: SubjectStrengthInput[]) {
+    await Promise.all(
+      strengths.map((entry) =>
+        this.subjectStrengths.upsert({
+          user_id: userId,
+          subject_code: entry.subjectCode,
+          level: entry.level,
+        }),
+      ),
+    );
+    await this.subjectStrengths.deleteNotIn(
+      userId,
+      strengths.map((entry) => entry.subjectCode),
+    );
   }
 }

@@ -2,7 +2,16 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { QuickMatchService } from "@/lib/services/quick-match.service";
-import type { QuickMatchActionState } from "@/lib/quick-match/quick-match-state";
+
+export type QuickMatchActionState = {
+  count: number | null;
+  submitted: boolean;
+};
+
+export const initialQuickMatchActionState: QuickMatchActionState = {
+  count: null,
+  submitted: false,
+};
 
 /**
  * Server action backing the landing page's "Quick Match Profile" (spec

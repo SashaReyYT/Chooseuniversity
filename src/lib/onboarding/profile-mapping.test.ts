@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  isGraduateStage,
+  isExamStage,
   listField,
   mapEnglishLevel,
   mapMathStrength,
@@ -28,14 +28,20 @@ describe("mapStage", () => {
     }
   });
 
-  it("maps graduates (finished school / college) to graduated", () => {
-    for (const stage of ["finished_school", "college"]) {
-      expect(mapStage(stage)).toEqual({
-        currentEducationLevel: "high_school",
-        hasGraduated: true,
-        preferredDegreeLevel: "bachelor",
-      });
-    }
+  it("maps graduates (finished school) to graduated", () => {
+    expect(mapStage("finished_school")).toEqual({
+      currentEducationLevel: "high_school",
+      hasGraduated: true,
+      preferredDegreeLevel: "bachelor",
+    });
+  });
+
+  it("maps college students as not graduated yet (still pre-bachelor's)", () => {
+    expect(mapStage("college")).toEqual({
+      currentEducationLevel: "high_school",
+      hasGraduated: false,
+      preferredDegreeLevel: "bachelor",
+    });
   });
 
   it("returns nulls for unknown stages", () => {
@@ -52,14 +58,16 @@ describe("mapStage", () => {
   });
 });
 
-describe("isGraduateStage", () => {
-  it("is true only for finished_school and college", () => {
-    expect(isGraduateStage("finished_school")).toBe(true);
-    expect(isGraduateStage("college")).toBe(true);
-    expect(isGraduateStage("grade_11")).toBe(false);
-    expect(isGraduateStage("grade_9")).toBe(false);
-    expect(isGraduateStage("other")).toBe(false);
-    expect(isGraduateStage(null)).toBe(false);
+describe("isExamStage", () => {
+  it("is true for any stage past grade 10", () => {
+    expect(isExamStage("grade_11")).toBe(true);
+    expect(isExamStage("finished_school")).toBe(true);
+    expect(isExamStage("college")).toBe(true);
+    expect(isExamStage("other")).toBe(true);
+    expect(isExamStage("grade_10")).toBe(false);
+    expect(isExamStage("grade_9")).toBe(false);
+    expect(isExamStage(null)).toBe(false);
+    expect(isExamStage("")).toBe(false);
   });
 });
 

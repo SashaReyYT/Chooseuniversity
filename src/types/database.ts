@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -1168,13 +1168,6 @@ export type Database = {
             referencedRelation: "languages"
             referencedColumns: ["code"]
           },
-          {
-            foreignKeyName: "user_language_proficiency_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_match_weights: {
@@ -1276,17 +1269,19 @@ export type Database = {
             | null
           current_gpa: number | null
           current_gpa_scale: number | null
+          education_stage: Database["public"]["Enums"]["education_stage"] | null
           english_level: Database["public"]["Enums"]["cefr_level"] | null
           full_name: string | null
           graduation_year: number | null
           has_graduated: boolean | null
           id: string
+          living_cost_mode: Database["public"]["Enums"]["budget_mode"]
           location_preference_type:
             | Database["public"]["Enums"]["location_preference_type"]
             | null
           math_background: Database["public"]["Enums"]["math_background"] | null
-          nationality_country_code: string | null
           national_exam_type: string | null
+          nationality_country_code: string | null
           open_to_additional_exams: boolean | null
           open_to_other_cities: boolean | null
           preferred_cities: string[]
@@ -1310,8 +1305,6 @@ export type Database = {
           wants_scholarship: boolean | null
           wants_stay_after_graduation: boolean | null
           wants_work_during_study: boolean | null
-          education_stage: Database["public"]["Enums"]["education_stage"] | null
-          living_cost_mode: Database["public"]["Enums"]["budget_mode"]
         }
         Insert: {
           admission_preference?:
@@ -1328,19 +1321,23 @@ export type Database = {
             | null
           current_gpa?: number | null
           current_gpa_scale?: number | null
+          education_stage?:
+            | Database["public"]["Enums"]["education_stage"]
+            | null
           english_level?: Database["public"]["Enums"]["cefr_level"] | null
           full_name?: string | null
           graduation_year?: number | null
           has_graduated?: boolean | null
           id: string
+          living_cost_mode?: Database["public"]["Enums"]["budget_mode"]
           location_preference_type?:
             | Database["public"]["Enums"]["location_preference_type"]
             | null
           math_background?:
             | Database["public"]["Enums"]["math_background"]
             | null
-          nationality_country_code?: string | null
           national_exam_type?: string | null
+          nationality_country_code?: string | null
           open_to_additional_exams?: boolean | null
           open_to_other_cities?: boolean | null
           preferred_cities?: string[]
@@ -1364,10 +1361,6 @@ export type Database = {
           wants_scholarship?: boolean | null
           wants_stay_after_graduation?: boolean | null
           wants_work_during_study?: boolean | null
-          education_stage?:
-            | Database["public"]["Enums"]["education_stage"]
-            | null
-          living_cost_mode?: Database["public"]["Enums"]["budget_mode"]
         }
         Update: {
           admission_preference?:
@@ -1384,19 +1377,23 @@ export type Database = {
             | null
           current_gpa?: number | null
           current_gpa_scale?: number | null
+          education_stage?:
+            | Database["public"]["Enums"]["education_stage"]
+            | null
           english_level?: Database["public"]["Enums"]["cefr_level"] | null
           full_name?: string | null
           graduation_year?: number | null
           has_graduated?: boolean | null
           id?: string
+          living_cost_mode?: Database["public"]["Enums"]["budget_mode"]
           location_preference_type?:
             | Database["public"]["Enums"]["location_preference_type"]
             | null
           math_background?:
             | Database["public"]["Enums"]["math_background"]
             | null
-          nationality_country_code?: string | null
           national_exam_type?: string | null
+          nationality_country_code?: string | null
           open_to_additional_exams?: boolean | null
           open_to_other_cities?: boolean | null
           preferred_cities?: string[]
@@ -1420,10 +1417,6 @@ export type Database = {
           wants_scholarship?: boolean | null
           wants_stay_after_graduation?: boolean | null
           wants_work_during_study?: boolean | null
-          education_stage?:
-            | Database["public"]["Enums"]["education_stage"]
-            | null
-          living_cost_mode?: Database["public"]["Enums"]["budget_mode"]
         }
         Relationships: [
           {
@@ -1439,6 +1432,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "fields_of_study"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_profiles_residence_country_code_fkey"
+            columns: ["residence_country_code"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["code"]
           },
         ]
       }
@@ -1496,15 +1496,7 @@ export type Database = {
           subject_code?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_subject_strengths_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_test_scores: {
         Row: {
@@ -1741,6 +1733,14 @@ export const Constants = {
       cefr_level: ["a1", "a2", "b1", "b2", "c1", "c2", "native", "not_sure"],
       degree_level: ["foundation", "bachelor", "master", "phd"],
       education_level: ["high_school", "bachelor", "master"],
+      education_stage: [
+        "grade_9",
+        "grade_10",
+        "grade_11",
+        "finished_school",
+        "college",
+        "other",
+      ],
       location_preference_type: [
         "specific_city",
         "any_city",
@@ -1770,11 +1770,6 @@ export const Constants = {
   },
 } as const
 
-// ---------------------------------------------------------------
-// Compatibility aliases — named exports the application code
-// imports from this module (generated types expose enums only via
-// Database["public"]["Enums"] / Enums<>).
-// ---------------------------------------------------------------
 export type DegreeLevel = Enums<"degree_level">;
 export type TuitionFeePeriod = Enums<"tuition_fee_period">;
 export type EducationLevel = Enums<"education_level">;

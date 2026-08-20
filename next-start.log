@@ -1,0 +1,13 @@
+▲ Next.js 16.3.1
+- Local:         http://localhost:3999
+- Network:       http://26.140.21.164:3999
+✓ Ready in 249ms
+✓ Running next.config.ts took 77ms
+⚠ Missing `origin` header from a forwarded Server Actions request.
+⨯ TypeError: Cannot read properties of undefined (reading 'get')
+    at p (D:\проекты\Unikchoose\.next\server\chunks\ssr\_0my1_07._.js:1:573)
+    at t (D:\проекты\Unikchoose\.next\server\chunks\ssr\_0my1_07._.js:1:1053)
+⨯ TypeError: Cannot read properties of undefined (reading 'get')
+    at p (D:\проекты\Unikchoose\.next\server\chunks\ssr\_0my1_07._.js:1:573)
+    at t (D:\проекты\Unikchoose\.next\server\chunks\ssr\_0my1_07._.js:1:1053)
+⚠ Missing `origin` header from a forwarded Server Actions request.

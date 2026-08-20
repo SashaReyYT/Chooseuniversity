@@ -5,12 +5,15 @@ import { routing } from "@/i18n/routing";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import { ProfileService } from "@/lib/services/profile.service";
-import { OnboardingForm } from "./onboarding-form";
+import { OnboardingForm } from "@/components/onboarding-form";
 
 /**
- * Multi-step profile wizard: every fieldset stays mounted (hidden via
- * CSS), so the single form POST collects every step's values regardless
- * of which step was last visible — see `OnboardingForm`.
+ * Multi-step adaptive questionnaire (11 questions): residence → target
+ * countries → education stage → start year → field of study → language →
+ * proficiency → national exam → subject strengths → budget →
+ * requirements. Every fieldset stays mounted (hidden via CSS), so the
+ * single form POST collects every step's values regardless of which step
+ * was last visible — see `OnboardingForm`.
  */
 export default async function OnboardingPage({
   params,
@@ -29,22 +32,44 @@ export default async function OnboardingPage({
   } = await supabase.auth.getUser();
 
   const referenceData = new ReferenceDataRepository(supabase);
-  const [countries, languages, fieldsOfStudy, existingProfile] =
-    await Promise.all([
-      referenceData.listCountries(),
-      referenceData.listLanguages(),
-      referenceData.listFieldsOfStudy(),
-      user ? new ProfileService(supabase).getFullProfileForUser(user.id) : null,
-    ]);
+  const [
+    countries,
+    supportedCountries,
+    languages,
+    fieldsOfStudy,
+    nmtSubjects,
+    fullProfile,
+  ] = await Promise.all([
+    referenceData.listCountries(),
+    referenceData.listSupportedCountries(),
+    referenceData.listLanguages(),
+    referenceData.listFieldsOfStudy(),
+    referenceData.listNmtSubjects(),
+    user
+      ? new ProfileService(supabase).getFullProfileForUser(user.id)
+      : {
+          profile: null,
+          nmtScores: [],
+          qualifications: [],
+          testScores: [],
+          subjectStrengths: [],
+          languageProficiency: [],
+        },
+  ]);
 
   return (
     <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-10 md:py-16">
       <OnboardingForm
         locale={locale}
         countries={countries}
+        supportedCountries={supportedCountries}
         languages={languages}
         fieldsOfStudy={fieldsOfStudy}
-        existingProfile={existingProfile}
+        nmtSubjects={nmtSubjects}
+        existingProfile={fullProfile.profile}
+        existingNmtScores={fullProfile.nmtScores}
+        existingSubjectStrengths={fullProfile.subjectStrengths}
+        existingLanguageProficiency={fullProfile.languageProficiency}
       />
     </main>
   );

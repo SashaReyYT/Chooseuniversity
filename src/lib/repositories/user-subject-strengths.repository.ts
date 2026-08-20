@@ -2,18 +2,15 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 
 type TypedSupabaseClient = SupabaseClient<Database>;
-type SubjectStrengthRow =
+type UserSubjectStrengthRow =
   Database["public"]["Tables"]["user_subject_strengths"]["Row"];
-
-export interface SubjectStrengthInput {
-  subjectCode: string;
-  level: "good" | "average" | "poor";
-}
+type UserSubjectStrengthInsert =
+  Database["public"]["Tables"]["user_subject_strengths"]["Insert"];
 
 export class UserSubjectStrengthsRepository {
   constructor(private readonly supabase: TypedSupabaseClient) {}
 
-  async listByUserId(userId: string): Promise<SubjectStrengthRow[]> {
+  async listByUserId(userId: string): Promise<UserSubjectStrengthRow[]> {
     const { data, error } = await this.supabase
       .from("user_subject_strengths")
       .select("*")
@@ -23,36 +20,33 @@ export class UserSubjectStrengthsRepository {
     return data ?? [];
   }
 
-  /**
-   * Replaces this user's subject-strength answers with exactly the set
-   * submitted — a subject un-selected on a later run of the questionnaire
-   * has its strength row removed rather than left stale.
-   */
-  async replace(
-    userId: string,
-    entries: SubjectStrengthInput[],
-  ): Promise<void> {
-    if (entries.length > 0) {
-      const { error } = await this.supabase
-        .from("user_subject_strengths")
-        .upsert(
-          entries.map((entry) => ({
-            user_id: userId,
-            subject_code: entry.subjectCode,
-            level: entry.level,
-          })),
-          { onConflict: "user_id,subject_code" },
-        );
-      if (error) throw error;
-    }
+  /** Insert or replace this user's self-rating for a subject (one row per user+subject, per the schema's unique constraint). */
+  async upsert(
+    strength: UserSubjectStrengthInsert,
+  ): Promise<UserSubjectStrengthRow> {
+    const { data, error } = await this.supabase
+      .from("user_subject_strengths")
+      .upsert(strength, { onConflict: "user_id,subject_code" })
+      .select("*")
+      .single();
 
-    const keepCodes =
-      entries.length > 0 ? entries.map((entry) => entry.subjectCode) : [""];
-    const { error: deleteError } = await this.supabase
+    if (error) throw error;
+    return data;
+  }
+
+  /** Removes subject ratings the user un-selected on a later submission. */
+  async deleteNotIn(userId: string, keepSubjectCodes: string[]): Promise<void> {
+    let query = this.supabase
       .from("user_subject_strengths")
       .delete()
-      .eq("user_id", userId)
-      .not("subject_code", "in", `(${keepCodes.join(",")})`);
-    if (deleteError) throw deleteError;
+      .eq("user_id", userId);
+
+    query =
+      keepSubjectCodes.length > 0
+        ? query.not("subject_code", "in", `(${keepSubjectCodes.join(",")})`)
+        : query;
+
+    const { error } = await query;
+    if (error) throw error;
   }
 }

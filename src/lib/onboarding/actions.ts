@@ -7,24 +7,70 @@ import type { OnboardingActionState } from "@/lib/onboarding/types";
 import {
   EDUCATION_STAGES,
   LANG_PROFICIENCY_PREFIX,
-  NATIONAL_EXAM_TYPES,
-  NMT_SUBJECTS,
-  NMT_SUBJECT_PREFIX,
+  NMT_BRANCHES,
+  NMT_SCORE_PREFIX,
   PROFICIENCY_LEVELS,
-  START_YEARS,
+  START_YEAR_CHOICES,
   STRENGTH_LEVELS,
-  SUBJECT_CODES,
   SUBJECT_STRENGTH_PREFIX,
-  isGraduateStage,
+  isExamStage,
   listField,
   mapEnglishLevel,
   mapMathStrength,
-  mapStage,
-  optionalNumber,
   optionalText,
   parseBudgetMode,
   parseEnum,
 } from "@/lib/onboarding/profile-mapping";
+import type {
+  EducationLevel,
+  EducationStage,
+  DegreeLevel,
+  LocationPreferenceType,
+} from "@/types/database";
+
+/**
+ * Which national exam question (onboarding Q8) applies to a resident of
+ * a given country. Only Ukraine is wired up today — everyone else skips
+ * Q8 entirely (see the matching UI-side map in `onboarding-form.tsx`) —
+ * extend both maps together when adding a country's exam.
+ */
+const RESIDENCE_EXAM_MAP: Record<string, "nmt"> = { UA: "nmt" };
+
+/**
+ * Q3 (education stage) also decides `current_education_level`,
+ * `has_graduated`, and `preferred_degree_level` — asked as a single
+ * question rather than three, per the migration's design (see
+ * `supabase/migrations/0018_questionnaire_redesign_sql`).
+ * "college" is treated as still-pre-bachelor's, since in the
+ * Ukrainian/CIS system a "коледж" doesn't reliably imply a completed
+ * higher-education degree.
+ */
+function deriveFromEducationStage(stage: EducationStage | null): {
+  currentEducationLevel: EducationLevel | null;
+  hasGraduated: boolean | null;
+  preferredDegreeLevel: DegreeLevel | null;
+} {
+  switch (stage) {
+    case "grade_9":
+    case "grade_10":
+    case "grade_11":
+      return { currentEducationLevel: "high_school", hasGraduated: false, preferredDegreeLevel: "bachelor" };
+    case "finished_school":
+      return { currentEducationLevel: "high_school", hasGraduated: true, preferredDegreeLevel: "bachelor" };
+    case "college":
+      return { currentEducationLevel: "high_school", hasGraduated: false, preferredDegreeLevel: "bachelor" };
+    default:
+      return { currentEducationLevel: null, hasGraduated: null, preferredDegreeLevel: null };
+  }
+}
+
+function deriveStartYear(choice: (typeof START_YEAR_CHOICES)[number] | null): number | null {
+  // "later" and "not_sure" both mean "no specific year" — start_year is a
+  // nullable integer column with nowhere honest to store the distinction,
+  // so both become null. The remaining choices are calendar years.
+  if (choice === "later" || choice === "not_sure") return null;
+  return choice ? Number(choice) : null;
+}
 
 export async function submitOnboardingAction(
   locale: string,
@@ -37,146 +83,171 @@ export async function submitOnboardingAction(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    // Shouldn't happen — `src/proxy.ts` establishes an anonymous session for
+    // Shouldn't happen — src/proxy.ts establishes an anonymous session for
     // every visitor — but fail loudly rather than silently no-op if it
     // somehow does.
     return { error: "No active session. Please reload the page and try again." };
   }
 
   const residenceCountryCode = optionalText(formData, "residence_country_code");
-  const residenceCity = optionalText(formData, "residence_city");
   const educationStage = parseEnum(formData.get("education_stage"), EDUCATION_STAGES);
-  const stageMapping = mapStage(educationStage);
+  const { currentEducationLevel, hasGraduated, preferredDegreeLevel } =
+    deriveFromEducationStage(educationStage);
 
-  const startYearRaw = parseEnum(formData.get("start_year"), START_YEARS);
-  const startYear = startYearRaw ? Number(startYearRaw) : null;
+  const startYearChoice = parseEnum(formData.get("start_year_choice"), START_YEAR_CHOICES);
+  const startYear = deriveStartYear(startYearChoice);
 
-  const budgetMode = parseBudgetMode(formData.get("budget_mode"));
-  const livingCostMode = parseBudgetMode(formData.get("living_cost_mode"));
+  // Q5 — field of study: one specific programme (primary), which also
+  // counts as the only preferred field in onboarding (the full profile
+  // form still supports a multi-select of additional fields).
+  const primaryFieldId = optionalText(formData, "primary_field_of_study_id");
+  const preferredFieldIds = new Set(
+    formData.getAll("preferred_field_of_study_ids").map(String),
+  );
+  if (primaryFieldId) preferredFieldIds.add(primaryFieldId);
 
-  const preferredCountries = listField(formData, "preferred_country_codes");
-  const preferredFields = listField(formData, "preferred_field_of_study_ids");
-  // The first selected field is the primary one (the UI marks it).
-  const primaryField = preferredFields[0] ?? null;
-  const preferredLanguages = listField(formData, "preferred_language_codes");
+  const preferredCountryCodes = listField(formData, "preferred_country_codes");
+  const preferredLanguageCodes = listField(formData, "preferred_language_codes");
 
-  // Q7 — one proficiency per chosen language: `lang_<code>`.
-  const languageProficiency = preferredLanguages.flatMap((code) => {
-    const level = parseEnum(
-      formData.get(`${LANG_PROFICIENCY_PREFIX}${code}`),
-      PROFICIENCY_LEVELS,
+  // Q10 — budget tiers (no exact amounts in onboarding; the profile form
+  // still offers them).
+  const budgetMode = parseBudgetMode(formData.get("budget_mode")) ?? "unknown";
+  const livingCostMode = parseBudgetMode(formData.get("living_cost_mode")) ?? "unknown";
+
+  // Q11 — extra requirements, all multi-select checkboxes. "nothing"
+  // ("Don't care") wins over everything else and clears the profile's
+  // requirement fields.
+  const nothingSelected = formData.get("nothing") != null;
+  const wantsScholarship = !nothingSelected && formData.get("wants_scholarship") != null;
+  const wantsDormitory = !nothingSelected && formData.get("wants_dormitory") != null;
+  const wantsWorkDuringStudy = !nothingSelected && formData.get("wants_work_during_study") != null;
+  const wantsStayAfterGraduation = !nothingSelected && formData.get("wants_stay_after_graduation") != null;
+  const noExtraExams = !nothingSelected && formData.get("no_extra_exams") != null;
+  const bigCity = !nothingSelected && formData.get("big_city") != null;
+  const smallCity = !nothingSelected && formData.get("small_city") != null;
+
+  const openToAdditionalExams = nothingSelected
+    ? null
+    : noExtraExams
+      ? false
+      : null;
+  const locationPreferenceType: LocationPreferenceType | null = nothingSelected
+    ? null
+    : bigCity
+      ? "capital_or_large_city"
+      : smallCity
+        ? "small_city"
+        : null;
+
+  // Q7 — per-language proficiency, one row per selected language.
+  const languageProficiency = preferredLanguageCodes
+    .map((code) => {
+      const level = parseEnum(
+        formData.get(`${LANG_PROFICIENCY_PREFIX}${code}`),
+        PROFICIENCY_LEVELS,
+      );
+      return level
+        ? { languageCode: code, level }
+        : null;
+    })
+    .filter(
+      (entry): entry is { languageCode: string; level: (typeof PROFICIENCY_LEVELS)[number] } =>
+        entry != null,
     );
-    return level != null
-      ? [{ languageCode: code, level }]
-      : [];
-  });
+  // English proficiency is what the matching engine's Language scorer and
+  // the CEFR hard requirement read off the profile.
+  const englishLevel = mapEnglishLevel(
+    languageProficiency.find((entry) => entry.languageCode === "en")?.level ?? null,
+  );
 
-  // Q9 — per-subject strength: `subject_<code>`.
-  const subjectStrengths = SUBJECT_CODES.flatMap((code) => {
-    const level = parseEnum(
-      formData.get(`${SUBJECT_STRENGTH_PREFIX}${code}`),
-      STRENGTH_LEVELS,
-    );
-    return level != null ? [{ subjectCode: code, level }] : [];
-  });
+  // Q8 — national exam. Only meaningful when the residence country maps
+  // to a known exam and the user is past grade 10; the wizard doesn't
+  // even render the step otherwise, but re-derive the gate server-side
+  // rather than trusting the client.
+  const examType = residenceCountryCode ? RESIDENCE_EXAM_MAP[residenceCountryCode] : undefined;
+  const examStepVisible = examType === "nmt" && isExamStage(educationStage);
+  const nmtBranch = parseEnum(formData.get("nmt_branch"), NMT_BRANCHES);
+  const nmtIsExpected = nmtBranch === "planning" || nmtBranch === "grade11_taking";
 
+  // Collect any NMT scores actually filled in (branch selection alone
+  // doesn't guarantee it — e.g. a grade-11 student can pick "taking it
+  // this year" and still leave every score blank). Q9 (subject
+  // strengths) then falls back in for anyone who ends up with zero
+  // scores here, exactly mirroring the client-side visibility rule.
+  const nmtScores: { subjectCode: string; score: number; isExpected: boolean }[] = [];
+  if (examStepVisible) {
+    for (const [key, value] of formData.entries()) {
+      if (!key.startsWith(NMT_SCORE_PREFIX)) continue;
+      const raw = String(value).trim();
+      if (raw === "") continue;
+      const score = Number(raw);
+      if (!Number.isFinite(score)) continue;
+      nmtScores.push({
+        subjectCode: key.slice(NMT_SCORE_PREFIX.length),
+        score,
+        isExpected: nmtIsExpected,
+      });
+    }
+  }
+  const nmtScoreEntered = nmtScores.length > 0;
+
+  // Q9 — subject strengths, collected whenever no NMT score was entered
+  // above (grade 9/10, non-mapped country, or the user declined/hasn't
+  // got a score yet).
+  const subjectStrengths: {
+    subjectCode: string;
+    level: (typeof STRENGTH_LEVELS)[number];
+  }[] = [];
+  for (const [key, value] of formData.entries()) {
+    if (!key.startsWith(SUBJECT_STRENGTH_PREFIX)) continue;
+    const level = parseEnum(value, STRENGTH_LEVELS);
+    if (!level) continue;
+    subjectStrengths.push({ subjectCode: key.slice(SUBJECT_STRENGTH_PREFIX.length), level });
+  }
+  // Math strength is what the engine's Academic scorer and the math hard
+  // requirement read off the profile.
   const mathStrength =
-    subjectStrengths.find((s) => s.subjectCode === "math")?.level ?? null;
-  const englishProficiency =
-    languageProficiency.find((l) => l.languageCode === "en")?.level ?? null;
-
-  // Q8 — national exams. Only asked for graduates (finished_school/college);
-  // in-school stages (grade_9..grade_11) answer subject strengths instead.
-  const showExamStep = isGraduateStage(educationStage);
-
-  const nationalExamType = showExamStep
-    ? parseEnum(formData.get("national_exam_type"), NATIONAL_EXAM_TYPES)
-    : null;
-
-  const nmtTaken = showExamStep
-    ? formData.get("nmt_taken") === "taken"
-    : null;
-
-  // NMT subject scores: `nmt_<subject_code>` (0–200). For "not yet taken"
-  // answers these are expected results (honestly flagged as such).
-  const nmtScores = showExamStep
-    ? NMT_SUBJECTS.flatMap((subjectCode) => {
-        const score = optionalNumber(
-          formData,
-          `${NMT_SUBJECT_PREFIX}${subjectCode}`,
-        );
-        return score != null
-          ? [{ subjectCode, score, scoreIsExpected: !nmtTaken }]
-          : [];
-      })
-    : [];
-
-  // Non-NMT national exams (Matura, Abitur, ...) → a single overall result
-  // stored as a test score the Admission Fit scorer can compare against
-  // programme requirements.
-  const nationalExamScore = showExamStep
-    ? optionalNumber(formData, "national_exam_score")
-    : null;
-
-  // Q11 — additional requirements.
-  const requirements = listField(formData, "requirements");
-  const wantsScholarship = requirements.includes("scholarship");
-  const wantsDormitory = requirements.includes("dormitory");
-  const wantsWorkDuringStudy = requirements.includes("work");
-  const wantsStayAfterGraduation = requirements.includes("stay");
-  const openToAdditionalExams = !requirements.includes("no_extra_exams");
+    subjectStrengths.find((entry) => entry.subjectCode === "mathematics")?.level ?? null;
 
   const profileService = new ProfileService(supabase);
 
   try {
     await profileService.upsert(user.id, {
-      full_name: null,
+      full_name: String(formData.get("full_name") ?? "").trim() || null,
       residence_country_code: residenceCountryCode,
-      residence_city: residenceCity,
+      residence_city: optionalText(formData, "residence_city"),
+      preferred_country_codes: preferredCountryCodes,
       education_stage: educationStage,
-      current_education_level: stageMapping.currentEducationLevel,
-      has_graduated: stageMapping.hasGraduated,
-      preferred_degree_level: stageMapping.preferredDegreeLevel,
+      current_education_level: currentEducationLevel,
+      has_graduated: hasGraduated,
+      preferred_degree_level: preferredDegreeLevel,
       start_year: startYear,
-      preferred_country_codes: preferredCountries,
-      preferred_field_of_study_ids: preferredFields,
-      primary_field_of_study_id: primaryField,
-      preferred_language_codes: preferredLanguages,
-      budget_mode: budgetMode ?? "unknown",
-      budget_currency: "EUR",
-      living_cost_mode: livingCostMode ?? "unknown",
-      national_exam_type: nationalExamType,
+      primary_field_of_study_id: primaryFieldId,
+      preferred_field_of_study_ids: Array.from(preferredFieldIds),
+      preferred_language_codes: preferredLanguageCodes,
+      national_exam_type: examType ?? null,
+      budget_mode: budgetMode,
+      living_cost_mode: livingCostMode,
       wants_scholarship: wantsScholarship,
       wants_dormitory: wantsDormitory,
       wants_work_during_study: wantsWorkDuringStudy,
       wants_stay_after_graduation: wantsStayAfterGraduation,
       open_to_additional_exams: openToAdditionalExams,
+      location_preference_type: locationPreferenceType,
       math_background: mapMathStrength(mathStrength),
-      english_level: mapEnglishLevel(englishProficiency),
+      english_level: englishLevel,
     });
 
+    // Q7 — per-language proficiency.
     await profileService.replaceLanguageProficiency(user.id, languageProficiency);
-    await profileService.replaceSubjectStrengths(user.id, subjectStrengths);
+
+    // Q8 — NMT subject scores (already collected above, used to gate Q9).
     await profileService.replaceNmtScores(user.id, nmtScores);
 
-    if (showExamStep && nationalExamType && nationalExamType !== "nmt") {
-      await profileService.setEnglishTestScore(
-        user.id,
-        nationalExamScore != null
-          ? {
-              qualificationId: null,
-              testType: nationalExamType,
-              score: nationalExamScore,
-              scoreDisplay: String(nationalExamScore),
-            }
-          : null,
-        null,
-      );
-    } else {
-      await profileService.setEnglishTestScore(user.id, null, null);
-    }
+    // Q9 — subject strengths, cleared when exam scores took their place.
+    await profileService.replaceSubjectStrengths(user.id, nmtScoreEntered ? [] : subjectStrengths);
   } catch (error) {
-    console.error("Failed to save onboarding profile:", error);
+    console.error("Failed to save profile:", error);
     return { error: "Something went wrong saving your profile. Please try again." };
   }
 

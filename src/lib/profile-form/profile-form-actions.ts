@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ProfileService } from "@/lib/services/profile.service";
+import type { SubjectStrengthLevel } from "@/lib/services/profile.service";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import type { ProfileFormActionState } from "@/lib/profile-form/profile-form-action-state";
 import type {
@@ -42,6 +43,10 @@ const CEFR_LEVELS: CefrLevel[] = [
 const MATH_BACKGROUNDS: MathBackground[] = [
   "excellent", "good", "average", "weak", "not_sure",
 ];
+// Subject self-rating writes to `user_subject_strengths.level`, whose check
+// constraint only accepts good/average/poor (unlike the profile's own
+// `math_background` column, which takes the full 5-level scale).
+const SUBJECT_STRENGTH_LEVELS = ["good", "average", "poor"] as const;
 const ADMISSION_PREFERENCES: AdmissionPreference[] = [
   "safest", "balanced", "competitive", "no_preference",
 ];
@@ -74,7 +79,7 @@ function parseOptionalNumber(
 
 function parseEnum<T extends string>(
   value: FormDataEntryValue | null,
-  allowed: T[],
+  allowed: readonly T[],
 ): T | null {
   return allowed.includes(value as T) ? (value as T) : null;
 }
@@ -170,9 +175,19 @@ export async function submitProfileFormAction(
   const validNmtSubjectCodes = new Set(nmtSubjects.map((subject) => subject.code));
   const qualificationById = new Map(qualifications.map((q) => [q.id, q]));
 
+  // Whether the user has finished school yet — drives whether we ask for
+  // NMT/exam scores at all, or ask for a subject self-rating instead (a
+  // 9th/10th/11th grader has no leaving-exam result to report yet).
+  const hasGraduated =
+    formData.get("has_graduated") === "yes"
+      ? true
+      : formData.get("has_graduated") === "no"
+        ? false
+        : null;
+
   const nmtTaken = parseEnum(formData.get("nmt_taken"), [...NMT_TAKEN_OPTIONS]);
   const nmtScores =
-    nmtTaken === "yes"
+    hasGraduated === true && nmtTaken === "yes"
       ? formData
           .getAll("nmt_subject_codes")
           .map(String)
@@ -183,6 +198,30 @@ export async function submitProfileFormAction(
             return Number.isFinite(score) ? { subjectCode: code, score } : null;
           })
           .filter((entry): entry is { subjectCode: string; score: number } => entry != null)
+      : [];
+
+  // Subject self-rating, asked instead of NMT scores while the user is
+  // still in school (has_graduated === false). Reuses the same
+  // nmt_subjects catalog as the exam question, on the 3-point
+  // good/average/poor scale the `user_subject_strengths.level` column
+  // accepts, phrased as "how strong are you" instead of "what score".
+  const subjectStrengths =
+    hasGraduated === false
+      ? formData
+          .getAll("subject_strength_codes")
+          .map(String)
+          .filter((code) => validNmtSubjectCodes.has(code))
+          .map((code) => {
+            const level = parseEnum(
+              formData.get(`subject_strength__${code}`),
+              SUBJECT_STRENGTH_LEVELS,
+            );
+            return level ? { subjectCode: code, level } : null;
+          })
+          .filter(
+            (entry): entry is { subjectCode: string; level: SubjectStrengthLevel } =>
+              entry != null,
+          )
       : [];
 
   // §21 — "other qualifications" (SAT/ACT/IB/etc), excluding NMT and CEFR
@@ -240,12 +279,7 @@ export async function submitProfileFormAction(
         EDUCATION_LEVELS,
       ),
       graduation_year: graduationYear,
-      has_graduated:
-        formData.get("has_graduated") === "yes"
-          ? true
-          : formData.get("has_graduated") === "no"
-            ? false
-            : null,
+      has_graduated: hasGraduated,
       english_level: parseEnum(formData.get("english_level"), CEFR_LEVELS),
       math_background: parseEnum(formData.get("math_background"), MATH_BACKGROUNDS),
       admission_preference: parseEnum(
@@ -283,6 +317,7 @@ export async function submitProfileFormAction(
 
     await Promise.all([
       profileService.replaceNmtScores(user.id, nmtScores),
+      profileService.replaceSubjectStrengths(user.id, subjectStrengths),
       profileService.replaceQualifications(user.id, qualificationEntries),
       profileService.setEnglishTestScore(
         user.id,

@@ -49,7 +49,14 @@ export default async function ProfilePage({
     referenceData.listQualifications(),
     user
       ? new ProfileService(supabase).getFullProfileForUser(user.id)
-      : { profile: null, nmtScores: [], qualifications: [], testScores: [] },
+      : {
+          profile: null,
+          nmtScores: [],
+          qualifications: [],
+          testScores: [],
+          subjectStrengths: [],
+          languageProficiency: [],
+        },
   ]);
 
   return (
@@ -75,6 +82,7 @@ export default async function ProfilePage({
         existingNmtScores={fullProfile.nmtScores}
         existingQualifications={fullProfile.qualifications}
         existingTestScores={fullProfile.testScores}
+        existingSubjectStrengths={fullProfile.subjectStrengths}
       />
     </main>
   );

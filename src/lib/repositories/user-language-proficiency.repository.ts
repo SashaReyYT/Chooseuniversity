@@ -7,6 +7,7 @@ type ProficiencyRow =
 
 export interface LanguageProficiencyInput {
   languageCode: string;
+  /** Must match the `user_language_proficiency.level` check constraint — `average`, not `medium`. */
   level: "good" | "average" | "poor" | "not_sure";
 }
 

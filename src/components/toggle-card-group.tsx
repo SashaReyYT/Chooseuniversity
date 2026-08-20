@@ -1,3 +1,5 @@
+import type { ChangeEvent } from "react";
+
 /**
  * Grid of card-styled checkboxes for a multi-select field — the
  * `unifind_personalized_matching_test` mockup's country-picker look
@@ -11,15 +13,34 @@ export function ToggleCardGroup({
   name,
   options,
   defaultValues,
+  onChange,
 }: {
   name: string;
   options: { value: string; label: string; caption?: string }[];
   defaultValues: string[];
+  /**
+   * Optional: called with the full set of currently-checked values
+   * whenever any checkbox toggles. Purely a read-side convenience for a
+   * parent that needs to react to the selection (e.g. rendering a
+   * follow-up question per selected language) — the group itself stays
+   * uncontrolled/DOM-driven for form submission.
+   */
+  onChange?: (values: string[]) => void;
 }) {
   const selected = new Set(defaultValues);
 
+  function handleChange(event: ChangeEvent<HTMLInputElement>) {
+    if (!onChange) return;
+    const fieldset = event.currentTarget.closest("[data-toggle-card-group]");
+    if (!fieldset) return;
+    const checked = Array.from(
+      fieldset.querySelectorAll<HTMLInputElement>(`input[name="${name}"]:checked`),
+    ).map((input) => input.value);
+    onChange(checked);
+  }
+
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div data-toggle-card-group className="grid grid-cols-2 gap-3">
       {options.map((option) => (
         <label
           key={option.value}
@@ -30,6 +51,7 @@ export function ToggleCardGroup({
             name={name}
             value={option.value}
             defaultChecked={selected.has(option.value)}
+            onChange={onChange ? handleChange : undefined}
             className="peer sr-only"
           />
           <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary text-on-primary items-center justify-center text-xs hidden peer-checked:flex">

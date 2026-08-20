@@ -1,5 +1,6 @@
 import "server-only";
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import type { User } from "@supabase/supabase-js";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -19,14 +20,18 @@ export async function getCurrentUser(): Promise<User | null> {
 }
 
 /**
- * Same as `getCurrentUser`, but redirects to sign-in when there isn't
- * one. For Server Components/layouts behind a protected route — `proxy.ts`
- * also redirects at the edge, but pages call this too so they're safe
- * even if reached directly (e.g. a server action) without relying solely
- * on middleware.
+ * Same as `getCurrentUser`, but redirects home when there isn't one.
+ * V1 has no signup/login UI (see `proxy.ts`) — every visitor gets an
+ * anonymous Supabase session at the edge, so this is a last-resort
+ * fallback (e.g. cookies blocked) rather than a real auth gate. It
+ * redirects to the locale-prefixed home page rather than a `/sign-in`
+ * route, which doesn't exist in this app.
  */
 export async function requireUser(): Promise<User> {
   const user = await getCurrentUser();
-  if (!user) redirect("/sign-in");
+  if (!user) {
+    const locale = await getLocale();
+    redirect(`/${locale}`);
+  }
   return user;
 }
