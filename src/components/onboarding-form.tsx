@@ -389,6 +389,15 @@ export function OnboardingForm({
     <form
       action={formAction}
       className="flex min-h-screen flex-col bg-background"
+      onKeyDown={(event) => {
+        // The whole wizard is one <form>, so pressing Enter inside a text
+        // input (Q1 city/name) would implicitly submit every step's
+        // answers early and bounce the user out of the quiz — swallow it
+        // until the last step, where Enter-submit is legitimate.
+        if (event.key === "Enter" && showContinue) {
+          event.preventDefault();
+        }
+      }}
     >
       {/* Top app bar: back + step label, segmented progress underneath */}
       <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-outline-variant/30">

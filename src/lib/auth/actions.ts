@@ -1,6 +1,6 @@
 "use server";
 
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { redirect } from "@/i18n/navigation";
@@ -17,14 +17,15 @@ export async function signUp(
   _prevState: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  const t = await getTranslations("Auth");
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) {
-    return { error: "Enter an email and password." };
+    return { error: t("errorMissingCredentials") };
   }
   if (password.length < 8) {
-    return { error: "Password must be at least 8 characters." };
+    return { error: t("errorPasswordTooShort") };
   }
 
   const supabase = await createServerSupabaseClient();
@@ -34,8 +35,11 @@ export async function signUp(
     return { error: error.message };
   }
 
+  // Straight to /discover, not the questionnaire: the quiz runs on the
+  // anonymous session, and signUp() upgrades that same anonymous user in
+  // place — their answers are already saved under this id.
   const locale = await getLocale();
-  redirect({ href: "/onboarding", locale });
+  redirect({ href: "/discover", locale });
   return { error: null };
 }
 
@@ -43,18 +47,19 @@ export async function signIn(
   _prevState: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  const t = await getTranslations("Auth");
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) {
-    return { error: "Enter an email and password." };
+    return { error: t("errorMissingCredentials") };
   }
 
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: "Incorrect email or password." };
+    return { error: t("errorInvalidCredentials") };
   }
 
   const locale = await getLocale();

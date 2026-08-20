@@ -1,12 +1,14 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { signUp } from "@/lib/auth/actions";
 import type { AuthFormState } from "@/lib/auth/types";
 
 const initialState: AuthFormState = { error: null };
 
 export function SignUpForm() {
+  const t = useTranslations("Auth");
   const [state, formAction, isPending] = useActionState(signUp, initialState);
 
   return (
@@ -16,7 +18,7 @@ export function SignUpForm() {
           htmlFor="email"
           className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wide"
         >
-          Email
+          {t("emailLabel")}
         </label>
         <input
           id="email"
@@ -33,7 +35,7 @@ export function SignUpForm() {
           htmlFor="password"
           className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wide"
         >
-          Password
+          {t("passwordLabel")}
         </label>
         <input
           id="password"
@@ -45,7 +47,7 @@ export function SignUpForm() {
           className="w-full rounded-md border border-outline-variant bg-surface-container-lowest px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
         />
         <p className="font-body-sm text-body-sm text-on-surface-variant">
-          At least 8 characters.
+          {t("passwordHint")}
         </p>
       </div>
 
@@ -58,7 +60,7 @@ export function SignUpForm() {
         disabled={isPending}
         className="w-full bg-primary text-on-primary font-label-caps text-label-caps px-8 py-4 rounded-full hover:bg-on-primary-fixed-variant transition-all active:scale-95 shadow-md disabled:opacity-60"
       >
-        {isPending ? "Creating account…" : "Create Account"}
+        {isPending ? t("submitSignUpPending") : t("submitSignUp")}
       </button>
     </form>
   );

@@ -765,5 +765,27 @@
     "description": "{count, plural, one {1 saved programme} other {# saved programmes}}",
     "empty": "You haven't saved any programmes yet.",
     "emptyCta": "Browse the catalogue"
+  },
+  "Auth": {
+    "signIn": "Sign in",
+    "getStarted": "Get started",
+    "signOut": "Sign out",
+    "signInTitle": "Sign in",
+    "signInDescription": "Welcome back — pick up where you left off.",
+    "newHere": "New to Unifind? Create an account",
+    "createAccount": "Create an account",
+    "signUpTitle": "Create your account",
+    "signUpDescription": "A couple of minutes to set up your profile, then see every programme scored against it.",
+    "haveAccount": "Already have an account? Sign in",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "passwordHint": "At least 8 characters.",
+    "submitSignUp": "Create Account",
+    "submitSignUpPending": "Creating account…",
+    "submitSignIn": "Sign In",
+    "submitSignInPending": "Signing in…",
+    "errorMissingCredentials": "Enter an email and password.",
+    "errorPasswordTooShort": "Password must be at least 8 characters.",
+    "errorInvalidCredentials": "Incorrect email or password."
   }
 }

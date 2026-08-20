@@ -1,12 +1,14 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { signIn } from "@/lib/auth/actions";
 import type { AuthFormState } from "@/lib/auth/types";
 
 const initialState: AuthFormState = { error: null };
 
 export function SignInForm() {
+  const t = useTranslations("Auth");
   const [state, formAction, isPending] = useActionState(signIn, initialState);
 
   return (
@@ -16,7 +18,7 @@ export function SignInForm() {
           htmlFor="email"
           className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wide"
         >
-          Email
+          {t("emailLabel")}
         </label>
         <input
           id="email"
@@ -33,7 +35,7 @@ export function SignInForm() {
           htmlFor="password"
           className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wide"
         >
-          Password
+          {t("passwordLabel")}
         </label>
         <input
           id="password"
@@ -54,7 +56,7 @@ export function SignInForm() {
         disabled={isPending}
         className="w-full bg-primary text-on-primary font-label-caps text-label-caps px-8 py-4 rounded-full hover:bg-on-primary-fixed-variant transition-all active:scale-95 shadow-md disabled:opacity-60"
       >
-        {isPending ? "Signing in…" : "Sign In"}
+        {isPending ? t("submitSignInPending") : t("submitSignIn")}
       </button>
     </form>
   );

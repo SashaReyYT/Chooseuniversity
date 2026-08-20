@@ -765,5 +765,27 @@
     "description": "{count, plural, one {1 збережена програма} few {# збережені програми} other {# збережених програм}}",
     "empty": "Ви ще не зберегли жодної програми.",
     "emptyCta": "Переглянути каталог"
+  },
+  "Auth": {
+    "signIn": "Увійти",
+    "getStarted": "Почати",
+    "signOut": "Вийти",
+    "signInTitle": "Вхід",
+    "signInDescription": "З поверненням — продовжіть з того місця, де зупинилися.",
+    "newHere": "Вперше на Unifind? Створіть акаунт",
+    "createAccount": "Створити акаунт",
+    "signUpTitle": "Створіть акаунт",
+    "signUpDescription": "Кілька хвилин на налаштування профілю — і ви побачите кожну програму з оцінкою відповідності.",
+    "haveAccount": "Вже маєте акаунт? Увійдіть",
+    "emailLabel": "Електронна пошта",
+    "passwordLabel": "Пароль",
+    "passwordHint": "Мінімум 8 символів.",
+    "submitSignUp": "Створити акаунт",
+    "submitSignUpPending": "Створення акаунту…",
+    "submitSignIn": "Увійти",
+    "submitSignInPending": "Вхід…",
+    "errorMissingCredentials": "Введіть електронну пошту та пароль.",
+    "errorPasswordTooShort": "Пароль має містити щонайменше 8 символів.",
+    "errorInvalidCredentials": "Неправильна електронна пошта або пароль."
   }
 }
