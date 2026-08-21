@@ -61,7 +61,7 @@ export default async function Home({
     topMatch = ranked[0] ?? null;
   }
 
-  const tMatching = topMatch ? await getTranslations() : null;
+  const tMatching = topMatch ? await getTranslations("Matching") : null;
 
   const referenceData = new ReferenceDataRepository(supabase);
   const [fieldsOfStudy, supportedCountries] = await Promise.all([

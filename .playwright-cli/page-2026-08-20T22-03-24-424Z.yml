@@ -1,0 +1,49 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - button "Back" [ref=e6]:
+          - generic [ref=e7]: arrow_back
+        - paragraph [ref=e8]: Step 8 of 10
+    - main [ref=e19]:
+      - generic [ref=e20]:
+        - heading "How good are you in the key subjects?" [level=1] [ref=e216]
+        - paragraph [ref=e22]: An honest self-assessment is enough — no exact scores.
+      - generic [ref=e217]:
+        - generic [ref=e218]:
+          - text: How strong are you in these subjects?
+          - paragraph [ref=e219]: You haven't graduated yet, so there's no exam score to enter — just rate yourself in the subjects that matter for your field.
+        - generic [ref=e220]:
+          - text: English
+          - generic [ref=e221]:
+            - generic [ref=e222] [cursor=pointer]:
+              - radio "Good" [ref=e223]
+              - generic [ref=e224]: Good
+            - generic [ref=e225] [cursor=pointer]:
+              - radio "Average" [ref=e226]
+              - generic [ref=e227]: Average
+            - generic [ref=e228] [cursor=pointer]:
+              - radio "Weak" [ref=e229]
+              - generic [ref=e230]: Weak
+        - generic [ref=e231]:
+          - text: Mathematics
+          - generic [ref=e232]:
+            - generic [ref=e233] [cursor=pointer]:
+              - radio "Good" [ref=e234]
+              - generic [ref=e235]: Good
+            - generic [ref=e236] [cursor=pointer]:
+              - radio "Average" [ref=e237]
+              - generic [ref=e238]: Average
+            - generic [ref=e239] [cursor=pointer]:
+              - radio "Weak" [ref=e240]
+              - generic [ref=e241]: Weak
+    - contentinfo [ref=e30]:
+      - generic [ref=e31]:
+        - paragraph [ref=e32]:
+          - generic [ref=e33]: tips_and_updates
+          - generic [ref=e34]: Almost done — a couple more answers.
+        - button "Continue" [active] [ref=e35]:
+          - text: Continue
+          - generic [ref=e36]: arrow_forward
+  - button "Open Next.js Dev Tools" [ref=e42] [cursor=pointer]
+  - alert [ref=e46]

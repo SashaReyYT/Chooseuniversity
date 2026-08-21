@@ -1,0 +1,21 @@
+
+> unifind@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use by process 21896, using available port 3001 instead.
+▲ Next.js 16.3.1 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://26.140.21.164:3001
+- Environments: .env.local
+✓ Ready in 1797ms
+✓ Running next.config.ts took 414ms
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          21896
+- Dir:          D:\проекты\Unikchoose
+- Log:          .next\dev\logs\next-development.log
+
+You can access the existing server at http://localhost:3000,
+or run taskkill /PID 21896 /F to stop it and start a new one.
+[?25h

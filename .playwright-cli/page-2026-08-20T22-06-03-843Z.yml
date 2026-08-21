@@ -1,0 +1,30 @@
+- generic [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - banner [ref=f1e3]:
+      - generic [ref=f1e5]:
+        - button "Back" [ref=f1e6]:
+          - generic [ref=f1e7]: arrow_back
+        - paragraph [ref=f1e8]: Step 6 of 10
+    - main [ref=f1e20]:
+      - generic [ref=f1e21]:
+        - heading "Which language are you ready to study in?" [level=1] [ref=f1e143]
+        - paragraph [ref=f1e23]: Based on the countries you chose — you can pick several.
+      - generic [ref=f1e145]:
+        - generic [ref=f1e146] [cursor=pointer]:
+          - checkbox "✓ Czech" [checked] [ref=f1e147]
+          - generic [ref=f1e148]: ✓
+          - generic [ref=f1e149]: Czech
+        - generic [ref=f1e150] [cursor=pointer]:
+          - checkbox "✓ English" [checked] [ref=f1e151]
+          - generic [ref=f1e152]: ✓
+          - generic [ref=f1e153]: English
+    - contentinfo [ref=f1e31]:
+      - generic [ref=f1e32]:
+        - paragraph [ref=f1e33]:
+          - generic [ref=f1e34]: tips_and_updates
+          - generic [ref=f1e35]: Almost done — a couple more answers.
+        - button "Continue" [active] [ref=f1e36]:
+          - text: Continue
+          - generic [ref=f1e37]: arrow_forward
+  - button "Open Next.js Dev Tools" [ref=f1e43] [cursor=pointer]
+  - alert [ref=f1e55]

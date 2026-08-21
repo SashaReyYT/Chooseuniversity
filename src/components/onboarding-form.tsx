@@ -278,12 +278,26 @@ export function OnboardingForm({
   const stepCount = visibleSteps.length;
   const [stepIndex, setStepIndex] = useState(0);
   const currentStep = visibleSteps[Math.min(stepIndex, stepCount - 1)];
+  const formRef = useRef<HTMLFormElement>(null);
 
   function goNext() {
     setStepIndex((current) => Math.min(stepCount - 1, current + 1));
   }
   function goBack() {
     setStepIndex((current) => Math.max(0, current - 1));
+  }
+  // The footer button is ALWAYS type="button": swapping its type to
+  // "submit" while the click that advanced to the last step was still
+  // being processed made the browser replay the activation against the
+  // freshly rendered submit button and fire the action a step early
+  // (the "kicked out before the last question" bug). On the last step we
+  // therefore submit explicitly.
+  function handleFooterAction() {
+    if (showContinue) {
+      goNext();
+      return;
+    }
+    formRef.current?.requestSubmit();
   }
 
   // Q5 — languages offered by the countries picked in Q2. No countries
@@ -387,14 +401,15 @@ export function OnboardingForm({
 
   return (
     <form
+      ref={formRef}
       action={formAction}
       className="flex min-h-screen flex-col bg-background"
       onKeyDown={(event) => {
-        // The whole wizard is one <form>, so pressing Enter inside a text
-        // input (Q1 city/name) would implicitly submit every step's
-        // answers early and bounce the user out of the quiz — swallow it
-        // until the last step, where Enter-submit is legitimate.
-        if (event.key === "Enter" && showContinue) {
+        // The whole wizard is one <form> with no type="submit" button, so
+        // the only way to submit is the footer button's requestSubmit().
+        // Swallow Enter everywhere so implicit submission can never fire
+        // the action mid-quiz.
+        if (event.key === "Enter") {
           event.preventDefault();
         }
       }}
@@ -433,8 +448,11 @@ export function OnboardingForm({
         </div>
       </header>
 
-      {/* Question canvas — only the current step is visible, all stay mounted */}
-      <main className="mx-auto w-full max-w-[800px] flex-grow space-y-8 px-margin-mobile md:px-margin-desktop py-8 pb-36 md:py-10">
+      {/* Question canvas — only the current step is visible, all stay mounted.
+          pb-48 clears the fixed footer on the smallest phones (the last
+          question's tiles must never scroll under it — see the footer
+          comment). */}
+      <main className="mx-auto w-full max-w-[800px] flex-grow space-y-8 px-margin-mobile md:px-margin-desktop py-8 pb-48 md:py-10">
         <section className="space-y-2">
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
             {t(currentStep.titleKey)}
@@ -754,47 +772,53 @@ export function OnboardingForm({
         )}
       </main>
 
-      {/* Anchored footer CTA */}
-      <footer className="fixed inset-x-0 bottom-0 z-40 border-t border-outline-variant/30 bg-surface/90 backdrop-blur-md py-4 px-margin-mobile md:px-margin-desktop">
-        <div className="mx-auto flex w-full max-w-[800px] flex-col items-center justify-between gap-4 sm:flex-row">
-          <p className="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
+      {/* Anchored footer CTA — single row on every screen (mockup
+          treatment): tip left, action right. Two stacked rows on mobile
+          made the footer tall enough to overlap the last question's
+          tiles under the fixed bar — taps on bottom-row tiles landed on
+          the action button and silently submitted the form. The button
+          itself never changes type — see handleFooterAction. */}
+      <footer className="fixed inset-x-0 bottom-0 z-40 border-t border-outline-variant/30 bg-surface/90 backdrop-blur-md py-3 px-margin-mobile md:px-margin-desktop">
+        <div className="mx-auto flex w-full max-w-[800px] items-center justify-between gap-3">
+          <p className="flex min-w-0 items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
             <span
               className="material-symbols-outlined text-primary-container text-sm"
               aria-hidden="true"
             >
               tips_and_updates
             </span>
-            {stepIndex + 1 < Math.ceil(stepCount / 2)
-              ? t("tipHalfway")
-              : t("tipAlmostDone")}
+            <span className="truncate">
+              {stepIndex + 1 < Math.ceil(stepCount / 2)
+                ? t("tipHalfway")
+                : t("tipAlmostDone")}
+            </span>
           </p>
-          {showContinue ? (
-            <button
-              type="button"
-              onClick={goNext}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 font-headline-sm text-headline-sm text-on-primary shadow-md transition-all duration-200 hover:-translate-y-[1px] hover:shadow-lg active:scale-95 sm:w-auto"
-            >
-              {t("continue")}
-              <span className="material-symbols-outlined" aria-hidden="true">
-                arrow_forward
-              </span>
-            </button>
-          ) : (
-            <button
-              type="submit"
-              disabled={pending}
-              aria-busy={pending}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 font-headline-sm text-headline-sm text-on-primary shadow-md transition-all duration-200 hover:-translate-y-[1px] hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-            >
-              {pending && (
-                <span
-                  className="h-4 w-4 animate-spin rounded-full border-2 border-on-primary/40 border-t-on-primary"
-                  aria-hidden="true"
-                />
-              )}
-              {pending ? t("submitPending") : t("submit")}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleFooterAction}
+            disabled={pending}
+            aria-busy={pending}
+            className="flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-primary px-6 py-3 font-headline-sm text-headline-sm text-on-primary shadow-md transition-all duration-200 hover:-translate-y-[1px] hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {pending && (
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-on-primary/40 border-t-on-primary"
+                aria-hidden="true"
+              />
+            )}
+            {showContinue ? (
+              <>
+                {t("continue")}
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  arrow_forward
+                </span>
+              </>
+            ) : pending ? (
+              t("submitPending")
+            ) : (
+              t("submit")
+            )}
+          </button>
         </div>
       </footer>
     </form>

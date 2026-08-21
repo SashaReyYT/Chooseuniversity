@@ -1,0 +1,28 @@
+- generic [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - banner [ref=f1e3]:
+      - generic [ref=f1e5]:
+        - button "Back" [ref=f1e6]:
+          - generic [ref=f1e7]: arrow_back
+        - paragraph [ref=f1e8]: Step 2 of 10
+    - main [ref=f1e20]:
+      - generic [ref=f1e21]:
+        - heading "Where would you like to study?" [level=1] [ref=f1e47]
+        - paragraph [ref=f1e23]: You can pick one or several countries.
+      - generic [ref=f1e48]:
+        - generic [ref=f1e50] [cursor=pointer]:
+          - checkbox "✓ 🇨🇿 Czech Republic" [checked] [active] [ref=f1e56]
+          - generic [ref=f1e57]: ✓
+          - generic [ref=f1e52]: 🇨🇿
+          - generic [ref=f1e53]: Czech Republic
+        - paragraph [ref=f1e54]: We're launching with Czechia — more countries are coming soon.
+    - contentinfo [ref=f1e31]:
+      - generic [ref=f1e32]:
+        - paragraph [ref=f1e33]:
+          - generic [ref=f1e34]: tips_and_updates
+          - generic [ref=f1e35]: Almost halfway there.
+        - button "Continue" [ref=f1e36]:
+          - text: Continue
+          - generic [ref=f1e37]: arrow_forward
+  - button "Open Next.js Dev Tools" [ref=f1e43] [cursor=pointer]
+  - alert [ref=f1e55]

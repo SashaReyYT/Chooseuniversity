@@ -53,7 +53,7 @@ export async function ProgrammeCard({
   defaultComparisonName,
 }: ProgrammeCardProps) {
   const locale = await getLocale();
-  const tMatching = match ? await getTranslations() : null;
+  const tMatching = match ? await getTranslations("Matching") : null;
 
   // §32 shows the "Why it matches you" list up front (the design example
   // has three entries); anything beyond that moves to the collapsed

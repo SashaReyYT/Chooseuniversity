@@ -173,7 +173,7 @@ export default async function ProgrammeDetailsPage({
   const isInComparison =
     comparisons[0]?.programmes.some((p) => p.id === programme.id) ?? false;
   const defaultComparisonName = tDiscover("heading");
-  const tMatching = match ? await getTranslations() : null;
+  const tMatching = match ? await getTranslations("Matching") : null;
 
   const dateFormatter = new Intl.DateTimeFormat(uiLocale, { dateStyle: "long" });
 
