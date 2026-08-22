@@ -20,9 +20,9 @@ export async function signUp(
   const t = await getTranslations("Auth");
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  // `next` is a safe internal path like "/onboarding" — passed from the
-  // sign-up page via a hidden input. Default to the questionnaire.
-  const next = String(formData.get("next") ?? "/onboarding").trim();
+  // After sign-up, redirect to sign-in page so user can log in
+  // The sign-in page will then redirect to onboarding
+  const next = String(formData.get("next") ?? "/sign-in").trim();
 
   if (!email || !password) {
     return { error: t("errorMissingCredentials") };
@@ -39,8 +39,6 @@ export async function signUp(
   }
 
   const locale = await getLocale();
-  // Upgrade of anonymous session keeps the same user id; redirect to `next`
-  // (the quiz) so the answers land on the real account.
   redirect({ href: next, locale });
   return { error: null };
 }

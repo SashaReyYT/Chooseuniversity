@@ -266,8 +266,8 @@ const _lifestylePreferences = cityFeatures
     await profileService.replaceSubjectStrengths(user.id, nmtScoreEntered ? [] : subjectStrengths);
   } catch (error) {
     console.error("Failed to save profile:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return { error: `Failed to save profile: ${message}` };
+    const message = error instanceof Error ? error.message : (typeof error === 'object' && error !== null ? JSON.stringify(error) : String(error));
+    return { error: `Failed to save profile: ${message || "Unknown error"}` };
   }
 
   redirect(`/${locale}/results`);
