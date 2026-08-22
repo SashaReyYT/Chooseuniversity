@@ -21,7 +21,7 @@ import {
   parseBudgetMode,
   parseEnum,
 } from "@/lib/onboarding/profile-mapping";
-import { LIFESTYLE_OPTIONS } from "@/components/onboarding-form";
+
 import type {
   EducationLevel,
   EducationStage,
@@ -115,30 +115,42 @@ export async function submitOnboardingAction(
   const budgetMode = parseBudgetMode(formData.get("budget_mode")) ?? "unknown";
   const livingCostMode = parseBudgetMode(formData.get("living_cost_mode")) ?? "unknown";
 
-  // Q11 — extra requirements, all multi-select checkboxes. "nothing"
-  // ("Don't care") wins over everything else and clears the profile's
-  // requirement fields.
-  const nothingSelected = formData.get("nothing") != null;
-  const wantsScholarship = !nothingSelected && formData.get("wants_scholarship") != null;
-  const wantsDormitory = !nothingSelected && formData.get("wants_dormitory") != null;
-  const wantsWorkDuringStudy = !nothingSelected && formData.get("wants_work_during_study") != null;
-  const wantsStayAfterGraduation = !nothingSelected && formData.get("wants_stay_after_graduation") != null;
-  const noExtraExams = !nothingSelected && formData.get("no_extra_exams") != null;
-  const bigCity = !nothingSelected && formData.get("big_city") != null;
-  const smallCity = !nothingSelected && formData.get("small_city") != null;
+  // Q11 — city format (single select) and city features (multi-select)
+  const cityFormat = String(formData.get("city_format") ?? "").trim();
+  const cityFeatures = formData.getAll("city_features").map(String).filter((v) => v !== "");
 
-  const openToAdditionalExams = nothingSelected
-    ? null
-    : noExtraExams
-      ? false
-      : null;
-  const locationPreferenceType: LocationPreferenceType | null = nothingSelected
-    ? null
-    : bigCity
+  const locationPreferenceType: LocationPreferenceType | null =
+    cityFormat === "large"
       ? "capital_or_large_city"
-      : smallCity
-        ? "small_city"
-        : null;
+      : cityFormat === "small"
+      ? "small_city"
+      : cityFormat === "student"
+      ? "student_city"
+      : null;
+
+  // Map city features to lifestyle_preferences
+  const cityFeatureMap: Record<string, string> = {
+    cost: "affordable-living",
+    nightlife: "vibrant-nightlife",
+    culture: "cultural-scene",
+    international: "international-community",
+    safe: "safe",
+    transport: "transport",
+    bike: "bike",
+    green: "green",
+  };
+const _lifestylePreferences = cityFeatures
+      .map((v) => cityFeatureMap[v])
+      .filter((v): v is string => v != null);
+
+  // Q12 — new requirements (support + admission)
+  const wantsScholarship = formData.get("scholarship") != null;
+  const wantsDormitory = formData.get("dormitory") != null;
+  const wantsWorkDuringStudy = formData.get("work") != null;
+  const wantsStayAfterGraduation = formData.get("stay") != null;
+  const noExtraExams = formData.get("no_extra_exams") != null;
+
+  const openToAdditionalExams = noExtraExams ? false : null;
 
   // Q7 — per-language proficiency, one row per selected language (CEFR levels).
   const languageProficiency = preferredLanguageCodes
@@ -213,8 +225,9 @@ export async function submitOnboardingAction(
   const profileService = new ProfileService(supabase);
 
   try {
-    const lifestylePreferences = LIFESTYLE_OPTIONS.map((opt) => opt.value)
-      .filter((val) => formData.get(val) != null);
+    const _lifestylePreferences = cityFeatures
+      .map((v) => cityFeatureMap[v])
+      .filter((v): v is string => v != null);
 
     await profileService.upsert(user.id, {
       full_name: String(formData.get("full_name") ?? "").trim() || null,
@@ -240,7 +253,7 @@ export async function submitOnboardingAction(
       location_preference_type: locationPreferenceType,
       math_background: mapMathStrength(mathStrength),
       english_level: englishLevel,
-      lifestyle_preferences: lifestylePreferences,
+      lifestyle_preferences: _lifestylePreferences,
     });
 
     // Q7 — per-language proficiency.

@@ -171,7 +171,7 @@ function deriveInitialNmtBranch(scores: UserNmtScoreRow[]): string {
 }
 
 /** Re-derives which Q11 checkboxes an existing profile answers to. */
-function deriveInitialRequirements(profile: UserProfileRow | null): string[] {
+function _deriveInitialRequirements(profile: UserProfileRow | null): string[] {
   if (!profile) return [];
   const selected: string[] = [];
   if (profile.wants_scholarship) selected.push("scholarship");
@@ -184,30 +184,69 @@ function deriveInitialRequirements(profile: UserProfileRow | null): string[] {
   return selected;
 }
 
-const REQUIREMENT_OPTIONS = [
-  // With support (assistance)
-  { value: "scholarship", labelKey: "reqScholarship", group: "withSupport" },
-  { value: "dormitory", labelKey: "reqDormitory", group: "withSupport" },
-  // Without support (independent)
-  { value: "work", labelKey: "reqWork", group: "withoutSupport" },
-  { value: "stay", labelKey: "reqStay", group: "withoutSupport" },
-  { value: "no_extra_exams", labelKey: "reqNoExtraExams", group: "withoutSupport" },
-  { value: "big_city", labelKey: "reqBigCity", group: "withoutSupport" },
-  { value: "small_city", labelKey: "reqSmallCity", group: "withoutSupport" },
-  { value: "nothing", labelKey: "reqNothing", group: "withoutSupport" },
+/** Re-derives the city format single-select from existing profile. */
+function deriveInitialCityFormat(profile: UserProfileRow | null): string {
+  if (!profile) return "";
+  if (profile.location_preference_type === "capital_or_large_city") return "large";
+  if (profile.location_preference_type === "small_city") return "small";
+  return "";
+}
+
+/** Re-derives the city features multi-select from existing profile. */
+function deriveInitialCityFeatures(profile: UserProfileRow | null): string[] {
+  if (!profile) return [];
+  const selected: string[] = [];
+  if (profile.lifestyle_preferences?.includes("affordable-living")) selected.push("cost");
+  if (profile.lifestyle_preferences?.includes("vibrant-nightlife")) selected.push("nightlife");
+  if (profile.lifestyle_preferences?.includes("cultural-scene")) selected.push("culture");
+  if (profile.lifestyle_preferences?.includes("international-community")) selected.push("international");
+  if (profile.lifestyle_preferences?.includes("safe")) selected.push("safe");
+  if (profile.lifestyle_preferences?.includes("transport")) selected.push("transport");
+  if (profile.lifestyle_preferences?.includes("bike")) selected.push("bike");
+  if (profile.lifestyle_preferences?.includes("green")) selected.push("green");
+  return selected;
+}
+
+/** Re-derives the new requirements (support + admission) from existing profile. */
+function deriveInitialRequirementsNew(profile: UserProfileRow | null): string[] {
+  if (!profile) return [];
+  const selected: string[] = [];
+  if (profile.wants_scholarship) selected.push("scholarship");
+  if (profile.wants_dormitory) selected.push("dormitory");
+  if (profile.wants_work_during_study) selected.push("work");
+  if (profile.wants_stay_after_graduation) selected.push("stay");
+  if (profile.open_to_additional_exams === false) selected.push("no_extra_exams");
+  return selected;
+}
+
+// Lifestyle / Q11 options
+export const CITY_FORMAT_OPTIONS = [
+  { value: "large", labelKey: "cityFormatLarge" },
+  { value: "student", labelKey: "cityFormatStudent" },
+  { value: "small", labelKey: "cityFormatSmall" },
+  { value: "dontcare", labelKey: "cityFormatDontCare" },
 ] as const;
 
-export const LIFESTYLE_OPTIONS = [
-  { value: "large_city", labelKey: "lifestyleLargeCity" },
-  { value: "student_city", labelKey: "lifestyleStudentCity" },
-  { value: "affordable", labelKey: "lifestyleAffordable" },
-  { value: "vibrant_nightlife", labelKey: "lifestyleNightlife" },
-  { value: "cultural_scene", labelKey: "lifestyleCulture" },
-  { value: "international_community", labelKey: "lifestyleInternational" },
-  { value: "safe_environment", labelKey: "lifestyleSafe" },
-  { value: "good_transport", labelKey: "lifestyleTransport" },
-  { value: "bike_friendly", labelKey: "lifestyleBike" },
-  { value: "green_spaces", labelKey: "lifestyleGreen" },
+export const CITY_FEATURE_OPTIONS = [
+  { value: "cost", labelKey: "cityFeatureCost" },
+  { value: "nightlife", labelKey: "cityFeatureNightlife" },
+  { value: "culture", labelKey: "cityFeatureCulture" },
+  { value: "international", labelKey: "cityFeatureInternational" },
+  { value: "safe", labelKey: "cityFeatureSafe" },
+  { value: "transport", labelKey: "cityFeatureTransport" },
+  { value: "bike", labelKey: "cityFeatureBike" },
+  { value: "green", labelKey: "cityFeatureGreen" },
+] as const;
+
+// Requirements / Q12 options
+const REQUIREMENT_OPTIONS = [
+  // Support & opportunities
+  { value: "scholarship", labelKey: "reqScholarship", group: "support" },
+  { value: "dormitory", labelKey: "reqDormitory", group: "support" },
+  { value: "work", labelKey: "reqWork", group: "support" },
+  { value: "stay", labelKey: "reqStay", group: "support" },
+  // Admission
+  { value: "no_extra_exams", labelKey: "reqNoExtraExams", group: "admission" },
 ] as const;
 
 /** Q7 — CEFR levels (C2 → A0), stored verbatim in `user_language_proficiency.level`. */
@@ -270,11 +309,14 @@ export function OnboardingForm({
   const [nmtScoreCount, setNmtScoreCount] = useState(
     existingNmtScores.filter((s) => s.score != null).length,
   );
-  const [requirements, setRequirements] = useState<string[]>(() =>
-    deriveInitialRequirements(existingProfile),
+  const [cityFormat, setCityFormat] = useState<string>(() =>
+    deriveInitialCityFormat(existingProfile),
   );
-  const [lifestyle, setLifestyle] = useState<string[]>(() =>
-    existingProfile?.lifestyle_preferences ?? [],
+  const [cityFeatures, setCityFeatures] = useState<string[]>(() =>
+    deriveInitialCityFeatures(existingProfile),
+  );
+  const [requirementsNew, setRequirementsNew] = useState<string[]>(() =>
+    deriveInitialRequirementsNew(existingProfile),
   );
 
   // Q8 (national exam) only makes sense for residents of a mapped country
@@ -400,20 +442,20 @@ export function OnboardingForm({
   }
 
   function toggleRequirement(value: string) {
-    setRequirements((current) => {
+    setRequirementsNew((current) => {
       if (current.includes(value)) {
-        return value === "nothing" ? [] : current.filter((v) => v !== value);
+        return current.filter((v) => v !== value);
       }
-      if (value === "nothing") return ["nothing"];
-      let next = current.filter((v) => v !== "nothing");
-      if (value === "big_city") next = next.filter((v) => v !== "small_city");
-      if (value === "small_city") next = next.filter((v) => v !== "big_city");
-      return [...next, value];
+      return [...current, value];
     });
   }
 
-  function toggleLifestyle(value: string) {
-    setLifestyle((current) => {
+  function toggleCityFormat(value: string) {
+    setCityFormat(value);
+  }
+
+  function toggleCityFeature(value: string) {
+    setCityFeatures((current) => {
       if (current.includes(value)) {
         return current.filter((v) => v !== value);
       }
@@ -752,63 +794,106 @@ export function OnboardingForm({
           />
         </div>
 
-        {/* Q11 — lifestyle preferences */}
+        {/* Q11 — lifestyle preferences: city format + city features */}
         <div className={currentStep.id === "lifestyle" ? "space-y-4" : "hidden"}>
           <div className="space-y-1">
             <span className={formLabelClassName}>{t("lifestyleLabel")}</span>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
-              {t("lifestyleHelp")}
+              {t("lifestyleSubLabel")}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {LIFESTYLE_OPTIONS.map((option) => {
-              const checked = lifestyle.includes(option.value);
-              return (
-                <label
-                  key={option.value}
-                  className={`group relative flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-center cursor-pointer transition-colors ${
-                    checked
-                      ? "border-primary bg-primary-fixed/20"
-                      : "border-outline-variant bg-surface-container-lowest"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    name={option.value}
-                    value="true"
-                    checked={checked}
-                    onChange={() => toggleLifestyle(option.value)}
-                    className="peer sr-only"
-                  />
-                  <span className="w-4 h-4 rounded border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center text-on-primary">
-                    {checked && (
-                      <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-                        check
-                      </span>
-                    )}
-                  </span>
-                  <span className="font-headline-sm text-headline-sm text-primary">
-                    {t(option.labelKey)}
-                  </span>
-                </label>
-              );
-            })}
+
+          {/* City format — single select (radio cards) */}
+          <div className="space-y-3">
+            <span className={formLabelClassName}>{t("cityFormatLabel")}</span>
+            <div className="grid grid-cols-2 gap-3">
+              {CITY_FORMAT_OPTIONS.map((option) => {
+                const checked = cityFormat === option.value;
+                return (
+                  <label
+                    key={option.value}
+                    className={`group relative flex flex-col items-center justify-center gap-2 rounded-lg border-2 px-4 py-4 text-center cursor-pointer transition-colors ${
+                      checked
+                        ? "border-primary bg-primary-fixed/20"
+                        : "border-outline-variant bg-surface-container-lowest"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="city_format"
+                      value={option.value}
+                      checked={checked}
+                      onChange={() => toggleCityFormat(option.value)}
+                      className="peer sr-only"
+                    />
+                    <span className="font-headline-sm text-headline-sm text-primary">
+                      {t(option.labelKey)}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* City features — multi-select (checkboxes) */}
+          <div className="space-y-3">
+            <span className={formLabelClassName}>{t("cityFeaturesLabel")}</span>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">
+              {t("lifestyleHelp")}
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {CITY_FEATURE_OPTIONS.map((option) => {
+                const checked = cityFeatures.includes(option.value);
+                return (
+                  <label
+                    key={option.value}
+                    className={`group relative flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-center cursor-pointer transition-colors ${
+                      checked
+                        ? "border-primary bg-primary-fixed/20"
+                        : "border-outline-variant bg-surface-container-lowest"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      name={option.value}
+                      value="true"
+                      checked={checked}
+                      onChange={() => toggleCityFeature(option.value)}
+                      className="peer sr-only"
+                    />
+                    <span className="w-4 h-4 rounded border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center text-on-primary">
+                      {checked && (
+                        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
+                          check
+                        </span>
+                      )}
+                    </span>
+                    <span className="font-headline-sm text-headline-sm text-primary">
+                      {t(option.labelKey)}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* Q12 — extra requirements */}
         <div className={currentStep.id === "extra" ? "space-y-4" : "hidden"}>
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
-            {t("requirementsHelp")}
-          </p>
-          {/* With support group */}
+          <div className="space-y-1">
+            <span className={formLabelClassName}>{t("requirementsLabel")}</span>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">
+              {t("requirementsSubLabel")}
+            </p>
+
+          {/* Support & opportunities group */}
           <div>
             <h4 className="font-label-caps text-label-caps text-on-surface-variant mb-3">
-              {t("reqGroupWithSupport")}
+              {t("reqGroupSupport")}
             </h4>
             <div className="grid grid-cols-2 gap-3">
-              {REQUIREMENT_OPTIONS.filter((o) => o.group === "withSupport").map((option) => {
-                const checked = requirements.includes(option.value);
+              {REQUIREMENT_OPTIONS.filter((o) => o.group === "support").map((option) => {
+                const checked = requirementsNew.includes(option.value);
                 return (
                   <label
                     key={option.value}
@@ -841,14 +926,15 @@ export function OnboardingForm({
               })}
             </div>
           </div>
-          {/* Without support group */}
+
+          {/* Admission group */}
           <div className="pt-4 border-t border-outline-variant/20">
             <h4 className="font-label-caps text-label-caps text-on-surface-variant mb-3">
-              {t("reqGroupWithoutSupport")}
+              {t("reqGroupAdmission")}
             </h4>
             <div className="grid grid-cols-2 gap-3">
-              {REQUIREMENT_OPTIONS.filter((o) => o.group === "withoutSupport").map((option) => {
-                const checked = requirements.includes(option.value);
+              {REQUIREMENT_OPTIONS.filter((o) => o.group === "admission").map((option) => {
+                const checked = requirementsNew.includes(option.value);
                 return (
                   <label
                     key={option.value}
@@ -882,6 +968,7 @@ export function OnboardingForm({
             </div>
           </div>
         </div>
+      </div>
 
         {state.error && (
           <p role="alert" className="font-body-sm text-body-sm text-error">
