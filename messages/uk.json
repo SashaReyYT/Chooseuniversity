@@ -477,6 +477,8 @@
     "livingHighHint": "€1,200+",
     "budgetUnknown": "Ще не знаю",
     "requirementsHelp": "Це вподобання для підбору — жодне з них не є жорсткою вимогою.",
+    "reqGroupWithSupport": "З підтримкою / допомогою",
+    "reqGroupWithoutSupport": "Самостійно / на власні сили",
     "reqScholarship": "Стипендія",
     "reqDormitory": "Гуртожиток",
     "reqWork": "Підробіток",

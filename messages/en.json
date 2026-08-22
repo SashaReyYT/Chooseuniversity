@@ -452,6 +452,8 @@
     "livingHighHint": "€1,200+",
     "budgetUnknown": "Not sure yet",
     "requirementsHelp": "These become preferences in matching — nothing is a hard requirement.",
+    "reqGroupWithSupport": "With support / assistance",
+    "reqGroupWithoutSupport": "On my own / independent",
     "reqScholarship": "Scholarship",
     "reqDormitory": "Dormitory",
     "reqWork": "Part-time work",

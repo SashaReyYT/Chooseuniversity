@@ -185,14 +185,16 @@ function deriveInitialRequirements(profile: UserProfileRow | null): string[] {
 }
 
 const REQUIREMENT_OPTIONS = [
-  { value: "scholarship", labelKey: "reqScholarship" },
-  { value: "dormitory", labelKey: "reqDormitory" },
-  { value: "work", labelKey: "reqWork" },
-  { value: "stay", labelKey: "reqStay" },
-  { value: "no_extra_exams", labelKey: "reqNoExtraExams" },
-  { value: "big_city", labelKey: "reqBigCity" },
-  { value: "small_city", labelKey: "reqSmallCity" },
-  { value: "nothing", labelKey: "reqNothing" },
+  // With support (assistance)
+  { value: "scholarship", labelKey: "reqScholarship", group: "withSupport" },
+  { value: "dormitory", labelKey: "reqDormitory", group: "withSupport" },
+  // Without support (independent)
+  { value: "work", labelKey: "reqWork", group: "withoutSupport" },
+  { value: "stay", labelKey: "reqStay", group: "withoutSupport" },
+  { value: "no_extra_exams", labelKey: "reqNoExtraExams", group: "withoutSupport" },
+  { value: "big_city", labelKey: "reqBigCity", group: "withoutSupport" },
+  { value: "small_city", labelKey: "reqSmallCity", group: "withoutSupport" },
+  { value: "nothing", labelKey: "reqNothing", group: "withoutSupport" },
 ] as const;
 
 export const LIFESTYLE_OPTIONS = [
@@ -799,39 +801,85 @@ export function OnboardingForm({
           <p className="font-body-sm text-body-sm text-on-surface-variant">
             {t("requirementsHelp")}
           </p>
-          <div className="grid grid-cols-2 gap-3">
-            {REQUIREMENT_OPTIONS.map((option) => {
-              const checked = requirements.includes(option.value);
-              return (
-                <label
-                  key={option.value}
-                  className={`group relative flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-center cursor-pointer transition-colors ${
-                    checked
-                      ? "border-primary bg-primary-fixed/20"
-                      : "border-outline-variant bg-surface-container-lowest"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    name={option.value}
-                    value="true"
-                    checked={checked}
-                    onChange={() => toggleRequirement(option.value)}
-                    className="peer sr-only"
-                  />
-                  <span className="w-4 h-4 rounded border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center text-on-primary">
-                    {checked && (
-                      <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-                        check
-                      </span>
-                    )}
-                  </span>
-                  <span className="font-headline-sm text-headline-sm text-primary">
-                    {t(option.labelKey)}
-                  </span>
-                </label>
-              );
-            })}
+          {/* With support group */}
+          <div>
+            <h4 className="font-label-caps text-label-caps text-on-surface-variant mb-3">
+              {t("reqGroupWithSupport")}
+            </h4>
+            <div className="grid grid-cols-2 gap-3">
+              {REQUIREMENT_OPTIONS.filter((o) => o.group === "withSupport").map((option) => {
+                const checked = requirements.includes(option.value);
+                return (
+                  <label
+                    key={option.value}
+                    className={`group relative flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-center cursor-pointer transition-colors ${
+                      checked
+                        ? "border-primary bg-primary-fixed/20"
+                        : "border-outline-variant bg-surface-container-lowest"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      name={option.value}
+                      value="true"
+                      checked={checked}
+                      onChange={() => toggleRequirement(option.value)}
+                      className="peer sr-only"
+                    />
+                    <span className="w-4 h-4 rounded border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center text-on-primary">
+                      {checked && (
+                        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
+                          check
+                        </span>
+                      )}
+                    </span>
+                    <span className="font-headline-sm text-headline-sm text-primary">
+                      {t(option.labelKey)}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+          {/* Without support group */}
+          <div className="pt-4 border-t border-outline-variant/20">
+            <h4 className="font-label-caps text-label-caps text-on-surface-variant mb-3">
+              {t("reqGroupWithoutSupport")}
+            </h4>
+            <div className="grid grid-cols-2 gap-3">
+              {REQUIREMENT_OPTIONS.filter((o) => o.group === "withoutSupport").map((option) => {
+                const checked = requirements.includes(option.value);
+                return (
+                  <label
+                    key={option.value}
+                    className={`group relative flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-center cursor-pointer transition-colors ${
+                      checked
+                        ? "border-primary bg-primary-fixed/20"
+                        : "border-outline-variant bg-surface-container-lowest"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      name={option.value}
+                      value="true"
+                      checked={checked}
+                      onChange={() => toggleRequirement(option.value)}
+                      className="peer sr-only"
+                    />
+                    <span className="w-4 h-4 rounded border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center text-on-primary">
+                      {checked && (
+                        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
+                          check
+                        </span>
+                      )}
+                    </span>
+                    <span className="font-headline-sm text-headline-sm text-primary">
+                      {t(option.labelKey)}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
           </div>
         </div>
 

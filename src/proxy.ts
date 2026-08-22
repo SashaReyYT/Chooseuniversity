@@ -42,10 +42,12 @@ export async function proxy(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    // Supabase isn't configured yet (e.g. local dev before `.env.local` is
-    // filled in). Skip session handling instead of throwing.
     return response;
   }
+
+  // Skip Supabase session handling for auth pages to avoid conflicts
+  const url = new URL(request.url);
+  const isAuthPage = url.pathname.includes("/sign-in") || url.pathname.includes("/sign-up") || url.pathname.includes("/onboarding");
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -64,13 +66,9 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (!user && !isAuthPage) {
     const { error } = await supabase.auth.signInAnonymously();
     if (error) {
-      // Don't fail the request over this — pages that need a session
-      // (e.g. saving a programme) will surface their own error if
-      // `auth.uid()` genuinely isn't available. Logged so it's visible
-      // in server logs rather than silently swallowed.
       console.error("Failed to start an anonymous session:", error.message);
     }
   }
