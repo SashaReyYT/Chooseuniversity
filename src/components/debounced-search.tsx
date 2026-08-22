@@ -9,7 +9,6 @@ interface DebouncedSearchProps {
   defaultValue?: string;
   placeholder?: string;
   debounceMs?: number;
-  locale: string;
   onSearch?: (query: string) => void;
 }
 
@@ -17,7 +16,6 @@ export function DebouncedSearch({
   defaultValue = "",
   placeholder,
   debounceMs = 300,
-  locale,
   onSearch,
 }: DebouncedSearchProps) {
   const router = useRouter();

@@ -6,12 +6,9 @@ import { Link } from "@/i18n/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ProfileService } from "@/lib/services/profile.service";
 import { MatchingService } from "@/lib/services/matching.service";
-import { ProgrammeCard } from "@/components/programme-card";
 import { AppShell } from "@/components/app-shell";
 import { Suspense } from "react";
 import { ResultsSkeleton } from "@/components/skeleton-wrappers";
-import type { MatchResult } from "@/lib/matching/engine";
-import type { MatchUserProfile } from "@/lib/matching/match-types";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import { formatTuition } from "@/components/match-display";
 
@@ -55,47 +52,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     referenceData.listCountries(),
   ]);
 
-  const profile = profileData.profile;
-  const matchProfile: MatchUserProfile = {
-    current_education_level: profile.current_education_level,
-    current_gpa: profile.current_gpa,
-    current_gpa_scale: profile.current_gpa_scale,
-    budget_min: profile.budget_min,
-    budget_max: profile.budget_max,
-    budget_currency: profile.budget_currency,
-    budget_mode: profile.budget_mode,
-    preferred_degree_level: profile.preferred_degree_level,
-    preferred_country_codes: profile.preferred_country_codes,
-    preferred_cities: profile.preferred_cities,
-    preferred_field_of_study_ids: profile.preferred_field_of_study_ids,
-    preferred_language_codes: profile.preferred_language_codes,
-    location_preference_type: profile.location_preference_type,
-    preferred_ownership_type: profile.preferred_ownership_type,
-    preferred_study_format: profile.preferred_study_format,
-    support_preference: profile.support_preference,
-    english_level: profile.english_level,
-    math_background: profile.math_background,
-    career_priorities: profile.career_priorities ?? [],
-    lifestyle_preferences: profile.lifestyle_preferences ?? [],
-    testScores: profileData.testScores.map((s) => ({
-      test_type: s.test_type,
-      qualification_id: s.qualification_id,
-      score: s.score,
-      cefr_equivalent: s.cefr_equivalent,
-    })),
-    nmtScores: profileData.nmtScores.map((s) => ({
-      subject_code: s.subject_code,
-      score: s.score,
-      max_score: s.max_score,
-    })),
-    qualifications: profileData.qualifications.map((q) => ({
-      qualification_id: q.qualification_id,
-      year: q.year,
-    })),
-  };
-
   const withScore = matches.filter((m) => m.match?.overallScore != null);
-  const top3 = withScore.slice(0, 3);
 
   const profileChips = [
     profile.preferred_field_of_study_ids?.[0]

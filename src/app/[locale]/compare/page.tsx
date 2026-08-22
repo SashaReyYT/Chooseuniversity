@@ -679,7 +679,6 @@ function DecisionSummary({
         label={t("decisionSummaryBestOverall")}
         description={t("decisionSummaryBestOverallDesc")}
         icon="emoji_events"
-        t={t}
         tDiscover={tDiscover}
       />
       {bestValue && bestValue.id !== bestOverall.id && (
@@ -689,7 +688,6 @@ function DecisionSummary({
           label={t("decisionSummaryBestValue")}
           description={t("decisionSummaryBestValueDesc")}
           icon="attach_money"
-          t={t}
           tDiscover={tDiscover}
         />
       )}
@@ -700,7 +698,6 @@ function DecisionSummary({
           label={t("decisionSummarySafestAdmission")}
           description={t("decisionSummarySafestAdmissionDesc")}
           icon="shield"
-          t={t}
           tDiscover={tDiscover}
         />
       )}
@@ -711,7 +708,6 @@ function DecisionSummary({
           label={t("decisionSummaryRunnerUp")}
           description={t("decisionSummaryRunnerUpDesc")}
           icon="star"
-          t={t}
           tDiscover={tDiscover}
         />
       )}
@@ -725,7 +721,6 @@ function DecisionCard({
   label,
   description,
   icon,
-  t,
   tDiscover,
 }: {
   programme: ProgrammeWithDetails;
@@ -733,7 +728,6 @@ function DecisionCard({
   label: string;
   description: string;
   icon: string;
-  t: Awaited<ReturnType<typeof getTranslations<"Compare">>>;
   tDiscover: DiscoverTranslator;
 }) {
   return (

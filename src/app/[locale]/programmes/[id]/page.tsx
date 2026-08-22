@@ -243,7 +243,7 @@ export default async function ProgrammeDetailsPage({
                 <span className="material-symbols-outlined" aria-hidden="true">how_to_reg</span>
                 {t("admissionOutlook")}
               </h2>
-              <AdmissionOutlook match={match} t={t} profile={profile} programme={programme} />
+              <AdmissionOutlook t={t} profile={profile} programme={programme} />
             </section>
           )}
 
@@ -1125,7 +1125,7 @@ export default async function ProgrammeDetailsPage({
 
       {/* Next steps */}
       {match && (
-        <NextSteps t={t} programme={programme} match={match} />
+        <NextSteps t={t} programme={programme} />
       )}
 
       </main>
@@ -1147,12 +1147,10 @@ function Fact({ label, value }: { label: string; value: string }) {
 
 /** Admission outlook — human-readable "Can I get in?" summary. */
 function AdmissionOutlook({
-  match,
   t,
   profile,
   programme,
 }: {
-  match: MatchResult;
   t: Awaited<ReturnType<typeof getTranslations<"ProgrammeDetails">>>;
   profile: { english_level: string | null; math_background: string | null; current_education_level: string | null; current_gpa: number | null } | null;
   programme: { academic_requirements: { entrance_exam_required: boolean | null; min_gpa: number | null; gpa_scale: number | null } | null; test_requirements: Array<{ qualification: { name: string } }> | null } | null;
@@ -1258,11 +1256,9 @@ function AdmissionOutlook({
 function NextSteps({
   t,
   programme,
-  match,
 }: {
   t: Awaited<ReturnType<typeof getTranslations<"ProgrammeDetails">>>;
   programme: ProgrammeWithDetails;
-  match: MatchResult;
 }) {
   const deadline = programme.application_deadline ? new Date(programme.application_deadline) : null;
   const hasDeadline = deadline && deadline > new Date();

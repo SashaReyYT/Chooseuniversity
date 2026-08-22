@@ -184,12 +184,6 @@ function deriveInitialRequirements(profile: UserProfileRow | null): string[] {
   return selected;
 }
 
-/** Re-derives which lifestyle checkboxes an existing profile answers to. */
-function deriveInitialLifestyle(profile: UserProfileRow | null): string[] {
-  if (!profile) return [];
-  return profile.lifestyle_preferences ?? [];
-}
-
 const REQUIREMENT_OPTIONS = [
   { value: "scholarship", labelKey: "reqScholarship" },
   { value: "dormitory", labelKey: "reqDormitory" },

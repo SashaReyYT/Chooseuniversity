@@ -1,4 +1,4 @@
-import { test as base, type Page, type Browser } from '@playwright/test';
+import { test as base, type Page } from '@playwright/test';
 
 interface AuthFixtures {
   authenticatedPage: Page;

@@ -1,6 +1,5 @@
 ﻿import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { getCurrentUser } from "@/lib/auth/session";
 import { AuthNav } from "@/components/auth-nav";
 
 /**

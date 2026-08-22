@@ -18,11 +18,7 @@ import { Suspense } from "react";
 import { DiscoverSkeleton } from "@/components/skeleton-wrappers";
 import { TopMatchesClient } from "@/components/top-matches-client";
 import { DebouncedSearch } from "@/components/debounced-search";
-import {
-  formatTuition,
-  LABEL_KEYS,
-  DIMENSION_KEYS,
-} from "@/components/match-display";
+import { formatTuition } from "@/components/match-display";
 import { updatePriorityAction } from "@/lib/matching/actions";
 
 export default async function DiscoverPage({
@@ -38,8 +34,7 @@ export default async function DiscoverPage({
   setRequestLocale(locale);
 
   const t = await getTranslations("Discover");
-  const tDiscover = await getTranslations("Discover");
-    const uiLocale = await getLocale();
+  const uiLocale = await getLocale();
   const supabase = await createServerSupabaseClient();
 
   const {

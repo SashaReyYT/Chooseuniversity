@@ -9,7 +9,6 @@ import { AppNav } from "@/components/app-nav";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ProfileService } from "@/lib/services/profile.service";
 import { MatchingService, type RankedMatch } from "@/lib/services/matching.service";
-import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import { renderMatchMessage } from "@/components/match-display";
 import { AuthNav } from "@/components/auth-nav";
 

@@ -19,7 +19,7 @@ function loadEnv() {
   }
 }
 
-async function globalSetup(config: FullConfig) {
+async function globalSetup(_config: FullConfig) {
   loadEnv();
   
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
