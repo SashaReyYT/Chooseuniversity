@@ -26,7 +26,7 @@ import { roundScore } from "./utils";
  * enum values as params, never pre-formatted UI strings).
  */
 
-const CAREER_TAGS = [
+const _CAREER_TAGS = [
   "research",
   "software",
   "finance",
@@ -38,9 +38,9 @@ const CAREER_TAGS = [
   "academia",
 ] as const;
 
-type CareerTag = (typeof CAREER_TAGS)[number];
+type CareerTag = (typeof _CAREER_TAGS)[number];
 
-const LIFESTYLE_TAGS = [
+const _LIFESTYLE_TAGS = [
   "large_city",
   "student_city",
   "affordable",
@@ -53,7 +53,7 @@ const LIFESTYLE_TAGS = [
   "green_spaces",
 ] as const;
 
-type LifestyleTag = (typeof LIFESTYLE_TAGS)[number];
+type LifestyleTag = (typeof _LIFESTYLE_TAGS)[number];
 
 /**
  * Career Fit — matches user's career priorities against programme career tags.

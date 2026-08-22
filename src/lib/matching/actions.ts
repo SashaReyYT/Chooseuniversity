@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import type { MatchWeights } from "@/lib/matching/match-types";
 import { UserMatchWeightsRepository } from "@/lib/repositories/user-match-weights.repository";
 import { MatchingService } from "@/lib/services/matching.service";
-import { ProfileService } from "@/lib/services/profile.service";
 
 export async function updateMatchWeightsAction(
   locale: string,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { LABEL_KEYS, formatTuition } from "@/components/match-display";
 import type { MatchResult } from "@/lib/matching/engine";
@@ -26,9 +27,10 @@ interface TopMatchesClientProps {
 export function TopMatchesClient({ topMatches, locale, uiLocale }: TopMatchesClientProps) {
   const t = useTranslations("Discover");
   const tDiscover = useTranslations("Discover");
+  const router = useRouter();
 
   const navigateToProgramme = (programmeId: string) => {
-    window.location.href = `/${locale}/programmes/${programmeId}`;
+    router.push(`/${locale}/programmes/${programmeId}`);
   };
 
   return (
@@ -42,7 +44,7 @@ export function TopMatchesClient({ topMatches, locale, uiLocale }: TopMatchesCli
         </p>
       </header>
       <div className="space-y-4">
-        {topMatches.map(({ entry, category, categoryKey, categoryDescKey, idx }) => (
+        {topMatches.map(({ entry, category, categoryKey, categoryDescKey }) => (
           <article
             key={entry.programme.id}
             className={`relative rounded-xl border border-outline-variant/40 bg-surface-container-low p-6 space-y-4 hover:border-primary/50 transition-colors cursor-pointer ${

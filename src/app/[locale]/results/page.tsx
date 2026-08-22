@@ -52,7 +52,9 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     referenceData.listCountries(),
   ]);
 
+  const profile = profileData.profile;
   const withScore = matches.filter((m) => m.match?.overallScore != null);
+  const top3 = withScore.slice(0, 3);
 
   const profileChips = [
     profile.preferred_field_of_study_ids?.[0]
@@ -87,13 +89,13 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
       : null,
   ].filter((chip): chip is string => Boolean(chip));
 
-  const categorisedTop = top3.map((entry, idx) => {
+  const categorisedTop = top3.map((entry, index) => {
     const score = entry.match!.overallScore!;
     let category: "best" | "ambitious" | "safe";
     let categoryLabel: string;
     let categoryDesc: string;
 
-    if (idx === 0 && score >= 90) {
+    if (index === 0 && score >= 90) {
       category = "best";
       categoryLabel = t("categoryBestFit");
       categoryDesc = t("categoryBestFitDesc");
@@ -112,7 +114,6 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
       category,
       categoryLabel,
       categoryDesc,
-      idx,
     };
   });
 
@@ -158,7 +159,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
 
             <div className="space-y-4">
               <Suspense fallback={<ResultsSkeleton />}>
-                {categorisedTop.map(({ entry, category, categoryLabel, categoryDesc, idx }) => (
+                {categorisedTop.map(({ entry, category, categoryLabel, categoryDesc }) => (
                   <article
                     key={entry.programme.id}
                     className={`relative rounded-xl border border-outline-variant/40 bg-surface-container-low p-6 space-y-4 ${

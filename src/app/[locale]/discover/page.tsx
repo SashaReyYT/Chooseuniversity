@@ -18,7 +18,7 @@ import { Suspense } from "react";
 import { DiscoverSkeleton } from "@/components/skeleton-wrappers";
 import { TopMatchesClient } from "@/components/top-matches-client";
 import { DebouncedSearch } from "@/components/debounced-search";
-import { formatTuition } from "@/components/match-display";
+
 import { updatePriorityAction } from "@/lib/matching/actions";
 
 export default async function DiscoverPage({
@@ -312,7 +312,6 @@ export default async function DiscoverPage({
           <DebouncedSearch
             defaultValue={searchQuery}
             placeholder={t("searchPlaceholder")}
-            locale={locale}
             debounceMs={300}
           />
         </div>

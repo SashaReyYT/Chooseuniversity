@@ -3,7 +3,7 @@ import { sortRankedMatches, type RankedMatch } from "./matching.service";
 import { makeProgramme } from "@/lib/matching/test-fixtures";
 import type { MatchResult } from "@/lib/matching/match-types";
 
-function makeMatch(overallScore: number | null, overrides: {
+function _makeMatch(overallScore: number | null, overrides: {
   confidence?: "high" | "medium" | "low";
   hardReqFails?: number;
   concernsCount?: number;

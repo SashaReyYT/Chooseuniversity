@@ -33,27 +33,6 @@ export function useMatchChanges(): UseMatchChangesReturn {
 
   const STORAGE_KEY = "unifind_prev_match_scores";
 
-  // Load previous scores from sessionStorage on mount
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const prevScores = JSON.parse(stored);
-          // Check if we have a pending comparison from a recent profile update
-          const pendingComparison = sessionStorage.getItem("unifind_pending_match_comparison");
-          if (pendingComparison === "true") {
-            // We just updated profile, need to fetch new scores and compare
-            checkForChanges();
-          }
-        } catch {
-          // Invalid stored data, clear it
-          sessionStorage.removeItem(STORAGE_KEY);
-        }
-      }
-    }
-  }, []);
-
   const checkForChanges = useCallback(async () => {
     const supabase = createClient();
     
@@ -122,6 +101,30 @@ export function useMatchChanges(): UseMatchChangesReturn {
       setIsLoading(false);
     }
   }, []);
+
+  // Load previous scores from sessionStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          JSON.parse(stored); // Just validate JSON
+          // Check if we have a pending comparison from a recent profile update
+          const pendingComparison = sessionStorage.getItem("unifind_pending_match_comparison");
+          if (pendingComparison === "true") {
+            // We just updated profile, need to fetch new scores and compare
+            // Use setTimeout to avoid synchronous setState in effect
+            setTimeout(() => {
+              checkForChanges();
+            }, 0);
+          }
+        } catch {
+          // Invalid stored data, clear it
+          sessionStorage.removeItem(STORAGE_KEY);
+        }
+      }
+    }
+  }, [checkForChanges]);
 
   const dismissChange = useCallback((programmeId: string) => {
     setChanges((prev) => prev.filter((c) => c.programmeId !== programmeId));

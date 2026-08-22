@@ -1,7 +1,5 @@
 import type { MatchResult, MatchDimensionResult } from "./engine";
-import type { MatchDimensionKey } from "./match-types";
 import type { MatchMessage } from "./messages";
-import { translated } from "./messages";
 
 /**
  * Human-readable explanations for match dimensions.
@@ -171,7 +169,6 @@ export function renderMatchMessage(
  */
 export function getOverallMatchSummary(
   match: MatchResult,
-  tDiscover: Awaited<ReturnType<typeof import("next-intl/server").getTranslations>>,
 ): { label: string; description: string } {
   if (!match.overallScore) {
     return { label: "No score", description: "Complete your profile to see your match score." };

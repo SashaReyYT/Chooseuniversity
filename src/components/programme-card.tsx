@@ -251,9 +251,9 @@ export async function ProgrammeCard({
             {match && match.dimensions.length > 0 && (
               <>
                 <div className="space-y-3">
-                  <p className="font-label-caps text-label-caps text-on-surface-variant">
-                    {t("matchBreakdown" as any)}
-                  </p>
+<p className="font-label-caps text-label-caps text-on-surface-variant">
+                      {t("matchBreakdown" as Parameters<typeof t>[0])}
+                    </p>
                   <div className="space-y-2">
                     {match.dimensions
                       .filter((d) => d.applicable && d.score != null)
