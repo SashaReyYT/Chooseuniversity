@@ -45,7 +45,13 @@ export async function proxy(request: NextRequest) {
   });
 
   // Refresh session if exists; do NOT create anonymous sessions
-  await supabase.auth.getUser();
+  // Wrap in try/catch because getUser() may throw if Supabase has
+  // anonymous sign-ins disabled and there's an invalid/expired session
+  try {
+    await supabase.auth.getUser();
+  } catch {
+    // Session invalid or expired; cookies will be cleared on next request
+  }
 
   return response;
 }

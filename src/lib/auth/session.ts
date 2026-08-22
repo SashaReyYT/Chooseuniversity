@@ -13,10 +13,14 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
  */
 export async function getCurrentUser(): Promise<User | null> {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user;
+  } catch {
+    return null;
+  }
 }
 
 /**
