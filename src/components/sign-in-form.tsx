@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
@@ -7,12 +7,17 @@ import type { AuthFormState } from "@/lib/auth/types";
 
 const initialState: AuthFormState = { error: null };
 
-export function SignInForm() {
+interface SignInFormProps {
+  next?: string;
+}
+
+export function SignInForm({ next = "/onboarding" }: SignInFormProps) {
   const t = useTranslations("Auth");
   const [state, formAction, isPending] = useActionState(signIn, initialState);
 
   return (
     <form action={formAction} className="space-y-4 max-w-sm">
+      <input type="hidden" name="next" value={next} />
       <div className="space-y-1.5">
         <label
           htmlFor="email"
@@ -42,6 +47,7 @@ export function SignInForm() {
           name="password"
           type="password"
           required
+          minLength={8}
           autoComplete="current-password"
           className="w-full rounded-md border border-outline-variant bg-surface-container-lowest px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
         />

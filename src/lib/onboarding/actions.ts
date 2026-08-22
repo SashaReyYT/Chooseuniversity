@@ -21,6 +21,7 @@ import {
   parseBudgetMode,
   parseEnum,
 } from "@/lib/onboarding/profile-mapping";
+import { LIFESTYLE_OPTIONS } from "@/components/onboarding-form";
 import type {
   EducationLevel,
   EducationStage,
@@ -212,6 +213,9 @@ export async function submitOnboardingAction(
   const profileService = new ProfileService(supabase);
 
   try {
+    const lifestylePreferences = LIFESTYLE_OPTIONS.map((opt) => opt.value)
+      .filter((val) => formData.get(val) != null);
+
     await profileService.upsert(user.id, {
       full_name: String(formData.get("full_name") ?? "").trim() || null,
       residence_country_code: residenceCountryCode,
@@ -236,6 +240,7 @@ export async function submitOnboardingAction(
       location_preference_type: locationPreferenceType,
       math_background: mapMathStrength(mathStrength),
       english_level: englishLevel,
+      lifestyle_preferences: lifestylePreferences,
     });
 
     // Q7 — per-language proficiency.
@@ -251,5 +256,5 @@ export async function submitOnboardingAction(
     return { error: "Something went wrong saving your profile. Please try again." };
   }
 
-  redirect(`/${locale}/discover`);
+  redirect(`/${locale}/results`);
 }

@@ -7,12 +7,17 @@ import type { AuthFormState } from "@/lib/auth/types";
 
 const initialState: AuthFormState = { error: null };
 
-export function SignUpForm() {
+interface SignUpFormProps {
+  next?: string;
+}
+
+export function SignUpForm({ next = "/onboarding" }: SignUpFormProps) {
   const t = useTranslations("Auth");
   const [state, formAction, isPending] = useActionState(signUp, initialState);
 
   return (
     <form action={formAction} className="space-y-4 max-w-sm">
+      <input type="hidden" name="next" value={next} />
       <div className="space-y-1.5">
         <label
           htmlFor="email"

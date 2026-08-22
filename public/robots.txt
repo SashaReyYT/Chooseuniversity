@@ -1,0 +1,28 @@
+# Unifind robots.txt
+# Allow all crawlers to access the public content
+# Disallow private/auth pages
+
+User-agent: *
+Allow: /
+
+# Disallow auth and private pages
+Disallow: /en/sign-in
+Disallow: /en/sign-up
+Disallow: /en/onboarding
+Disallow: /en/results
+Disallow: /en/profile
+Disallow: /en/saved
+Disallow: /en/compare
+Disallow: /en/admin
+
+Disallow: /uk/sign-in
+Disallow: /uk/sign-up
+Disallow: /uk/onboarding
+Disallow: /uk/results
+Disallow: /uk/profile
+Disallow: /uk/saved
+Disallow: /uk/compare
+Disallow: /uk/admin
+
+# Sitemap location
+Sitemap: https://unifind.org/sitemap.xml

@@ -26,6 +26,96 @@ import { roundScore } from "./utils";
  * enum values as params, never pre-formatted UI strings).
  */
 
+const CAREER_TAGS = [
+  "research",
+  "software",
+  "finance",
+  "business",
+  "medicine",
+  "design",
+  "public_sector",
+  "startups",
+  "academia",
+] as const;
+
+type CareerTag = (typeof CAREER_TAGS)[number];
+
+const LIFESTYLE_TAGS = [
+  "large_city",
+  "student_city",
+  "affordable",
+  "vibrant_nightlife",
+  "cultural_scene",
+  "international_community",
+  "safe_environment",
+  "good_transport",
+  "bike_friendly",
+  "green_spaces",
+] as const;
+
+type LifestyleTag = (typeof LIFESTYLE_TAGS)[number];
+
+/**
+ * Career Fit — matches user's career priorities against programme career tags.
+ * Both user profile and programme must have career data for this to be applicable.
+ *
+ * Scoring:
+ * - For each matching tag: +30 points
+ * - Maximum 100 (when all user priorities match programme tags)
+ * - If user has no priorities or programme has no tags → not applicable
+ */
+export function scoreCareerFit(
+  profile: MatchUserProfile,
+  programme: ProgrammeWithDetails,
+): MatchDimensionResult {
+  const userPriorities = profile.career_priorities as CareerTag[] | undefined;
+  const programmeTags = programme.career_tags as CareerTag[] | undefined;
+
+  const concerns: MatchMessage[] = [];
+
+  if (!userPriorities || userPriorities.length === 0) {
+    concerns.push(translated("career.missingPriority"));
+    return unknownDimension("career", concerns);
+  }
+  if (!programmeTags || programmeTags.length === 0) {
+    concerns.push(translated("career.missingData"));
+    return unknownDimension("career", concerns);
+  }
+
+  const matchingTags = userPriorities.filter((tag) => programmeTags.includes(tag));
+  const matchCount = matchingTags.length;
+  const maxPossible = userPriorities.length;
+
+  // Score: each matching tag gives proportional points, max 100
+  const score = roundScore((matchCount / maxPossible) * 100);
+
+  const reasons: MatchMessage[] = [];
+  if (matchCount > 0) {
+    reasons.push(
+      translated("career.match", {
+        tags: matchingTags.map((t) => t.replace("_", " ")).join(", "),
+      }),
+    );
+  }
+  if (matchCount < userPriorities.length) {
+    const missing = userPriorities.filter((tag) => !programmeTags.includes(tag));
+    concerns.push(
+      translated("career.partialMatch", {
+        missing: missing.map((t) => t.replace("_", " ")).join(", "),
+      }),
+    );
+  }
+
+  return {
+    key: "career",
+    label: MATCH_DIMENSION_LABELS.career,
+    score,
+    applicable: true,
+    reasons,
+    concerns,
+  };
+}
+
 /**
  * Study Format Fit — compares the student's `preferred_study_format`
  * (full_time / part_time / either) against the programme's published
@@ -109,26 +199,73 @@ export function scoreFormatFit(
 }
 
 /**
- * Career Fit — non-applicable until programme career attributes exist.
- * The user's `career_priorities` are stored, but there is nothing on the
- * programme side to match them against yet.
- */
-export function scoreCareerFit(
-  _profile: MatchUserProfile,
-  _programme: ProgrammeWithDetails,
-): MatchDimensionResult {
-  return unknownDimension("career", [translated("career.missingData")]);
-}
-
-/**
- * Lifestyle Fit — non-applicable until lifestyle data exists on either
- * side of the match.
+ * Lifestyle Fit — matches user's lifestyle preferences against programme lifestyle tags.
+ * Both user profile and programme must have lifestyle data for this to be applicable.
+ *
+ * Lifestyle tags represent city characteristics:
+ * - large_city: Large international city, high student population, higher living costs
+ * - student_city: Student-focused city, lower cost than capitals, strong university presence
+ * - affordable: Low cost of living
+ * - vibrant_nightlife: Active nightlife and entertainment
+ * - cultural_scene: Rich cultural offerings (museums, theaters, events)
+ * - international_community: Large international student population
+ * - safe_environment: Low crime, safe for students
+ * - good_transport: Excellent public transport
+ * - bike_friendly: Good cycling infrastructure
+ * - green_spaces: Parks, nature nearby
+ *
+ * Scoring: each matching tag gives proportional points, max 100
  */
 export function scoreLifestyleFit(
-  _profile: MatchUserProfile,
-  _programme: ProgrammeWithDetails,
+  profile: MatchUserProfile,
+  programme: ProgrammeWithDetails,
 ): MatchDimensionResult {
-  return unknownDimension("lifestyle", [translated("lifestyle.missingData")]);
+  const userPreferences = profile.lifestyle_preferences as LifestyleTag[] | undefined;
+  const programmeTags = programme.lifestyle_tags as LifestyleTag[] | undefined;
+
+  const concerns: MatchMessage[] = [];
+
+  if (!userPreferences || userPreferences.length === 0) {
+    concerns.push(translated("lifestyle.missingPriority"));
+    return unknownDimension("lifestyle", concerns);
+  }
+  if (!programmeTags || programmeTags.length === 0) {
+    concerns.push(translated("lifestyle.missingData"));
+    return unknownDimension("lifestyle", concerns);
+  }
+
+  const matchingTags = userPreferences.filter((tag) => programmeTags.includes(tag));
+  const matchCount = matchingTags.length;
+  const maxPossible = userPreferences.length;
+
+  // Score: each matching tag gives proportional points, max 100
+  const score = roundScore((matchCount / maxPossible) * 100);
+
+  const reasons: MatchMessage[] = [];
+  if (matchCount > 0) {
+    reasons.push(
+      translated("lifestyle.match", {
+        tags: matchingTags.map((t) => t.replace("_", " ")).join(", "),
+      }),
+    );
+  }
+  if (matchCount < userPreferences.length) {
+    const missing = userPreferences.filter((tag) => !programmeTags.includes(tag));
+    concerns.push(
+      translated("lifestyle.partialMatch", {
+        missing: missing.map((t) => t.replace("_", " ")).join(", "),
+      }),
+    );
+  }
+
+  return {
+    key: "lifestyle",
+    label: MATCH_DIMENSION_LABELS.lifestyle,
+    score,
+    applicable: true,
+    reasons,
+    concerns,
+  };
 }
 
 /** UNKNOWN dimension payload shared by the not-yet-scorable extended dimensions. */

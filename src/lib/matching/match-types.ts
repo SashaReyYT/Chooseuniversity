@@ -28,6 +28,8 @@ export type MatchUserProfile = Pick<
   | "support_preference"
   | "english_level"
   | "math_background"
+  | "career_priorities"
+  | "lifestyle_preferences"
 > & {
   testScores: Pick<
     Database["public"]["Tables"]["user_test_scores"]["Row"],

@@ -1,0 +1,797 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: authenticated\core.spec.ts >> Authenticated Flow >> discover shows programme cards
+- Location: e2e\authenticated\core.spec.ts:12:7
+
+# Error details
+
+```
+Error: expect(locator).toBeVisible() failed
+
+Locator: locator('a[href^="/en/programmes/"]').first()
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "toBeVisible" with timeout 10000ms
+  - waiting for locator('a[href^="/en/programmes/"]').first()
+
+```
+
+```yaml
+- banner:
+  - link "Unifind":
+    - /url: /
+  - navigation:
+    - link "e2e-test@example.com":
+      - /url: /profile
+    - button "Sign out"
+- navigation "Unifind":
+  - link "Discover":
+    - /url: /en/discover
+  - link "Saved":
+    - /url: /en/saved
+  - link "Compare":
+    - /url: /en/compare
+  - link "Profile":
+    - /url: /en/profile
+- main:
+  - heading "Discover" [level=1]
+  - paragraph: Programmes ranked by how well they fit the profile you gave us.
+  - link "Edit your profile":
+    - /url: /en/profile
+  - region "Profile Summary":
+    - paragraph: 26 programmes
+    - text: Computer Science Bachelor Czech Republic + Poland + Germany English + Czech
+  - region "Your top matches":
+    - heading "Your top matches" [level=2]
+    - paragraph: Based on your profile, these are the strongest fits — categorised to help you decide.
+    - article:
+      - text: Best Fit
+      - paragraph: 100%
+      - paragraph: Excellent Fit
+      - heading "Chemistry and Technology (Bachelor's Programmes)" [level=3]
+      - paragraph: University of Chemistry and Technology Prague · Prague
+      - paragraph: The most balanced match across all your criteria — high confidence, strong fit.
+      - link "View details":
+        - /url: /en/en/programmes/900fae72-f8e1-47bb-8a0e-d9bcd8d41f80
+      - text: Tuition not published
+    - article:
+      - text: Safe Choice
+      - paragraph: 100%
+      - paragraph: Excellent Fit
+      - heading "Economics and Management (with Marketing / International Trade specializations)" [level=3]
+      - paragraph: University of Chemistry and Technology Prague · Prague
+      - paragraph: High admission confidence with strong alignment to your profile.
+      - link "View details":
+        - /url: /en/en/programmes/953f0a7e-3b74-4cc3-98e4-14c26805c560
+      - text: Tuition not published
+    - article:
+      - text: Safe Choice
+      - paragraph: 96%
+      - paragraph: Excellent Fit
+      - heading "Bachelor of Business Administration (BBA)" [level=3]
+      - paragraph: Prague University of Economics and Business · Prague
+      - paragraph: High admission confidence with strong alignment to your profile.
+      - link "View details":
+        - /url: /en/en/programmes/10269263-8388-464d-a456-54afbced35ef
+      - text: €5,000 / year
+  - text: Search programmes
+  - searchbox "Search programmes"
+  - combobox:
+    - option "All fields" [selected]
+    - option "Architecture"
+    - option "Graphic Design"
+    - option "Business Administration"
+    - option "Economics"
+    - option "Biomedical Engineering"
+    - option "Electrical Engineering"
+    - option "Mechanical Engineering"
+    - option "Artificial Intelligence"
+    - option "Computer Science"
+    - option "Cybersecurity"
+    - option "Data Science"
+    - option "Software Engineering"
+    - option "Medicine"
+    - option "Physiotherapy"
+    - option "Philology"
+    - option "Law"
+    - option "Agricultural Sciences"
+    - option "Biology"
+    - option "Chemistry"
+    - option "Environmental Sciences"
+    - option "Mathematics"
+    - option "Physics"
+    - option "International Relations"
+    - option "Psychology"
+  - combobox:
+    - option "All degrees" [selected]
+    - option "Bachelor"
+    - option "Master"
+    - option "PhD"
+  - combobox:
+    - option "All languages" [selected]
+    - option "Czech"
+    - option "Dutch"
+    - option "English"
+    - option "French"
+    - option "German"
+    - option "Italian"
+    - option "Polish"
+    - option "Portuguese"
+    - option "Spanish"
+    - option "Ukrainian"
+  - combobox:
+    - option "All countries" [selected]
+    - option "Austria"
+    - option "Canada"
+    - option "Czech Republic"
+    - option "Denmark"
+    - option "Finland"
+    - option "France"
+    - option "Germany"
+    - option "Ireland"
+    - option "Italy"
+    - option "Netherlands"
+    - option "Poland"
+    - option "Portugal"
+    - option "Spain"
+    - option "Sweden"
+    - option "Switzerland"
+    - option "Ukraine"
+    - option "United Kingdom"
+    - option "United States"
+  - button "Search"
+  - group "Search programmes":
+    - link "Best Match":
+      - /url: /en/en/discover?sort=best_match
+    - link "Lowest Estimated Cost":
+      - /url: /en/en/discover?sort=lowest_cost
+    - link "Top Academic":
+      - /url: /en/en/discover?sort=highest_match
+    - link "Filters":
+      - /url: "#filters"
+  - region:
+    - group: What matters most
+  - paragraph: 26 programmes
+  - text: Top Match
+  - article:
+    - paragraph: 100%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: University of Chemistry and Technology Prague
+    - heading "Chemistry and Technology (Bachelor's Programmes)" [level=2]:
+      - link "Chemistry and Technology (Bachelor's Programmes)":
+        - /url: programmes/900fae72-f8e1-47bb-8a0e-d9bcd8d41f80
+    - paragraph: Prague, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Admission Fit 100% — High admission confidence
+    - paragraph: Tuition not published · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+      - listitem: Prague is a large city — matches your city-size preference.
+    - paragraph: One thing to know
+    - paragraph: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+    - link "View details":
+      - /url: programmes/900fae72-f8e1-47bb-8a0e-d9bcd8d41f80
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 100%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: University of Chemistry and Technology Prague
+    - heading "Economics and Management (with Marketing / International Trade specializations)" [level=2]:
+      - link "Economics and Management (with Marketing / International Trade specializations)":
+        - /url: programmes/953f0a7e-3b74-4cc3-98e4-14c26805c560
+    - paragraph: Prague, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Admission Fit 100% — High admission confidence
+    - paragraph: Tuition not published · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+      - listitem: Prague is a large city — matches your city-size preference.
+    - paragraph: One thing to know
+    - paragraph: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+    - link "View details":
+      - /url: programmes/953f0a7e-3b74-4cc3-98e4-14c26805c560
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 96%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: Prague University of Economics and Business
+    - heading "Bachelor of Business Administration (BBA)" [level=2]:
+      - link "Bachelor of Business Administration (BBA)":
+        - /url: programmes/10269263-8388-464d-a456-54afbced35ef
+    - paragraph: Prague, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 80% — Good admission chances
+    - paragraph: €5,000 / year · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Fits your budget (~5,000–5,000 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/10269263-8388-464d-a456-54afbced35ef
+    - button "Save"
+    - button "In comparison"
+    - group: Show details
+  - article:
+    - paragraph: 96%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: Prague University of Economics and Business
+    - heading "Bachelor of Economics of Markets and Organizations" [level=2]:
+      - link "Bachelor of Economics of Markets and Organizations":
+        - /url: programmes/d43cd74e-0ed0-4763-8c1e-99c6e882eef1
+    - paragraph: Prague, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 80% — Good admission chances
+    - paragraph: €5,000 / year · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Fits your budget (~5,000–5,000 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/d43cd74e-0ed0-4763-8c1e-99c6e882eef1
+    - button "Save"
+    - button "In comparison"
+    - group: Show details
+  - article:
+    - paragraph: 96%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: Czech University of Life Sciences Prague
+    - heading "Bachelor's Programme (Tropical AgriSciences)" [level=2]:
+      - link "Bachelor's Programme (Tropical AgriSciences)":
+        - /url: programmes/546569a6-8742-4561-a4a0-06f7c87e7730
+    - paragraph: Prague, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 80% — Good admission chances
+    - paragraph: CZK 8,000 / year · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Fits your budget (~320–320 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/546569a6-8742-4561-a4a0-06f7c87e7730
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 96%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: Czech Technical University in Prague
+    - heading "Informatics" [level=2]:
+      - link "Informatics":
+        - /url: programmes/f1899d11-0bc3-47c4-b059-74652052f08d
+    - paragraph: Prague, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 80% — Good admission chances
+    - paragraph: CZK 128,000 / year · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Strong Computer Science match.
+      - listitem: Fits your budget (~5,120–5,120 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/f1899d11-0bc3-47c4-b059-74652052f08d
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 95%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: Czech Technical University in Prague
+    - heading "Biomedical Technology" [level=2]:
+      - link "Biomedical Technology":
+        - /url: programmes/2f3fd96f-bbad-440b-a450-8416aa0cf730
+    - paragraph: Prague, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Admission Fit 80% — Good admission chances
+    - paragraph: Tuition not published · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+      - listitem: Prague is a large city — matches your city-size preference.
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/2f3fd96f-bbad-440b-a450-8416aa0cf730
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 95%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: Czech University of Life Sciences Prague
+    - heading "Bachelor's Programme (Environmental Sciences)" [level=2]:
+      - link "Bachelor's Programme (Environmental Sciences)":
+        - /url: programmes/4c012d81-0a84-45fc-9cad-99dfbb427d7f
+    - paragraph: Prague, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Admission Fit 80% — Good admission chances
+    - paragraph: Tuition not published · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+      - listitem: Prague is a large city — matches your city-size preference.
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/4c012d81-0a84-45fc-9cad-99dfbb427d7f
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 95%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: Prague University of Economics and Business
+    - heading "Bachelor of International and Diplomatic Studies" [level=2]:
+      - link "Bachelor of International and Diplomatic Studies":
+        - /url: programmes/29412b91-1e18-473c-b113-aa895750563c
+    - paragraph: Prague, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Admission Fit 80% — Good admission chances
+    - paragraph: Tuition not published · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+      - listitem: Prague is a large city — matches your city-size preference.
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/29412b91-1e18-473c-b113-aa895750563c
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 95%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: Prague University of Economics and Business
+    - heading "Bachelor of International Business (IBB)" [level=2]:
+      - link "Bachelor of International Business (IBB)":
+        - /url: programmes/6d549054-6972-445c-8dc6-07b316048498
+    - paragraph: Prague, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Admission Fit 80% — Good admission chances
+    - paragraph: Tuition not published · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+      - listitem: Prague is a large city — matches your city-size preference.
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/6d549054-6972-445c-8dc6-07b316048498
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 92%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: Taras Shevchenko National University of Kyiv
+    - heading "Computer Science and Cybernetics" [level=2]:
+      - link "Computer Science and Cybernetics":
+        - /url: programmes/28b70f17-e877-47a1-8bab-9b37a597ef20
+    - paragraph: Kyiv, Ukraine
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 100% — High admission confidence
+    - paragraph: €2,000–€3,000 / year · 48 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Strong Computer Science match.
+      - listitem: Fits your budget (~8,000–9,000 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+    - paragraph: One thing to know
+    - paragraph: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+    - link "View details":
+      - /url: programmes/28b70f17-e877-47a1-8bab-9b37a597ef20
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 92%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: Bogomolets National Medical University
+    - heading "Medicine (English-medium)" [level=2]:
+      - link "Medicine (English-medium)":
+        - /url: programmes/96782033-3b3b-4a15-aeda-34f7cfb326d0
+    - paragraph: Kyiv, Ukraine
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 100% — High admission confidence
+    - paragraph: €4,500–€5,000 / year · 72 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Fits your budget (~10,500–11,000 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+      - listitem: Kyiv is a large city — matches your city-size preference.
+    - paragraph: One thing to know
+    - paragraph: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+    - link "View details":
+      - /url: programmes/96782033-3b3b-4a15-aeda-34f7cfb326d0
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 92%
+    - paragraph: Excellent Fit
+    - text: Best Overall
+    - paragraph: V.N. Karazin Kharkiv National University
+    - heading "Medicine (English-medium)" [level=2]:
+      - link "Medicine (English-medium)":
+        - /url: programmes/50a1b90d-6ece-4743-a1de-3cc19f1b7ddb
+    - paragraph: Kharkiv, Ukraine
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 100% — High admission confidence
+    - paragraph: $4,500–$6,500 / year · 72 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Fits your budget (~8,004–9,844 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+      - listitem: Kharkiv is a large city — matches your city-size preference.
+    - paragraph: One thing to know
+    - paragraph: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+    - link "View details":
+      - /url: programmes/50a1b90d-6ece-4743-a1de-3cc19f1b7ddb
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 89%
+    - paragraph: Strong Fit
+    - text: Best Value
+    - paragraph: Masaryk University
+    - heading "Biology and Biochemistry" [level=2]:
+      - link "Biology and Biochemistry":
+        - /url: programmes/62f0ac04-7167-402f-a06a-26bbdc0b9707
+    - paragraph: Brno, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 80% — Good admission chances
+    - paragraph: €3,000 / year · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Fits your budget (~3,000–3,000 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/62f0ac04-7167-402f-a06a-26bbdc0b9707
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 89%
+    - paragraph: Strong Fit
+    - text: Best Value
+    - paragraph: Masaryk University
+    - heading "Data Analytics" [level=2]:
+      - link "Data Analytics":
+        - /url: programmes/6cb03cf6-39b8-4918-aa4e-0eb616218afa
+    - paragraph: Brno, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 80% — Good admission chances
+    - paragraph: €14,000 / year · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Fits your budget (~14,000–14,000 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/6cb03cf6-39b8-4918-aa4e-0eb616218afa
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 88%
+    - paragraph: Strong Fit
+    - text: Best Value
+    - paragraph: Lviv Polytechnic National University
+    - heading "Computer Science" [level=2]:
+      - link "Computer Science":
+        - /url: programmes/dfcf2d71-d9c1-40b4-8d75-923f8fec1a7a
+    - paragraph: Lviv, Ukraine
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 80% — Good admission chances
+    - paragraph: $1,750–$2,200 / year · 48 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Strong Computer Science match.
+      - listitem: Fits your budget (~6,026–6,440 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/dfcf2d71-d9c1-40b4-8d75-923f8fec1a7a
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 86%
+    - paragraph: Strong Fit
+    - text: Best Academic
+    - paragraph: Mendel University in Brno
+    - heading "Economics and Management" [level=2]:
+      - link "Economics and Management":
+        - /url: programmes/68fb34d4-fe52-4646-870f-1d095d29794b
+    - paragraph: Brno, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Admission Fit 80% — Good admission chances
+    - paragraph: Tuition not published · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/68fb34d4-fe52-4646-870f-1d095d29794b
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 86%
+    - paragraph: Strong Fit
+    - text: Best Academic
+    - paragraph: Palacký University Olomouc
+    - heading "Physiotherapy" [level=2]:
+      - link "Physiotherapy":
+        - /url: programmes/351c841b-54c2-4cf3-9c3e-23b4f57aa654
+    - paragraph: Olomouc, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Admission Fit 80% — Good admission chances
+    - paragraph: Tuition not published · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+      - listitem: Has a dedicated international student office.
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/351c841b-54c2-4cf3-9c3e-23b4f57aa654
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 86%
+    - paragraph: Strong Fit
+    - text: Best Academic
+    - paragraph: University of Ostrava
+    - heading "English Philology" [level=2]:
+      - link "English Philology":
+        - /url: programmes/5c8c833b-8847-4f86-9993-5461a8663d6f
+    - paragraph: Ostrava, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Admission Fit 80% — Good admission chances
+    - paragraph: Tuition not published · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/5c8c833b-8847-4f86-9993-5461a8663d6f
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 86%
+    - paragraph: Strong Fit
+    - text: Best Academic
+    - paragraph: University of Ostrava
+    - heading "Mathematics" [level=2]:
+      - link "Mathematics":
+        - /url: programmes/4d3d578f-3770-45a2-b035-e341d2f15bcb
+    - paragraph: Ostrava, Czech Republic
+    - text: Academic Fit 100% — Excellent academic fit Admission Fit 80% — Good admission chances
+    - paragraph: Tuition not published · 36 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: English-taught programme, matching your preference.
+      - listitem: In one of your preferred countries (Czech Republic).
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/4d3d578f-3770-45a2-b035-e341d2f15bcb
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 85%
+    - paragraph: Strong Fit
+    - text: Best Value
+    - paragraph: Sumy State University
+    - heading "Medicine (English-medium)" [level=2]:
+      - link "Medicine (English-medium)":
+        - /url: programmes/bd6452e1-b7a5-4de9-a980-b5296fd705f0
+    - paragraph: Sumy, Ukraine
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 100% — High admission confidence
+    - paragraph: $4,000–$4,500 / year · 72 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Fits your budget (~6,992–7,452 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+      - listitem: No entrance exam required.
+    - paragraph: One thing to know
+    - paragraph: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+    - link "View details":
+      - /url: programmes/bd6452e1-b7a5-4de9-a980-b5296fd705f0
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 85%
+    - paragraph: Strong Fit
+    - text: Best Value
+    - paragraph: National Technical University of Ukraine "Igor Sikorsky Kyiv Polytechnic Institute"
+    - 'heading "Electronics: Electronic Components and Systems" [level=2]':
+      - 'link "Electronics: Electronic Components and Systems"':
+        - /url: programmes/3400afbc-ef48-4af2-a87d-4f270cd136c3
+    - paragraph: Kyiv, Ukraine
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 65% — Competitive admission
+    - paragraph: UAH 74,000–UAH 111,000 / year · 48 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Fits your budget (~1,680–2,457 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+      - listitem: Kyiv is a large city — matches your city-size preference.
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/3400afbc-ef48-4af2-a87d-4f270cd136c3
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 85%
+    - paragraph: Strong Fit
+    - text: Best Value
+    - paragraph: National Technical University of Ukraine "Igor Sikorsky Kyiv Polytechnic Institute"
+    - heading "Software Engineering" [level=2]:
+      - link "Software Engineering":
+        - /url: programmes/66817d94-06d5-4cfe-8a5c-f70face23e71
+    - paragraph: Kyiv, Ukraine
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 65% — Competitive admission
+    - paragraph: UAH 74,000–UAH 111,000 / year · 48 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Fits your budget (~1,680–2,457 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+      - listitem: Kyiv is a large city — matches your city-size preference.
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/66817d94-06d5-4cfe-8a5c-f70face23e71
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 85%
+    - paragraph: Strong Fit
+    - text: Best Academic
+    - paragraph: Lviv Polytechnic National University
+    - heading "Management" [level=2]:
+      - link "Management":
+        - /url: programmes/3623fb5e-535d-4220-994d-2aa8ef84c10c
+    - paragraph: Lviv, Ukraine
+    - text: Academic Fit 100% — Excellent academic fit Admission Fit 80% — Good admission chances
+    - paragraph: $1,750 / year · 48 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: English-taught programme, matching your preference.
+      - listitem: Lviv is a large city — matches your city-size preference.
+      - listitem: "Application deadline: October 15, 2026."
+    - paragraph: One thing to know
+    - paragraph: An entrance exam is required for this programme.
+    - link "View details":
+      - /url: programmes/3623fb5e-535d-4220-994d-2aa8ef84c10c
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 84%
+    - paragraph: Strong Fit
+    - text: Best Value
+    - paragraph: Taras Shevchenko National University of Kyiv
+    - heading "International Business, Commerce and Finance" [level=2]:
+      - link "International Business, Commerce and Finance":
+        - /url: programmes/506955f3-f954-4caf-89e9-1ac611f6d935
+    - paragraph: Kyiv, Ukraine
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 60% — Competitive admission
+    - paragraph: €1,990 / year · 48 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Fits your budget (~7,990–7,990 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+      - listitem: Kyiv is a large city — matches your city-size preference.
+    - paragraph: One thing to know
+    - paragraph: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+    - link "View details":
+      - /url: programmes/506955f3-f954-4caf-89e9-1ac611f6d935
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+  - article:
+    - paragraph: 84%
+    - paragraph: Strong Fit
+    - text: Best Value
+    - paragraph: Taras Shevchenko National University of Kyiv
+    - 'heading "Philology: English Studies and Two Foreign Languages" [level=2]':
+      - 'link "Philology: English Studies and Two Foreign Languages"':
+        - /url: programmes/e3be5936-48d4-44f1-abc7-b87fb98d1c93
+    - paragraph: Kyiv, Ukraine
+    - text: Academic Fit 100% — Excellent academic fit Budget Fit 100% — Fits your budget well Admission Fit 60% — Competitive admission
+    - paragraph: €1,990 / year · 48 months · English
+    - paragraph: Why it matches you
+    - list:
+      - listitem: Fits your budget (~7,990–7,990 EUR/year).
+      - listitem: English-taught programme, matching your preference.
+      - listitem: Kyiv is a large city — matches your city-size preference.
+    - paragraph: One thing to know
+    - paragraph: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+    - link "View details":
+      - /url: programmes/e3be5936-48d4-44f1-abc7-b87fb98d1c93
+    - button "Save"
+    - button "Compare"
+    - group: Show details
+- alert
+```
+
+# Test source
+
+```ts
+  1  | import { test, expect } from '../fixtures/auth';
+  2  | 
+  3  | test.describe('Authenticated Flow', () => {
+  4  |   test('can access discover after sign-in', async ({ authenticatedPage }) => {
+  5  |     const page = authenticatedPage;
+  6  |     
+  7  |     await page.goto('/en/discover');
+  8  |     await expect(page).toHaveURL(/.*\/discover/);
+  9  |     await expect(page.locator('h1')).toContainText('Discover');
+  10 |   });
+  11 | 
+  12 |   test('discover shows programme cards', async ({ authenticatedPage }) => {
+  13 |     const page = authenticatedPage;
+  14 |     
+  15 |     await page.goto('/en/discover');
+> 16 |     await expect(page.locator('a[href^="/en/programmes/"]').first()).toBeVisible({ timeout: 10000 });
+     |                                                                      ^ Error: expect(locator).toBeVisible() failed
+  17 |   });
+  18 | 
+  19 |   test('can open programme detail', async ({ authenticatedPage }) => {
+  20 |     const page = authenticatedPage;
+  21 |     
+  22 |     await page.goto('/en/discover');
+  23 |     const firstLink = page.locator('a[href^="/en/programmes/"]').first();
+  24 |     await firstLink.click();
+  25 |     
+  26 |     await expect(page).toHaveURL(/\/en\/programmes\/[^/]+/);
+  27 |     await expect(page.locator('h1')).toBeVisible();
+  28 |     await expect(page.locator('text=Key facts')).toBeVisible();
+  29 |   });
+  30 | });
+```

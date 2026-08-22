@@ -14,6 +14,7 @@ import {
 } from "@/components/match-display";
 import { determineBestForLabel } from "@/lib/matching/best-for";
 import type { MatchUserProfile } from "@/lib/matching/match-types";
+import { getDimensionExplanation } from "@/lib/matching/explanations";
 
 interface ProgrammeCardProps {
   programme: ProgrammeWithDetails;
@@ -65,20 +66,14 @@ export async function ProgrammeCard({
 
   const bestForLabel = match ? determineBestForLabel(match, profile) : null;
 
-  // Compact metrics: Academic, Budget, Admission
+  // Compact metrics: Academic, Budget, Admission - now with human-readable explanations
   const compactMetrics = match?.dimensions
     .filter((d) => ["academic", "budget", "admission"].includes(d.key))
-    .filter((d) => d.applicable && d.score != null) ?? [];
-
-  // Admission difficulty text label
-  const admissionDim = match?.dimensions.find((d) => d.key === "admission");
-  const admissionDifficulty = admissionDim?.applicable
-    ? admissionDim.score != null && admissionDim.score >= 80
-      ? t("admissionDifficultyEasy")
-      : admissionDim.score != null && admissionDim.score >= 50
-        ? t("admissionDifficultyModerate")
-        : t("admissionDifficultyCompetitive")
-    : null;
+    .filter((d) => d.applicable && d.score != null)
+    .map((dim) => ({
+      ...dim,
+      explanation: getDimensionExplanation(dim, tMatching),
+    })) ?? [];
 
   return (
     <article className="bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-6 md:p-8 ambient-shadow space-y-5">
@@ -112,7 +107,7 @@ export async function ProgrammeCard({
           {programme.university.name}
         </p>
         <h2 className="font-headline-sm text-headline-sm text-primary">
-          <Link href={`/programmes/${programme.id}`} className="hover:underline">
+          <Link href={`programmes/${programme.id}`} className="hover:underline">
             {programme.name}
           </Link>
         </h2>
@@ -122,24 +117,25 @@ export async function ProgrammeCard({
         </p>
       </div>
 
-      {/* 3. Compact metrics — Academic, Budget, Admission */}
+      {/* 3. Compact metrics — Academic, Budget, Admission with human-readable summaries */}
       {compactMetrics.length > 0 && (
         <div className="flex flex-wrap gap-4">
           {compactMetrics.map((dim) => (
             <div key={dim.key} className="flex items-center gap-2">
-              <span className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wide">
+              <span className={`font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wide ${
+                dim.explanation.icon === "success" ? "text-success" :
+                dim.explanation.icon === "warning" ? "text-warning" : "text-info"
+              }`}>
                 {t(DIMENSION_KEYS[dim.key])}
               </span>
               <span className="font-data-lg text-data-lg text-primary">
                 {dim.score}%
               </span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant hidden sm:inline">
+                — {dim.explanation.summary}
+              </span>
             </div>
           ))}
-          {admissionDifficulty && (
-            <span className="font-label-caps text-label-caps text-warning">
-              {admissionDifficulty}
-            </span>
-          )}
         </div>
       )}
 
@@ -187,7 +183,7 @@ export async function ProgrammeCard({
       {/* 6. Actions */}
       <div className="flex flex-wrap gap-3 pt-2 border-t border-outline-variant/20">
         <Link
-          href={`/programmes/${programme.id}`}
+          href={`programmes/${programme.id}`}
           className="font-label-caps text-label-caps text-primary border border-primary rounded-full px-6 py-3 hover:bg-surface-container transition-all active:scale-95"
         >
           {t("viewDetails")}
@@ -253,26 +249,55 @@ export async function ProgrammeCard({
 
           <div className="mt-4 space-y-4">
             {match && match.dimensions.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {match.dimensions.map((dimension) => (
-                  <div key={dimension.key} className="space-y-1">
-                    <p className="font-label-caps text-label-caps text-on-surface-variant">
-                      {t(DIMENSION_KEYS[dimension.key])}
-                    </p>
-                    <p
-                      className={`font-data-lg text-data-lg ${
-                        dimension.applicable
-                          ? "text-primary"
-                          : "text-on-surface-variant"
-                      }`}
-                    >
-                      {dimension.applicable
-                        ? `${dimension.score}%`
-                        : t("notApplicable")}
-                    </p>
+              <>
+                <div className="space-y-3">
+                  <p className="font-label-caps text-label-caps text-on-surface-variant">
+                    {t("matchBreakdown" as any)}
+                  </p>
+                  <div className="space-y-2">
+                    {match.dimensions
+                      .filter((d) => d.applicable && d.score != null)
+                      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+                      .map((dimension) => {
+                        const explanation = getDimensionExplanation(dimension, tMatching);
+                        return (
+                          <div key={dimension.key} className="rounded-lg border border-outline-variant/40 bg-surface-container-low p-4 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className={`material-symbols-outlined ${
+                                  explanation.icon === "success" ? "text-success" :
+                                  explanation.icon === "warning" ? "text-warning" : "text-info"
+                                }`} aria-hidden="true">
+                                  {explanation.icon === "success" ? "check_circle" :
+                                   explanation.icon === "warning" ? "warning" : "info"}
+                                </span>
+                                <span className="font-headline-sm text-headline-sm text-primary">
+                                  {explanation.label}
+                                </span>
+                              </div>
+                              <span className="font-data-lg text-data-lg text-primary">
+                                {dimension.score}%
+                              </span>
+                            </div>
+                            <p className="font-body-sm text-body-sm text-on-surface-variant">
+                              {explanation.summary}
+                            </p>
+                            {explanation.details.length > 0 && (
+                              <ul className="space-y-1 ml-6">
+                                {explanation.details.slice(0, 3).map((detail, idx) => (
+                                  <li key={idx} className="font-body-sm text-body-sm text-on-surface-variant flex items-start gap-2">
+                                    <span className="shrink-0" aria-hidden="true">•</span>
+                                    <span>{detail}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        );
+                      })}
                   </div>
-                ))}
-              </div>
+                </div>
+              </>
             )}
 
             {restReasons.length > 0 && tMatching && (
@@ -322,5 +347,3 @@ export async function ProgrammeCard({
     </article>
   );
 }
-
-

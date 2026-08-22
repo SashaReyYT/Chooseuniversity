@@ -17,8 +17,7 @@ import {
 import { ProgrammesRepository, type ProgrammeWithDetails } from "@/lib/repositories/programmes.repository";
 import type { MatchResult } from "@/lib/matching/engine";
 import type { MatchDimensionKey } from "@/lib/matching/match-types";
-import { DIMENSION_KEYS, type DiscoverTranslator } from "@/components/match-display";
-import { annualLivingCost } from "@/lib/matching/utils";
+import { DIMENSION_KEYS, formatTuition, annualLivingCost, type DiscoverTranslator } from "@/components/match-display";
 import { formDangerButtonClassName, formInputClassName, formSecondaryButtonClassName } from "@/components/form-styles";
 import { AppShell } from "@/components/app-shell";
 
@@ -138,13 +137,24 @@ export default async function ComparePage({
           </Link>
         </div>
       ) : (
-        <ComparisonTable
-          programmes={programmes}
-          matchById={matchById}
-          locale={uiLocale}
-          t={t}
-          tDiscover={tDiscover}
-        />
+        <>
+          {/* Decision summary — quick overview for decision making */}
+          {matchById.size > 0 && (
+            <section className="space-y-4" aria-labelledby="compare-decision-heading">
+              <h2 id="compare-decision-heading" className="font-headline-md text-headline-md text-primary">
+                {t("decisionSummaryHeading")}
+              </h2>
+              <DecisionSummary programmes={programmes} matchById={matchById} t={t} tDiscover={tDiscover} />
+            </section>
+          )}
+          <ComparisonTable
+            programmes={programmes}
+            matchById={matchById}
+            locale={uiLocale}
+            t={t}
+            tDiscover={tDiscover}
+          />
+        </>
       )}
 
       {addableProgrammes.length > 0 && (
@@ -596,5 +606,169 @@ function ComparisonTable({
         </table>
       </div>
     </div>
+  );
+}
+
+/**
+ * Decision Summary — human-readable "Our take" for quick decision making.
+ * Shows Best Overall / Best Value / Safest Admission based on match scores.
+ */
+function DecisionSummary({
+  programmes,
+  matchById,
+  t,
+  tDiscover,
+}: {
+  programmes: ProgrammeWithDetails[];
+  matchById: Map<string, MatchResult>;
+  t: Awaited<ReturnType<typeof getTranslations<"Compare">>>;
+  tDiscover: DiscoverTranslator;
+}) {
+  if (programmes.length === 0) return null;
+
+  const withMatch = programmes.filter((p) => matchById.get(p.id)?.overallScore != null);
+  if (withMatch.length === 0) return null;
+
+  // Sort by match score descending
+  const sorted = [...withMatch].sort((a, b) => {
+    const sa = matchById.get(a.id)?.overallScore ?? -1;
+    const sb = matchById.get(b.id)?.overallScore ?? -1;
+    return sb - sa;
+  });
+
+  const bestOverall = sorted[0];
+  const bestMatch = matchById.get(bestOverall.id)!;
+
+  // Best value = highest match score among those with lowest tuition
+  const withTuition = sorted.filter((p) => p.tuition_min != null && p.tuition_currency);
+  let bestValue: ProgrammeWithDetails | null = null;
+  if (withTuition.length > 0) {
+    // Normalize tuition to a common currency (use first programme's currency as base)
+    const baseCurrency = withTuition[0].tuition_currency!;
+    const tuitionScores = withTuition.map((p) => {
+      const match = matchById.get(p.id)!;
+      const tuition = p.tuition_currency === baseCurrency ? p.tuition_min! : p.tuition_min! * 1; // simplified
+      return { programme: p, score: match.overallScore!, tuition };
+    });
+    // Best value = high score, low tuition ratio
+    tuitionScores.sort((a, b) => {
+      const ratioA = a.tuition / (a.score || 1);
+      const ratioB = b.tuition / (b.score || 1);
+      return ratioA - ratioB;
+    });
+    bestValue = tuitionScores[0].programme;
+  }
+
+  // Safest admission = highest admission dimension score
+  let safestAdmission: ProgrammeWithDetails | null = null;
+  let maxAdmissionScore = -1;
+  for (const p of sorted) {
+    const match = matchById.get(p.id)!;
+    const admissionDim = match.dimensions.find((d) => d.key === "admission");
+    if (admissionDim?.applicable && admissionDim.score != null && admissionDim.score > maxAdmissionScore) {
+      maxAdmissionScore = admissionDim.score;
+      safestAdmission = p;
+    }
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <DecisionCard
+        programme={bestOverall}
+        match={bestMatch}
+        label={t("decisionSummaryBestOverall")}
+        description={t("decisionSummaryBestOverallDesc")}
+        icon="emoji_events"
+        t={t}
+        tDiscover={tDiscover}
+      />
+      {bestValue && bestValue.id !== bestOverall.id && (
+        <DecisionCard
+          programme={bestValue}
+          match={matchById.get(bestValue.id)!}
+          label={t("decisionSummaryBestValue")}
+          description={t("decisionSummaryBestValueDesc")}
+          icon="attach_money"
+          t={t}
+          tDiscover={tDiscover}
+        />
+      )}
+      {safestAdmission && safestAdmission.id !== bestOverall.id && safestAdmission.id !== bestValue?.id && (
+        <DecisionCard
+          programme={safestAdmission}
+          match={matchById.get(safestAdmission.id)!}
+          label={t("decisionSummarySafestAdmission")}
+          description={t("decisionSummarySafestAdmissionDesc")}
+          icon="shield"
+          t={t}
+          tDiscover={tDiscover}
+        />
+      )}
+      {(bestValue?.id === bestOverall.id || !bestValue) && (!safestAdmission || safestAdmission.id === bestOverall.id) && sorted.length > 1 && (
+        <DecisionCard
+          programme={sorted[1]}
+          match={matchById.get(sorted[1].id)!}
+          label={t("decisionSummaryRunnerUp")}
+          description={t("decisionSummaryRunnerUpDesc")}
+          icon="star"
+          t={t}
+          tDiscover={tDiscover}
+        />
+      )}
+    </div>
+  );
+}
+
+function DecisionCard({
+  programme,
+  match,
+  label,
+  description,
+  icon,
+  t,
+  tDiscover,
+}: {
+  programme: ProgrammeWithDetails;
+  match: MatchResult;
+  label: string;
+  description: string;
+  icon: string;
+  t: Awaited<ReturnType<typeof getTranslations<"Compare">>>;
+  tDiscover: DiscoverTranslator;
+}) {
+  return (
+    <Link
+      href={`/programmes/${programme.id}`}
+      className="relative rounded-xl border border-outline-variant/40 bg-surface-container-low p-6 space-y-4 hover:border-primary/50 transition-colors"
+    >
+      <span className="absolute -top-3 left-4 z-10 font-label-caps text-label-caps text-on-primary bg-primary rounded-full px-3 py-1 flex items-center gap-1">
+        <span className="material-symbols-outlined" aria-hidden="true">{icon}</span>
+        {label}
+      </span>
+      <div className="flex items-center gap-3">
+        <p className="font-display-lg text-display-lg text-primary leading-none">
+          {match.overallScore ?? "—"}%
+        </p>
+        {match.overallLabel && (
+          <p className="font-headline-sm text-headline-sm text-on-surface-variant">
+            {tDiscover(`label${match.overallLabel.replace(/\s+/g, "")}` as Parameters<typeof tDiscover>[0])}
+          </p>
+        )}
+      </div>
+      <h3 className="font-headline-sm text-headline-sm text-primary line-clamp-1">
+        {programme.name}
+      </h3>
+      <p className="font-body-sm text-body-sm text-on-surface-variant">
+        {programme.university.name} · {programme.university.city}
+      </p>
+      <p className="font-body-sm text-body-sm text-on-surface-variant">
+        {description}
+      </p>
+      <div className="pt-2 flex items-center justify-between">
+        <span className="font-body-sm text-body-sm text-on-surface-variant">
+          {formatTuition(programme, "en", tDiscover)}
+        </span>
+      </div>
+    </Link>
   );
 }

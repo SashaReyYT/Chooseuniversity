@@ -10,6 +10,7 @@ import {
   type LanguageProficiencyInput,
 } from "@/lib/repositories/user-language-proficiency.repository";
 import type { CefrLevel } from "@/types/database";
+import { MatchingService } from "@/lib/services/matching.service";
 
 /** Matches the `user_subject_strengths.level` check constraint — a plainer
  * 3-point subset of the `math_background` enum (`poor`, not `weak`), used
@@ -49,32 +50,49 @@ export interface SubjectStrengthInput {
 }
 
 /**
- * Wraps the profile repository with the one business rule onboarding
- * needs: create the profile on first submission, update it on any
- * resubmission (re-doing onboarding, or a future "edit preferences"
- * screen), rather than callers needing to know which case they're in.
- *
- * Also orchestrates the questionnaire's test/qualification data (spec
- * §20–§22), which lives in separate tables (`user_nmt_scores`,
- * `user_qualifications`, `user_test_scores`) rather than on
- * `user_profiles` itself, since a user can have any number of scores.
- */
-export class ProfileService {
-  private readonly userProfile: UserProfileRepository;
-  private readonly nmtScores: UserNmtScoresRepository;
-  private readonly qualifications: UserQualificationsRepository;
-  private readonly testScores: UserTestScoresRepository;
-  private readonly subjectStrengths: UserSubjectStrengthsRepository;
-  private readonly languageProficiency: UserLanguageProficiencyRepository;
+   * Wraps the profile repository with the one business rule onboarding
+   * needs: create the profile on first submission, update it on any
+   * resubmission (re-doing onboarding, or a future "edit preferences"
+   * screen), rather than callers needing to know which case they're in.
+   *
+   * Also orchestrates the questionnaire's test/qualification data (spec
+   * §20–§22), which lives in separate tables (`user_nmt_scores`,
+   * `user_qualifications`, `user_test_scores`) rather than on
+   * `user_profiles` itself, since a user can have any number of scores.
+   */
+  export class ProfileService {
+    private readonly userProfile: UserProfileRepository;
+    private readonly nmtScores: UserNmtScoresRepository;
+    private readonly qualifications: UserQualificationsRepository;
+    private readonly testScores: UserTestScoresRepository;
+    private readonly subjectStrengths: UserSubjectStrengthsRepository;
+    private readonly languageProficiency: UserLanguageProficiencyRepository;
+    private readonly matching: MatchingService;
 
-  constructor(supabase: SupabaseClient<Database>) {
-    this.userProfile = new UserProfileRepository(supabase);
-    this.nmtScores = new UserNmtScoresRepository(supabase);
-    this.qualifications = new UserQualificationsRepository(supabase);
-    this.testScores = new UserTestScoresRepository(supabase);
-    this.subjectStrengths = new UserSubjectStrengthsRepository(supabase);
-    this.languageProficiency = new UserLanguageProficiencyRepository(supabase);
-  }
+    constructor(supabase: SupabaseClient<Database>) {
+      this.userProfile = new UserProfileRepository(supabase);
+      this.nmtScores = new UserNmtScoresRepository(supabase);
+      this.qualifications = new UserQualificationsRepository(supabase);
+      this.testScores = new UserTestScoresRepository(supabase);
+      this.subjectStrengths = new UserSubjectStrengthsRepository(supabase);
+      this.languageProficiency = new UserLanguageProficiencyRepository(supabase);
+      this.matching = new MatchingService(supabase);
+    }
+
+    /**
+     * Gets current match scores for all programmes for a user.
+     * Used to compare before/after profile updates.
+     */
+    async getMatchScores(userId: string): Promise<Map<string, number>> {
+      const matches = await this.matching.listMatchesForUser(userId);
+      const scores = new Map<string, number>();
+      for (const match of matches) {
+        if (match.match.overallScore != null) {
+          scores.set(match.programme.id, match.match.overallScore);
+        }
+      }
+      return scores;
+    }
 
   getForUser(userId: string) {
     return this.userProfile.findByUserId(userId);

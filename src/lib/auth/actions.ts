@@ -20,6 +20,9 @@ export async function signUp(
   const t = await getTranslations("Auth");
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  // `next` is a safe internal path like "/onboarding" — passed from the
+  // sign-up page via a hidden input. Default to the questionnaire.
+  const next = String(formData.get("next") ?? "/onboarding").trim();
 
   if (!email || !password) {
     return { error: t("errorMissingCredentials") };
@@ -35,11 +38,10 @@ export async function signUp(
     return { error: error.message };
   }
 
-  // Straight to /discover, not the questionnaire: the quiz runs on the
-  // anonymous session, and signUp() upgrades that same anonymous user in
-  // place — their answers are already saved under this id.
   const locale = await getLocale();
-  redirect({ href: "/discover", locale });
+  // Upgrade of anonymous session keeps the same user id; redirect to `next`
+  // (the quiz) so the answers land on the real account.
+  redirect({ href: next, locale });
   return { error: null };
 }
 
@@ -50,6 +52,7 @@ export async function signIn(
   const t = await getTranslations("Auth");
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const next = String(formData.get("next") ?? "/onboarding").trim();
 
   if (!email || !password) {
     return { error: t("errorMissingCredentials") };
@@ -63,7 +66,7 @@ export async function signIn(
   }
 
   const locale = await getLocale();
-  redirect({ href: "/discover", locale });
+  redirect({ href: next, locale });
   return { error: null };
 }
 

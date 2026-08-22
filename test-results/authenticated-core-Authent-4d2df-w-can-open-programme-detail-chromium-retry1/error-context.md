@@ -1,0 +1,1506 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: authenticated\core.spec.ts >> Authenticated Flow >> can open programme detail
+- Location: e2e\authenticated\core.spec.ts:19:7
+
+# Error details
+
+```
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: locator.click: Target page, context or browser has been closed
+Call log:
+  - waiting for locator('a[href^="/en/programmes/"]').first()
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Unifind" [ref=e5] [cursor=pointer]:
+          - /url: /
+        - navigation [ref=e6]:
+          - link "e2e-test@example.com" [ref=e7] [cursor=pointer]:
+            - /url: /profile
+          - button "Sign out" [ref=e9]
+    - navigation "Unifind" [ref=e10]:
+      - link "Discover" [ref=e11] [cursor=pointer]:
+        - /url: /en/discover
+        - generic [ref=e12]: explore
+      - link "Saved" [ref=e14] [cursor=pointer]:
+        - /url: /en/saved
+        - generic [ref=e15]: bookmark
+      - link "Compare" [ref=e17] [cursor=pointer]:
+        - /url: /en/compare
+        - generic [ref=e18]: compare_arrows
+      - link "Profile" [ref=e20] [cursor=pointer]:
+        - /url: /en/profile
+        - generic [ref=e21]: person
+    - main [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - heading "Discover" [level=1] [ref=e26]
+          - paragraph [ref=e27]: Programmes ranked by how well they fit the profile you gave us.
+        - link "Edit your profile" [ref=e28] [cursor=pointer]:
+          - /url: /en/profile
+      - region "Profile Summary" [ref=e29]:
+        - paragraph [ref=e30]: 26 programmes
+        - generic [ref=e31]:
+          - generic [ref=e32]: Computer Science
+          - generic [ref=e33]: Bachelor
+          - generic [ref=e34]: Czech Republic + Poland + Germany
+          - generic [ref=e35]: English + Czech
+      - region [ref=e36]:
+        - generic [ref=e37]:
+          - heading "Your top matches" [level=2] [ref=e38]
+          - paragraph [ref=e39]: Based on your profile, these are the strongest fits — categorised to help you decide.
+        - generic [ref=e40]:
+          - article [ref=e41] [cursor=pointer]:
+            - generic [ref=e42]: Best Fit
+            - generic [ref=e43]:
+              - paragraph [ref=e44]: 100%
+              - paragraph [ref=e45]: Excellent Fit
+            - heading "Chemistry and Technology (Bachelor's Programmes)" [level=3] [ref=e46]
+            - paragraph [ref=e47]: University of Chemistry and Technology Prague · Prague
+            - paragraph [ref=e48]: The most balanced match across all your criteria — high confidence, strong fit.
+            - generic [ref=e49]:
+              - link "View details" [ref=e50]:
+                - /url: /en/en/programmes/900fae72-f8e1-47bb-8a0e-d9bcd8d41f80
+              - generic [ref=e51]: Tuition not published
+          - article [ref=e52] [cursor=pointer]:
+            - generic [ref=e53]: Safe Choice
+            - generic [ref=e54]:
+              - paragraph [ref=e55]: 100%
+              - paragraph [ref=e56]: Excellent Fit
+            - heading "Economics and Management (with Marketing / International Trade specializations)" [level=3] [ref=e57]
+            - paragraph [ref=e58]: University of Chemistry and Technology Prague · Prague
+            - paragraph [ref=e59]: High admission confidence with strong alignment to your profile.
+            - generic [ref=e60]:
+              - link "View details" [ref=e61]:
+                - /url: /en/en/programmes/953f0a7e-3b74-4cc3-98e4-14c26805c560
+              - generic [ref=e62]: Tuition not published
+          - article [ref=e63] [cursor=pointer]:
+            - generic [ref=e64]: Safe Choice
+            - generic [ref=e65]:
+              - paragraph [ref=e66]: 96%
+              - paragraph [ref=e67]: Excellent Fit
+            - heading "Bachelor of Business Administration (BBA)" [level=3] [ref=e68]
+            - paragraph [ref=e69]: Prague University of Economics and Business · Prague
+            - paragraph [ref=e70]: High admission confidence with strong alignment to your profile.
+            - generic [ref=e71]:
+              - link "View details" [ref=e72]:
+                - /url: /en/en/programmes/10269263-8388-464d-a456-54afbced35ef
+              - generic [ref=e73]: €5,000 / year
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - generic [ref=e76]: Search programmes
+          - searchbox "Search programmes" [ref=e77]
+        - generic [ref=e78]:
+          - combobox [ref=e79]:
+            - option "All fields" [selected]
+            - option "Architecture"
+            - option "Graphic Design"
+            - option "Business Administration"
+            - option "Economics"
+            - option "Biomedical Engineering"
+            - option "Electrical Engineering"
+            - option "Mechanical Engineering"
+            - option "Artificial Intelligence"
+            - option "Computer Science"
+            - option "Cybersecurity"
+            - option "Data Science"
+            - option "Software Engineering"
+            - option "Medicine"
+            - option "Physiotherapy"
+            - option "Philology"
+            - option "Law"
+            - option "Agricultural Sciences"
+            - option "Biology"
+            - option "Chemistry"
+            - option "Environmental Sciences"
+            - option "Mathematics"
+            - option "Physics"
+            - option "International Relations"
+            - option "Psychology"
+          - combobox [ref=e80]:
+            - option "All degrees" [selected]
+            - option "Bachelor"
+            - option "Master"
+            - option "PhD"
+          - combobox [ref=e81]:
+            - option "All languages" [selected]
+            - option "Czech"
+            - option "Dutch"
+            - option "English"
+            - option "French"
+            - option "German"
+            - option "Italian"
+            - option "Polish"
+            - option "Portuguese"
+            - option "Spanish"
+            - option "Ukrainian"
+          - combobox [ref=e82]:
+            - option "All countries" [selected]
+            - option "Austria"
+            - option "Canada"
+            - option "Czech Republic"
+            - option "Denmark"
+            - option "Finland"
+            - option "France"
+            - option "Germany"
+            - option "Ireland"
+            - option "Italy"
+            - option "Netherlands"
+            - option "Poland"
+            - option "Portugal"
+            - option "Spain"
+            - option "Sweden"
+            - option "Switzerland"
+            - option "Ukraine"
+            - option "United Kingdom"
+            - option "United States"
+          - button "Search" [ref=e83]
+      - group "Search programmes" [ref=e84]:
+        - link "Best Match" [ref=e85] [cursor=pointer]:
+          - /url: /en/en/discover?sort=best_match
+        - link "Lowest Estimated Cost" [ref=e86] [cursor=pointer]:
+          - /url: /en/en/discover?sort=lowest_cost
+        - link "Top Academic" [ref=e87] [cursor=pointer]:
+          - /url: /en/en/discover?sort=highest_match
+        - link "Filters" [ref=e88] [cursor=pointer]:
+          - /url: "#filters"
+      - region [ref=e89]:
+        - group [ref=e90]:
+          - generic [ref=e91] [cursor=pointer]:
+            - generic [ref=e92]:
+              - generic [ref=e93]: tune
+              - text: What matters most
+            - generic [ref=e94]: expand_more
+      - paragraph [ref=e95]: 26 programmes
+      - generic [ref=e96]:
+        - generic [ref=e97]:
+          - generic [ref=e98]: Top Match
+          - article [ref=e99]:
+            - generic [ref=e100]:
+              - paragraph [ref=e101]: 100%
+              - paragraph [ref=e102]: Excellent Fit
+              - generic [ref=e103]: Best Overall
+            - generic [ref=e104]:
+              - paragraph [ref=e105]: University of Chemistry and Technology Prague
+              - heading [level=2] [ref=e106]:
+                - link "Chemistry and Technology (Bachelor's Programmes)" [ref=e107] [cursor=pointer]:
+                  - /url: programmes/900fae72-f8e1-47bb-8a0e-d9bcd8d41f80
+              - paragraph [ref=e108]: Prague, Czech Republic
+            - generic [ref=e109]:
+              - generic [ref=e110]:
+                - generic [ref=e111]: Academic Fit
+                - generic [ref=e112]: 100%
+                - generic [ref=e113]: — Excellent academic fit
+              - generic [ref=e114]:
+                - generic [ref=e115]: Admission Fit
+                - generic [ref=e116]: 100%
+                - generic [ref=e117]: — High admission confidence
+            - paragraph [ref=e118]: Tuition not published · 36 months · English
+            - generic [ref=e119]:
+              - paragraph [ref=e120]: Why it matches you
+              - list [ref=e121]:
+                - listitem [ref=e122]:
+                  - generic [ref=e123]: ✓
+                  - generic [ref=e124]: English-taught programme, matching your preference.
+                - listitem [ref=e125]:
+                  - generic [ref=e126]: ✓
+                  - generic [ref=e127]: In one of your preferred countries (Czech Republic).
+                - listitem [ref=e128]:
+                  - generic [ref=e129]: ✓
+                  - generic [ref=e130]: Prague is a large city — matches your city-size preference.
+            - generic [ref=e131]:
+              - paragraph [ref=e132]: One thing to know
+              - paragraph [ref=e133]:
+                - generic [ref=e134]: ⚠
+                - generic [ref=e135]: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+            - generic [ref=e136]:
+              - link "View details" [ref=e137] [cursor=pointer]:
+                - /url: programmes/900fae72-f8e1-47bb-8a0e-d9bcd8d41f80
+              - button "Save" [ref=e139]
+              - button "Compare" [ref=e143]
+            - group [ref=e144]:
+              - generic "Show details" [ref=e145] [cursor=pointer]:
+                - text: Show details
+                - generic [ref=e146]: ▾
+        - article [ref=e148]:
+          - generic [ref=e149]:
+            - paragraph [ref=e150]: 100%
+            - paragraph [ref=e151]: Excellent Fit
+            - generic [ref=e152]: Best Overall
+          - generic [ref=e153]:
+            - paragraph [ref=e154]: University of Chemistry and Technology Prague
+            - heading [level=2] [ref=e155]:
+              - link "Economics and Management (with Marketing / International Trade specializations)" [ref=e156] [cursor=pointer]:
+                - /url: programmes/953f0a7e-3b74-4cc3-98e4-14c26805c560
+            - paragraph [ref=e157]: Prague, Czech Republic
+          - generic [ref=e158]:
+            - generic [ref=e159]:
+              - generic [ref=e160]: Academic Fit
+              - generic [ref=e161]: 100%
+              - generic [ref=e162]: — Excellent academic fit
+            - generic [ref=e163]:
+              - generic [ref=e164]: Admission Fit
+              - generic [ref=e165]: 100%
+              - generic [ref=e166]: — High admission confidence
+          - paragraph [ref=e167]: Tuition not published · 36 months · English
+          - generic [ref=e168]:
+            - paragraph [ref=e169]: Why it matches you
+            - list [ref=e170]:
+              - listitem [ref=e171]:
+                - generic [ref=e172]: ✓
+                - generic [ref=e173]: English-taught programme, matching your preference.
+              - listitem [ref=e174]:
+                - generic [ref=e175]: ✓
+                - generic [ref=e176]: In one of your preferred countries (Czech Republic).
+              - listitem [ref=e177]:
+                - generic [ref=e178]: ✓
+                - generic [ref=e179]: Prague is a large city — matches your city-size preference.
+          - generic [ref=e180]:
+            - paragraph [ref=e181]: One thing to know
+            - paragraph [ref=e182]:
+              - generic [ref=e183]: ⚠
+              - generic [ref=e184]: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+          - generic [ref=e185]:
+            - link "View details" [ref=e186] [cursor=pointer]:
+              - /url: programmes/953f0a7e-3b74-4cc3-98e4-14c26805c560
+            - button "Save" [ref=e188]
+            - button "Compare" [ref=e192]
+          - group [ref=e193]:
+            - generic "Show details" [ref=e194] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e195]: ▾
+        - article [ref=e197]:
+          - generic [ref=e198]:
+            - paragraph [ref=e199]: 96%
+            - paragraph [ref=e200]: Excellent Fit
+            - generic [ref=e201]: Best Overall
+          - generic [ref=e202]:
+            - paragraph [ref=e203]: Prague University of Economics and Business
+            - heading [level=2] [ref=e204]:
+              - link "Bachelor of Business Administration (BBA)" [ref=e205] [cursor=pointer]:
+                - /url: programmes/10269263-8388-464d-a456-54afbced35ef
+            - paragraph [ref=e206]: Prague, Czech Republic
+          - generic [ref=e207]:
+            - generic [ref=e208]:
+              - generic [ref=e209]: Academic Fit
+              - generic [ref=e210]: 100%
+              - generic [ref=e211]: — Excellent academic fit
+            - generic [ref=e212]:
+              - generic [ref=e213]: Budget Fit
+              - generic [ref=e214]: 100%
+              - generic [ref=e215]: — Fits your budget well
+            - generic [ref=e216]:
+              - generic [ref=e217]: Admission Fit
+              - generic [ref=e218]: 80%
+              - generic [ref=e219]: — Good admission chances
+          - paragraph [ref=e220]: €5,000 / year · 36 months · English
+          - generic [ref=e221]:
+            - paragraph [ref=e222]: Why it matches you
+            - list [ref=e223]:
+              - listitem [ref=e224]:
+                - generic [ref=e225]: ✓
+                - generic [ref=e226]: Fits your budget (~5,000–5,000 EUR/year).
+              - listitem [ref=e227]:
+                - generic [ref=e228]: ✓
+                - generic [ref=e229]: English-taught programme, matching your preference.
+              - listitem [ref=e230]:
+                - generic [ref=e231]: ✓
+                - generic [ref=e232]: In one of your preferred countries (Czech Republic).
+          - generic [ref=e233]:
+            - paragraph [ref=e234]: One thing to know
+            - paragraph [ref=e235]:
+              - generic [ref=e236]: ⚠
+              - generic [ref=e237]: An entrance exam is required for this programme.
+          - generic [ref=e238]:
+            - link "View details" [ref=e239] [cursor=pointer]:
+              - /url: programmes/10269263-8388-464d-a456-54afbced35ef
+            - button "Save" [ref=e241]
+            - button "In comparison" [ref=e245]
+          - group [ref=e246]:
+            - generic "Show details" [ref=e247] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e248]: ▾
+        - article [ref=e250]:
+          - generic [ref=e251]:
+            - paragraph [ref=e252]: 96%
+            - paragraph [ref=e253]: Excellent Fit
+            - generic [ref=e254]: Best Overall
+          - generic [ref=e255]:
+            - paragraph [ref=e256]: Prague University of Economics and Business
+            - heading [level=2] [ref=e257]:
+              - link "Bachelor of Economics of Markets and Organizations" [ref=e258] [cursor=pointer]:
+                - /url: programmes/d43cd74e-0ed0-4763-8c1e-99c6e882eef1
+            - paragraph [ref=e259]: Prague, Czech Republic
+          - generic [ref=e260]:
+            - generic [ref=e261]:
+              - generic [ref=e262]: Academic Fit
+              - generic [ref=e263]: 100%
+              - generic [ref=e264]: — Excellent academic fit
+            - generic [ref=e265]:
+              - generic [ref=e266]: Budget Fit
+              - generic [ref=e267]: 100%
+              - generic [ref=e268]: — Fits your budget well
+            - generic [ref=e269]:
+              - generic [ref=e270]: Admission Fit
+              - generic [ref=e271]: 80%
+              - generic [ref=e272]: — Good admission chances
+          - paragraph [ref=e273]: €5,000 / year · 36 months · English
+          - generic [ref=e274]:
+            - paragraph [ref=e275]: Why it matches you
+            - list [ref=e276]:
+              - listitem [ref=e277]:
+                - generic [ref=e278]: ✓
+                - generic [ref=e279]: Fits your budget (~5,000–5,000 EUR/year).
+              - listitem [ref=e280]:
+                - generic [ref=e281]: ✓
+                - generic [ref=e282]: English-taught programme, matching your preference.
+              - listitem [ref=e283]:
+                - generic [ref=e284]: ✓
+                - generic [ref=e285]: In one of your preferred countries (Czech Republic).
+          - generic [ref=e286]:
+            - paragraph [ref=e287]: One thing to know
+            - paragraph [ref=e288]:
+              - generic [ref=e289]: ⚠
+              - generic [ref=e290]: An entrance exam is required for this programme.
+          - generic [ref=e291]:
+            - link "View details" [ref=e292] [cursor=pointer]:
+              - /url: programmes/d43cd74e-0ed0-4763-8c1e-99c6e882eef1
+            - button "Save" [ref=e294]
+            - button "In comparison" [ref=e298]
+          - group [ref=e299]:
+            - generic "Show details" [ref=e300] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e301]: ▾
+        - article [ref=e303]:
+          - generic [ref=e304]:
+            - paragraph [ref=e305]: 96%
+            - paragraph [ref=e306]: Excellent Fit
+            - generic [ref=e307]: Best Overall
+          - generic [ref=e308]:
+            - paragraph [ref=e309]: Czech University of Life Sciences Prague
+            - heading [level=2] [ref=e310]:
+              - link "Bachelor's Programme (Tropical AgriSciences)" [ref=e311] [cursor=pointer]:
+                - /url: programmes/546569a6-8742-4561-a4a0-06f7c87e7730
+            - paragraph [ref=e312]: Prague, Czech Republic
+          - generic [ref=e313]:
+            - generic [ref=e314]:
+              - generic [ref=e315]: Academic Fit
+              - generic [ref=e316]: 100%
+              - generic [ref=e317]: — Excellent academic fit
+            - generic [ref=e318]:
+              - generic [ref=e319]: Budget Fit
+              - generic [ref=e320]: 100%
+              - generic [ref=e321]: — Fits your budget well
+            - generic [ref=e322]:
+              - generic [ref=e323]: Admission Fit
+              - generic [ref=e324]: 80%
+              - generic [ref=e325]: — Good admission chances
+          - paragraph [ref=e326]: CZK 8,000 / year · 36 months · English
+          - generic [ref=e327]:
+            - paragraph [ref=e328]: Why it matches you
+            - list [ref=e329]:
+              - listitem [ref=e330]:
+                - generic [ref=e331]: ✓
+                - generic [ref=e332]: Fits your budget (~320–320 EUR/year).
+              - listitem [ref=e333]:
+                - generic [ref=e334]: ✓
+                - generic [ref=e335]: English-taught programme, matching your preference.
+              - listitem [ref=e336]:
+                - generic [ref=e337]: ✓
+                - generic [ref=e338]: In one of your preferred countries (Czech Republic).
+          - generic [ref=e339]:
+            - paragraph [ref=e340]: One thing to know
+            - paragraph [ref=e341]:
+              - generic [ref=e342]: ⚠
+              - generic [ref=e343]: An entrance exam is required for this programme.
+          - generic [ref=e344]:
+            - link "View details" [ref=e345] [cursor=pointer]:
+              - /url: programmes/546569a6-8742-4561-a4a0-06f7c87e7730
+            - button "Save" [ref=e347]
+            - button "Compare" [ref=e351]
+          - group [ref=e352]:
+            - generic "Show details" [ref=e353] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e354]: ▾
+        - article [ref=e356]:
+          - generic [ref=e357]:
+            - paragraph [ref=e358]: 96%
+            - paragraph [ref=e359]: Excellent Fit
+            - generic [ref=e360]: Best Overall
+          - generic [ref=e361]:
+            - paragraph [ref=e362]: Czech Technical University in Prague
+            - heading [level=2] [ref=e363]:
+              - link "Informatics" [ref=e364] [cursor=pointer]:
+                - /url: programmes/f1899d11-0bc3-47c4-b059-74652052f08d
+            - paragraph [ref=e365]: Prague, Czech Republic
+          - generic [ref=e366]:
+            - generic [ref=e367]:
+              - generic [ref=e368]: Academic Fit
+              - generic [ref=e369]: 100%
+              - generic [ref=e370]: — Excellent academic fit
+            - generic [ref=e371]:
+              - generic [ref=e372]: Budget Fit
+              - generic [ref=e373]: 100%
+              - generic [ref=e374]: — Fits your budget well
+            - generic [ref=e375]:
+              - generic [ref=e376]: Admission Fit
+              - generic [ref=e377]: 80%
+              - generic [ref=e378]: — Good admission chances
+          - paragraph [ref=e379]: CZK 128,000 / year · 36 months · English
+          - generic [ref=e380]:
+            - paragraph [ref=e381]: Why it matches you
+            - list [ref=e382]:
+              - listitem [ref=e383]:
+                - generic [ref=e384]: ✓
+                - generic [ref=e385]: Strong Computer Science match.
+              - listitem [ref=e386]:
+                - generic [ref=e387]: ✓
+                - generic [ref=e388]: Fits your budget (~5,120–5,120 EUR/year).
+              - listitem [ref=e389]:
+                - generic [ref=e390]: ✓
+                - generic [ref=e391]: English-taught programme, matching your preference.
+          - generic [ref=e392]:
+            - paragraph [ref=e393]: One thing to know
+            - paragraph [ref=e394]:
+              - generic [ref=e395]: ⚠
+              - generic [ref=e396]: An entrance exam is required for this programme.
+          - generic [ref=e397]:
+            - link "View details" [ref=e398] [cursor=pointer]:
+              - /url: programmes/f1899d11-0bc3-47c4-b059-74652052f08d
+            - button "Save" [ref=e400]
+            - button "Compare" [ref=e404]
+          - group [ref=e405]:
+            - generic "Show details" [ref=e406] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e407]: ▾
+        - article [ref=e409]:
+          - generic [ref=e410]:
+            - paragraph [ref=e411]: 95%
+            - paragraph [ref=e412]: Excellent Fit
+            - generic [ref=e413]: Best Overall
+          - generic [ref=e414]:
+            - paragraph [ref=e415]: Czech Technical University in Prague
+            - heading [level=2] [ref=e416]:
+              - link "Biomedical Technology" [ref=e417] [cursor=pointer]:
+                - /url: programmes/2f3fd96f-bbad-440b-a450-8416aa0cf730
+            - paragraph [ref=e418]: Prague, Czech Republic
+          - generic [ref=e419]:
+            - generic [ref=e420]:
+              - generic [ref=e421]: Academic Fit
+              - generic [ref=e422]: 100%
+              - generic [ref=e423]: — Excellent academic fit
+            - generic [ref=e424]:
+              - generic [ref=e425]: Admission Fit
+              - generic [ref=e426]: 80%
+              - generic [ref=e427]: — Good admission chances
+          - paragraph [ref=e428]: Tuition not published · 36 months · English
+          - generic [ref=e429]:
+            - paragraph [ref=e430]: Why it matches you
+            - list [ref=e431]:
+              - listitem [ref=e432]:
+                - generic [ref=e433]: ✓
+                - generic [ref=e434]: English-taught programme, matching your preference.
+              - listitem [ref=e435]:
+                - generic [ref=e436]: ✓
+                - generic [ref=e437]: In one of your preferred countries (Czech Republic).
+              - listitem [ref=e438]:
+                - generic [ref=e439]: ✓
+                - generic [ref=e440]: Prague is a large city — matches your city-size preference.
+          - generic [ref=e441]:
+            - paragraph [ref=e442]: One thing to know
+            - paragraph [ref=e443]:
+              - generic [ref=e444]: ⚠
+              - generic [ref=e445]: An entrance exam is required for this programme.
+          - generic [ref=e446]:
+            - link "View details" [ref=e447] [cursor=pointer]:
+              - /url: programmes/2f3fd96f-bbad-440b-a450-8416aa0cf730
+            - button "Save" [ref=e449]
+            - button "Compare" [ref=e453]
+          - group [ref=e454]:
+            - generic "Show details" [ref=e455] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e456]: ▾
+        - article [ref=e458]:
+          - generic [ref=e459]:
+            - paragraph [ref=e460]: 95%
+            - paragraph [ref=e461]: Excellent Fit
+            - generic [ref=e462]: Best Overall
+          - generic [ref=e463]:
+            - paragraph [ref=e464]: Czech University of Life Sciences Prague
+            - heading [level=2] [ref=e465]:
+              - link "Bachelor's Programme (Environmental Sciences)" [ref=e466] [cursor=pointer]:
+                - /url: programmes/4c012d81-0a84-45fc-9cad-99dfbb427d7f
+            - paragraph [ref=e467]: Prague, Czech Republic
+          - generic [ref=e468]:
+            - generic [ref=e469]:
+              - generic [ref=e470]: Academic Fit
+              - generic [ref=e471]: 100%
+              - generic [ref=e472]: — Excellent academic fit
+            - generic [ref=e473]:
+              - generic [ref=e474]: Admission Fit
+              - generic [ref=e475]: 80%
+              - generic [ref=e476]: — Good admission chances
+          - paragraph [ref=e477]: Tuition not published · 36 months · English
+          - generic [ref=e478]:
+            - paragraph [ref=e479]: Why it matches you
+            - list [ref=e480]:
+              - listitem [ref=e481]:
+                - generic [ref=e482]: ✓
+                - generic [ref=e483]: English-taught programme, matching your preference.
+              - listitem [ref=e484]:
+                - generic [ref=e485]: ✓
+                - generic [ref=e486]: In one of your preferred countries (Czech Republic).
+              - listitem [ref=e487]:
+                - generic [ref=e488]: ✓
+                - generic [ref=e489]: Prague is a large city — matches your city-size preference.
+          - generic [ref=e490]:
+            - paragraph [ref=e491]: One thing to know
+            - paragraph [ref=e492]:
+              - generic [ref=e493]: ⚠
+              - generic [ref=e494]: An entrance exam is required for this programme.
+          - generic [ref=e495]:
+            - link "View details" [ref=e496] [cursor=pointer]:
+              - /url: programmes/4c012d81-0a84-45fc-9cad-99dfbb427d7f
+            - button "Save" [ref=e498]
+            - button "Compare" [ref=e502]
+          - group [ref=e503]:
+            - generic "Show details" [ref=e504] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e505]: ▾
+        - article [ref=e507]:
+          - generic [ref=e508]:
+            - paragraph [ref=e509]: 95%
+            - paragraph [ref=e510]: Excellent Fit
+            - generic [ref=e511]: Best Overall
+          - generic [ref=e512]:
+            - paragraph [ref=e513]: Prague University of Economics and Business
+            - heading [level=2] [ref=e514]:
+              - link "Bachelor of International and Diplomatic Studies" [ref=e515] [cursor=pointer]:
+                - /url: programmes/29412b91-1e18-473c-b113-aa895750563c
+            - paragraph [ref=e516]: Prague, Czech Republic
+          - generic [ref=e517]:
+            - generic [ref=e518]:
+              - generic [ref=e519]: Academic Fit
+              - generic [ref=e520]: 100%
+              - generic [ref=e521]: — Excellent academic fit
+            - generic [ref=e522]:
+              - generic [ref=e523]: Admission Fit
+              - generic [ref=e524]: 80%
+              - generic [ref=e525]: — Good admission chances
+          - paragraph [ref=e526]: Tuition not published · 36 months · English
+          - generic [ref=e527]:
+            - paragraph [ref=e528]: Why it matches you
+            - list [ref=e529]:
+              - listitem [ref=e530]:
+                - generic [ref=e531]: ✓
+                - generic [ref=e532]: English-taught programme, matching your preference.
+              - listitem [ref=e533]:
+                - generic [ref=e534]: ✓
+                - generic [ref=e535]: In one of your preferred countries (Czech Republic).
+              - listitem [ref=e536]:
+                - generic [ref=e537]: ✓
+                - generic [ref=e538]: Prague is a large city — matches your city-size preference.
+          - generic [ref=e539]:
+            - paragraph [ref=e540]: One thing to know
+            - paragraph [ref=e541]:
+              - generic [ref=e542]: ⚠
+              - generic [ref=e543]: An entrance exam is required for this programme.
+          - generic [ref=e544]:
+            - link "View details" [ref=e545] [cursor=pointer]:
+              - /url: programmes/29412b91-1e18-473c-b113-aa895750563c
+            - button "Save" [ref=e547]
+            - button "Compare" [ref=e551]
+          - group [ref=e552]:
+            - generic "Show details" [ref=e553] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e554]: ▾
+        - article [ref=e556]:
+          - generic [ref=e557]:
+            - paragraph [ref=e558]: 95%
+            - paragraph [ref=e559]: Excellent Fit
+            - generic [ref=e560]: Best Overall
+          - generic [ref=e561]:
+            - paragraph [ref=e562]: Prague University of Economics and Business
+            - heading [level=2] [ref=e563]:
+              - link "Bachelor of International Business (IBB)" [ref=e564] [cursor=pointer]:
+                - /url: programmes/6d549054-6972-445c-8dc6-07b316048498
+            - paragraph [ref=e565]: Prague, Czech Republic
+          - generic [ref=e566]:
+            - generic [ref=e567]:
+              - generic [ref=e568]: Academic Fit
+              - generic [ref=e569]: 100%
+              - generic [ref=e570]: — Excellent academic fit
+            - generic [ref=e571]:
+              - generic [ref=e572]: Admission Fit
+              - generic [ref=e573]: 80%
+              - generic [ref=e574]: — Good admission chances
+          - paragraph [ref=e575]: Tuition not published · 36 months · English
+          - generic [ref=e576]:
+            - paragraph [ref=e577]: Why it matches you
+            - list [ref=e578]:
+              - listitem [ref=e579]:
+                - generic [ref=e580]: ✓
+                - generic [ref=e581]: English-taught programme, matching your preference.
+              - listitem [ref=e582]:
+                - generic [ref=e583]: ✓
+                - generic [ref=e584]: In one of your preferred countries (Czech Republic).
+              - listitem [ref=e585]:
+                - generic [ref=e586]: ✓
+                - generic [ref=e587]: Prague is a large city — matches your city-size preference.
+          - generic [ref=e588]:
+            - paragraph [ref=e589]: One thing to know
+            - paragraph [ref=e590]:
+              - generic [ref=e591]: ⚠
+              - generic [ref=e592]: An entrance exam is required for this programme.
+          - generic [ref=e593]:
+            - link "View details" [ref=e594] [cursor=pointer]:
+              - /url: programmes/6d549054-6972-445c-8dc6-07b316048498
+            - button "Save" [ref=e596]
+            - button "Compare" [ref=e600]
+          - group [ref=e601]:
+            - generic "Show details" [ref=e602] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e603]: ▾
+        - article [ref=e605]:
+          - generic [ref=e606]:
+            - paragraph [ref=e607]: 92%
+            - paragraph [ref=e608]: Excellent Fit
+            - generic [ref=e609]: Best Overall
+          - generic [ref=e610]:
+            - paragraph [ref=e611]: Taras Shevchenko National University of Kyiv
+            - heading [level=2] [ref=e612]:
+              - link "Computer Science and Cybernetics" [ref=e613] [cursor=pointer]:
+                - /url: programmes/28b70f17-e877-47a1-8bab-9b37a597ef20
+            - paragraph [ref=e614]: Kyiv, Ukraine
+          - generic [ref=e615]:
+            - generic [ref=e616]:
+              - generic [ref=e617]: Academic Fit
+              - generic [ref=e618]: 100%
+              - generic [ref=e619]: — Excellent academic fit
+            - generic [ref=e620]:
+              - generic [ref=e621]: Budget Fit
+              - generic [ref=e622]: 100%
+              - generic [ref=e623]: — Fits your budget well
+            - generic [ref=e624]:
+              - generic [ref=e625]: Admission Fit
+              - generic [ref=e626]: 100%
+              - generic [ref=e627]: — High admission confidence
+          - paragraph [ref=e628]: €2,000–€3,000 / year · 48 months · English
+          - generic [ref=e629]:
+            - paragraph [ref=e630]: Why it matches you
+            - list [ref=e631]:
+              - listitem [ref=e632]:
+                - generic [ref=e633]: ✓
+                - generic [ref=e634]: Strong Computer Science match.
+              - listitem [ref=e635]:
+                - generic [ref=e636]: ✓
+                - generic [ref=e637]: Fits your budget (~8,000–9,000 EUR/year).
+              - listitem [ref=e638]:
+                - generic [ref=e639]: ✓
+                - generic [ref=e640]: English-taught programme, matching your preference.
+          - generic [ref=e641]:
+            - paragraph [ref=e642]: One thing to know
+            - paragraph [ref=e643]:
+              - generic [ref=e644]: ⚠
+              - generic [ref=e645]: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+          - generic [ref=e646]:
+            - link "View details" [ref=e647] [cursor=pointer]:
+              - /url: programmes/28b70f17-e877-47a1-8bab-9b37a597ef20
+            - button "Save" [ref=e649]
+            - button "Compare" [ref=e653]
+          - group [ref=e654]:
+            - generic "Show details" [ref=e655] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e656]: ▾
+        - article [ref=e658]:
+          - generic [ref=e659]:
+            - paragraph [ref=e660]: 92%
+            - paragraph [ref=e661]: Excellent Fit
+            - generic [ref=e662]: Best Overall
+          - generic [ref=e663]:
+            - paragraph [ref=e664]: Bogomolets National Medical University
+            - heading [level=2] [ref=e665]:
+              - link "Medicine (English-medium)" [ref=e666] [cursor=pointer]:
+                - /url: programmes/96782033-3b3b-4a15-aeda-34f7cfb326d0
+            - paragraph [ref=e667]: Kyiv, Ukraine
+          - generic [ref=e668]:
+            - generic [ref=e669]:
+              - generic [ref=e670]: Academic Fit
+              - generic [ref=e671]: 100%
+              - generic [ref=e672]: — Excellent academic fit
+            - generic [ref=e673]:
+              - generic [ref=e674]: Budget Fit
+              - generic [ref=e675]: 100%
+              - generic [ref=e676]: — Fits your budget well
+            - generic [ref=e677]:
+              - generic [ref=e678]: Admission Fit
+              - generic [ref=e679]: 100%
+              - generic [ref=e680]: — High admission confidence
+          - paragraph [ref=e681]: €4,500–€5,000 / year · 72 months · English
+          - generic [ref=e682]:
+            - paragraph [ref=e683]: Why it matches you
+            - list [ref=e684]:
+              - listitem [ref=e685]:
+                - generic [ref=e686]: ✓
+                - generic [ref=e687]: Fits your budget (~10,500–11,000 EUR/year).
+              - listitem [ref=e688]:
+                - generic [ref=e689]: ✓
+                - generic [ref=e690]: English-taught programme, matching your preference.
+              - listitem [ref=e691]:
+                - generic [ref=e692]: ✓
+                - generic [ref=e693]: Kyiv is a large city — matches your city-size preference.
+          - generic [ref=e694]:
+            - paragraph [ref=e695]: One thing to know
+            - paragraph [ref=e696]:
+              - generic [ref=e697]: ⚠
+              - generic [ref=e698]: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+          - generic [ref=e699]:
+            - link "View details" [ref=e700] [cursor=pointer]:
+              - /url: programmes/96782033-3b3b-4a15-aeda-34f7cfb326d0
+            - button "Save" [ref=e702]
+            - button "Compare" [ref=e706]
+          - group [ref=e707]:
+            - generic "Show details" [ref=e708] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e709]: ▾
+        - article [ref=e711]:
+          - generic [ref=e712]:
+            - paragraph [ref=e713]: 92%
+            - paragraph [ref=e714]: Excellent Fit
+            - generic [ref=e715]: Best Overall
+          - generic [ref=e716]:
+            - paragraph [ref=e717]: V.N. Karazin Kharkiv National University
+            - heading [level=2] [ref=e718]:
+              - link "Medicine (English-medium)" [ref=e719] [cursor=pointer]:
+                - /url: programmes/50a1b90d-6ece-4743-a1de-3cc19f1b7ddb
+            - paragraph [ref=e720]: Kharkiv, Ukraine
+          - generic [ref=e721]:
+            - generic [ref=e722]:
+              - generic [ref=e723]: Academic Fit
+              - generic [ref=e724]: 100%
+              - generic [ref=e725]: — Excellent academic fit
+            - generic [ref=e726]:
+              - generic [ref=e727]: Budget Fit
+              - generic [ref=e728]: 100%
+              - generic [ref=e729]: — Fits your budget well
+            - generic [ref=e730]:
+              - generic [ref=e731]: Admission Fit
+              - generic [ref=e732]: 100%
+              - generic [ref=e733]: — High admission confidence
+          - paragraph [ref=e734]: $4,500–$6,500 / year · 72 months · English
+          - generic [ref=e735]:
+            - paragraph [ref=e736]: Why it matches you
+            - list [ref=e737]:
+              - listitem [ref=e738]:
+                - generic [ref=e739]: ✓
+                - generic [ref=e740]: Fits your budget (~8,004–9,844 EUR/year).
+              - listitem [ref=e741]:
+                - generic [ref=e742]: ✓
+                - generic [ref=e743]: English-taught programme, matching your preference.
+              - listitem [ref=e744]:
+                - generic [ref=e745]: ✓
+                - generic [ref=e746]: Kharkiv is a large city — matches your city-size preference.
+          - generic [ref=e747]:
+            - paragraph [ref=e748]: One thing to know
+            - paragraph [ref=e749]:
+              - generic [ref=e750]: ⚠
+              - generic [ref=e751]: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+          - generic [ref=e752]:
+            - link "View details" [ref=e753] [cursor=pointer]:
+              - /url: programmes/50a1b90d-6ece-4743-a1de-3cc19f1b7ddb
+            - button "Save" [ref=e755]
+            - button "Compare" [ref=e759]
+          - group [ref=e760]:
+            - generic "Show details" [ref=e761] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e762]: ▾
+        - article [ref=e764]:
+          - generic [ref=e765]:
+            - paragraph [ref=e766]: 89%
+            - paragraph [ref=e767]: Strong Fit
+            - generic [ref=e768]: Best Value
+          - generic [ref=e769]:
+            - paragraph [ref=e770]: Masaryk University
+            - heading [level=2] [ref=e771]:
+              - link "Biology and Biochemistry" [ref=e772] [cursor=pointer]:
+                - /url: programmes/62f0ac04-7167-402f-a06a-26bbdc0b9707
+            - paragraph [ref=e773]: Brno, Czech Republic
+          - generic [ref=e774]:
+            - generic [ref=e775]:
+              - generic [ref=e776]: Academic Fit
+              - generic [ref=e777]: 100%
+              - generic [ref=e778]: — Excellent academic fit
+            - generic [ref=e779]:
+              - generic [ref=e780]: Budget Fit
+              - generic [ref=e781]: 100%
+              - generic [ref=e782]: — Fits your budget well
+            - generic [ref=e783]:
+              - generic [ref=e784]: Admission Fit
+              - generic [ref=e785]: 80%
+              - generic [ref=e786]: — Good admission chances
+          - paragraph [ref=e787]: €3,000 / year · 36 months · English
+          - generic [ref=e788]:
+            - paragraph [ref=e789]: Why it matches you
+            - list [ref=e790]:
+              - listitem [ref=e791]:
+                - generic [ref=e792]: ✓
+                - generic [ref=e793]: Fits your budget (~3,000–3,000 EUR/year).
+              - listitem [ref=e794]:
+                - generic [ref=e795]: ✓
+                - generic [ref=e796]: English-taught programme, matching your preference.
+              - listitem [ref=e797]:
+                - generic [ref=e798]: ✓
+                - generic [ref=e799]: In one of your preferred countries (Czech Republic).
+          - generic [ref=e800]:
+            - paragraph [ref=e801]: One thing to know
+            - paragraph [ref=e802]:
+              - generic [ref=e803]: ⚠
+              - generic [ref=e804]: An entrance exam is required for this programme.
+          - generic [ref=e805]:
+            - link "View details" [ref=e806] [cursor=pointer]:
+              - /url: programmes/62f0ac04-7167-402f-a06a-26bbdc0b9707
+            - button "Save" [ref=e808]
+            - button "Compare" [ref=e812]
+          - group [ref=e813]:
+            - generic "Show details" [ref=e814] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e815]: ▾
+        - article [ref=e817]:
+          - generic [ref=e818]:
+            - paragraph [ref=e819]: 89%
+            - paragraph [ref=e820]: Strong Fit
+            - generic [ref=e821]: Best Value
+          - generic [ref=e822]:
+            - paragraph [ref=e823]: Masaryk University
+            - heading [level=2] [ref=e824]:
+              - link "Data Analytics" [ref=e825] [cursor=pointer]:
+                - /url: programmes/6cb03cf6-39b8-4918-aa4e-0eb616218afa
+            - paragraph [ref=e826]: Brno, Czech Republic
+          - generic [ref=e827]:
+            - generic [ref=e828]:
+              - generic [ref=e829]: Academic Fit
+              - generic [ref=e830]: 100%
+              - generic [ref=e831]: — Excellent academic fit
+            - generic [ref=e832]:
+              - generic [ref=e833]: Budget Fit
+              - generic [ref=e834]: 100%
+              - generic [ref=e835]: — Fits your budget well
+            - generic [ref=e836]:
+              - generic [ref=e837]: Admission Fit
+              - generic [ref=e838]: 80%
+              - generic [ref=e839]: — Good admission chances
+          - paragraph [ref=e840]: €14,000 / year · 36 months · English
+          - generic [ref=e841]:
+            - paragraph [ref=e842]: Why it matches you
+            - list [ref=e843]:
+              - listitem [ref=e844]:
+                - generic [ref=e845]: ✓
+                - generic [ref=e846]: Fits your budget (~14,000–14,000 EUR/year).
+              - listitem [ref=e847]:
+                - generic [ref=e848]: ✓
+                - generic [ref=e849]: English-taught programme, matching your preference.
+              - listitem [ref=e850]:
+                - generic [ref=e851]: ✓
+                - generic [ref=e852]: In one of your preferred countries (Czech Republic).
+          - generic [ref=e853]:
+            - paragraph [ref=e854]: One thing to know
+            - paragraph [ref=e855]:
+              - generic [ref=e856]: ⚠
+              - generic [ref=e857]: An entrance exam is required for this programme.
+          - generic [ref=e858]:
+            - link "View details" [ref=e859] [cursor=pointer]:
+              - /url: programmes/6cb03cf6-39b8-4918-aa4e-0eb616218afa
+            - button "Save" [ref=e861]
+            - button "Compare" [ref=e865]
+          - group [ref=e866]:
+            - generic "Show details" [ref=e867] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e868]: ▾
+        - article [ref=e870]:
+          - generic [ref=e871]:
+            - paragraph [ref=e872]: 88%
+            - paragraph [ref=e873]: Strong Fit
+            - generic [ref=e874]: Best Value
+          - generic [ref=e875]:
+            - paragraph [ref=e876]: Lviv Polytechnic National University
+            - heading [level=2] [ref=e877]:
+              - link "Computer Science" [ref=e878] [cursor=pointer]:
+                - /url: programmes/dfcf2d71-d9c1-40b4-8d75-923f8fec1a7a
+            - paragraph [ref=e879]: Lviv, Ukraine
+          - generic [ref=e880]:
+            - generic [ref=e881]:
+              - generic [ref=e882]: Academic Fit
+              - generic [ref=e883]: 100%
+              - generic [ref=e884]: — Excellent academic fit
+            - generic [ref=e885]:
+              - generic [ref=e886]: Budget Fit
+              - generic [ref=e887]: 100%
+              - generic [ref=e888]: — Fits your budget well
+            - generic [ref=e889]:
+              - generic [ref=e890]: Admission Fit
+              - generic [ref=e891]: 80%
+              - generic [ref=e892]: — Good admission chances
+          - paragraph [ref=e893]: $1,750–$2,200 / year · 48 months · English
+          - generic [ref=e894]:
+            - paragraph [ref=e895]: Why it matches you
+            - list [ref=e896]:
+              - listitem [ref=e897]:
+                - generic [ref=e898]: ✓
+                - generic [ref=e899]: Strong Computer Science match.
+              - listitem [ref=e900]:
+                - generic [ref=e901]: ✓
+                - generic [ref=e902]: Fits your budget (~6,026–6,440 EUR/year).
+              - listitem [ref=e903]:
+                - generic [ref=e904]: ✓
+                - generic [ref=e905]: English-taught programme, matching your preference.
+          - generic [ref=e906]:
+            - paragraph [ref=e907]: One thing to know
+            - paragraph [ref=e908]:
+              - generic [ref=e909]: ⚠
+              - generic [ref=e910]: An entrance exam is required for this programme.
+          - generic [ref=e911]:
+            - link "View details" [ref=e912] [cursor=pointer]:
+              - /url: programmes/dfcf2d71-d9c1-40b4-8d75-923f8fec1a7a
+            - button "Save" [ref=e914]
+            - button "Compare" [ref=e918]
+          - group [ref=e919]:
+            - generic "Show details" [ref=e920] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e921]: ▾
+        - article [ref=e923]:
+          - generic [ref=e924]:
+            - paragraph [ref=e925]: 86%
+            - paragraph [ref=e926]: Strong Fit
+            - generic [ref=e927]: Best Academic
+          - generic [ref=e928]:
+            - paragraph [ref=e929]: Mendel University in Brno
+            - heading [level=2] [ref=e930]:
+              - link "Economics and Management" [ref=e931] [cursor=pointer]:
+                - /url: programmes/68fb34d4-fe52-4646-870f-1d095d29794b
+            - paragraph [ref=e932]: Brno, Czech Republic
+          - generic [ref=e933]:
+            - generic [ref=e934]:
+              - generic [ref=e935]: Academic Fit
+              - generic [ref=e936]: 100%
+              - generic [ref=e937]: — Excellent academic fit
+            - generic [ref=e938]:
+              - generic [ref=e939]: Admission Fit
+              - generic [ref=e940]: 80%
+              - generic [ref=e941]: — Good admission chances
+          - paragraph [ref=e942]: Tuition not published · 36 months · English
+          - generic [ref=e943]:
+            - paragraph [ref=e944]: Why it matches you
+            - list [ref=e945]:
+              - listitem [ref=e946]:
+                - generic [ref=e947]: ✓
+                - generic [ref=e948]: English-taught programme, matching your preference.
+              - listitem [ref=e949]:
+                - generic [ref=e950]: ✓
+                - generic [ref=e951]: In one of your preferred countries (Czech Republic).
+          - generic [ref=e952]:
+            - paragraph [ref=e953]: One thing to know
+            - paragraph [ref=e954]:
+              - generic [ref=e955]: ⚠
+              - generic [ref=e956]: An entrance exam is required for this programme.
+          - generic [ref=e957]:
+            - link "View details" [ref=e958] [cursor=pointer]:
+              - /url: programmes/68fb34d4-fe52-4646-870f-1d095d29794b
+            - button "Save" [ref=e960]
+            - button "Compare" [ref=e964]
+          - group [ref=e965]:
+            - generic "Show details" [ref=e966] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e967]: ▾
+        - article [ref=e969]:
+          - generic [ref=e970]:
+            - paragraph [ref=e971]: 86%
+            - paragraph [ref=e972]: Strong Fit
+            - generic [ref=e973]: Best Academic
+          - generic [ref=e974]:
+            - paragraph [ref=e975]: Palacký University Olomouc
+            - heading [level=2] [ref=e976]:
+              - link "Physiotherapy" [ref=e977] [cursor=pointer]:
+                - /url: programmes/351c841b-54c2-4cf3-9c3e-23b4f57aa654
+            - paragraph [ref=e978]: Olomouc, Czech Republic
+          - generic [ref=e979]:
+            - generic [ref=e980]:
+              - generic [ref=e981]: Academic Fit
+              - generic [ref=e982]: 100%
+              - generic [ref=e983]: — Excellent academic fit
+            - generic [ref=e984]:
+              - generic [ref=e985]: Admission Fit
+              - generic [ref=e986]: 80%
+              - generic [ref=e987]: — Good admission chances
+          - paragraph [ref=e988]: Tuition not published · 36 months · English
+          - generic [ref=e989]:
+            - paragraph [ref=e990]: Why it matches you
+            - list [ref=e991]:
+              - listitem [ref=e992]:
+                - generic [ref=e993]: ✓
+                - generic [ref=e994]: English-taught programme, matching your preference.
+              - listitem [ref=e995]:
+                - generic [ref=e996]: ✓
+                - generic [ref=e997]: In one of your preferred countries (Czech Republic).
+              - listitem [ref=e998]:
+                - generic [ref=e999]: ✓
+                - generic [ref=e1000]: Has a dedicated international student office.
+          - generic [ref=e1001]:
+            - paragraph [ref=e1002]: One thing to know
+            - paragraph [ref=e1003]:
+              - generic [ref=e1004]: ⚠
+              - generic [ref=e1005]: An entrance exam is required for this programme.
+          - generic [ref=e1006]:
+            - link "View details" [ref=e1007] [cursor=pointer]:
+              - /url: programmes/351c841b-54c2-4cf3-9c3e-23b4f57aa654
+            - button "Save" [ref=e1009]
+            - button "Compare" [ref=e1013]
+          - group [ref=e1014]:
+            - generic "Show details" [ref=e1015] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e1016]: ▾
+        - article [ref=e1018]:
+          - generic [ref=e1019]:
+            - paragraph [ref=e1020]: 86%
+            - paragraph [ref=e1021]: Strong Fit
+            - generic [ref=e1022]: Best Academic
+          - generic [ref=e1023]:
+            - paragraph [ref=e1024]: University of Ostrava
+            - heading [level=2] [ref=e1025]:
+              - link "English Philology" [ref=e1026] [cursor=pointer]:
+                - /url: programmes/5c8c833b-8847-4f86-9993-5461a8663d6f
+            - paragraph [ref=e1027]: Ostrava, Czech Republic
+          - generic [ref=e1028]:
+            - generic [ref=e1029]:
+              - generic [ref=e1030]: Academic Fit
+              - generic [ref=e1031]: 100%
+              - generic [ref=e1032]: — Excellent academic fit
+            - generic [ref=e1033]:
+              - generic [ref=e1034]: Admission Fit
+              - generic [ref=e1035]: 80%
+              - generic [ref=e1036]: — Good admission chances
+          - paragraph [ref=e1037]: Tuition not published · 36 months · English
+          - generic [ref=e1038]:
+            - paragraph [ref=e1039]: Why it matches you
+            - list [ref=e1040]:
+              - listitem [ref=e1041]:
+                - generic [ref=e1042]: ✓
+                - generic [ref=e1043]: English-taught programme, matching your preference.
+              - listitem [ref=e1044]:
+                - generic [ref=e1045]: ✓
+                - generic [ref=e1046]: In one of your preferred countries (Czech Republic).
+          - generic [ref=e1047]:
+            - paragraph [ref=e1048]: One thing to know
+            - paragraph [ref=e1049]:
+              - generic [ref=e1050]: ⚠
+              - generic [ref=e1051]: An entrance exam is required for this programme.
+          - generic [ref=e1052]:
+            - link "View details" [ref=e1053] [cursor=pointer]:
+              - /url: programmes/5c8c833b-8847-4f86-9993-5461a8663d6f
+            - button "Save" [ref=e1055]
+            - button "Compare" [ref=e1059]
+          - group [ref=e1060]:
+            - generic "Show details" [ref=e1061] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e1062]: ▾
+        - article [ref=e1064]:
+          - generic [ref=e1065]:
+            - paragraph [ref=e1066]: 86%
+            - paragraph [ref=e1067]: Strong Fit
+            - generic [ref=e1068]: Best Academic
+          - generic [ref=e1069]:
+            - paragraph [ref=e1070]: University of Ostrava
+            - heading [level=2] [ref=e1071]:
+              - link "Mathematics" [ref=e1072] [cursor=pointer]:
+                - /url: programmes/4d3d578f-3770-45a2-b035-e341d2f15bcb
+            - paragraph [ref=e1073]: Ostrava, Czech Republic
+          - generic [ref=e1074]:
+            - generic [ref=e1075]:
+              - generic [ref=e1076]: Academic Fit
+              - generic [ref=e1077]: 100%
+              - generic [ref=e1078]: — Excellent academic fit
+            - generic [ref=e1079]:
+              - generic [ref=e1080]: Admission Fit
+              - generic [ref=e1081]: 80%
+              - generic [ref=e1082]: — Good admission chances
+          - paragraph [ref=e1083]: Tuition not published · 36 months · English
+          - generic [ref=e1084]:
+            - paragraph [ref=e1085]: Why it matches you
+            - list [ref=e1086]:
+              - listitem [ref=e1087]:
+                - generic [ref=e1088]: ✓
+                - generic [ref=e1089]: English-taught programme, matching your preference.
+              - listitem [ref=e1090]:
+                - generic [ref=e1091]: ✓
+                - generic [ref=e1092]: In one of your preferred countries (Czech Republic).
+          - generic [ref=e1093]:
+            - paragraph [ref=e1094]: One thing to know
+            - paragraph [ref=e1095]:
+              - generic [ref=e1096]: ⚠
+              - generic [ref=e1097]: An entrance exam is required for this programme.
+          - generic [ref=e1098]:
+            - link "View details" [ref=e1099] [cursor=pointer]:
+              - /url: programmes/4d3d578f-3770-45a2-b035-e341d2f15bcb
+            - button "Save" [ref=e1101]
+            - button "Compare" [ref=e1105]
+          - group [ref=e1106]:
+            - generic "Show details" [ref=e1107] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e1108]: ▾
+        - article [ref=e1110]:
+          - generic [ref=e1111]:
+            - paragraph [ref=e1112]: 85%
+            - paragraph [ref=e1113]: Strong Fit
+            - generic [ref=e1114]: Best Value
+          - generic [ref=e1115]:
+            - paragraph [ref=e1116]: Sumy State University
+            - heading [level=2] [ref=e1117]:
+              - link "Medicine (English-medium)" [ref=e1118] [cursor=pointer]:
+                - /url: programmes/bd6452e1-b7a5-4de9-a980-b5296fd705f0
+            - paragraph [ref=e1119]: Sumy, Ukraine
+          - generic [ref=e1120]:
+            - generic [ref=e1121]:
+              - generic [ref=e1122]: Academic Fit
+              - generic [ref=e1123]: 100%
+              - generic [ref=e1124]: — Excellent academic fit
+            - generic [ref=e1125]:
+              - generic [ref=e1126]: Budget Fit
+              - generic [ref=e1127]: 100%
+              - generic [ref=e1128]: — Fits your budget well
+            - generic [ref=e1129]:
+              - generic [ref=e1130]: Admission Fit
+              - generic [ref=e1131]: 100%
+              - generic [ref=e1132]: — High admission confidence
+          - paragraph [ref=e1133]: $4,000–$4,500 / year · 72 months · English
+          - generic [ref=e1134]:
+            - paragraph [ref=e1135]: Why it matches you
+            - list [ref=e1136]:
+              - listitem [ref=e1137]:
+                - generic [ref=e1138]: ✓
+                - generic [ref=e1139]: Fits your budget (~6,992–7,452 EUR/year).
+              - listitem [ref=e1140]:
+                - generic [ref=e1141]: ✓
+                - generic [ref=e1142]: English-taught programme, matching your preference.
+              - listitem [ref=e1143]:
+                - generic [ref=e1144]: ✓
+                - generic [ref=e1145]: No entrance exam required.
+          - generic [ref=e1146]:
+            - paragraph [ref=e1147]: One thing to know
+            - paragraph [ref=e1148]:
+              - generic [ref=e1149]: ⚠
+              - generic [ref=e1150]: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+          - generic [ref=e1151]:
+            - link "View details" [ref=e1152] [cursor=pointer]:
+              - /url: programmes/bd6452e1-b7a5-4de9-a980-b5296fd705f0
+            - button "Save" [ref=e1154]
+            - button "Compare" [ref=e1158]
+          - group [ref=e1159]:
+            - generic "Show details" [ref=e1160] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e1161]: ▾
+        - article [ref=e1163]:
+          - generic [ref=e1164]:
+            - paragraph [ref=e1165]: 85%
+            - paragraph [ref=e1166]: Strong Fit
+            - generic [ref=e1167]: Best Value
+          - generic [ref=e1168]:
+            - paragraph [ref=e1169]: National Technical University of Ukraine "Igor Sikorsky Kyiv Polytechnic Institute"
+            - heading [level=2] [ref=e1170]:
+              - 'link "Electronics: Electronic Components and Systems" [ref=e1171] [cursor=pointer]':
+                - /url: programmes/3400afbc-ef48-4af2-a87d-4f270cd136c3
+            - paragraph [ref=e1172]: Kyiv, Ukraine
+          - generic [ref=e1173]:
+            - generic [ref=e1174]:
+              - generic [ref=e1175]: Academic Fit
+              - generic [ref=e1176]: 100%
+              - generic [ref=e1177]: — Excellent academic fit
+            - generic [ref=e1178]:
+              - generic [ref=e1179]: Budget Fit
+              - generic [ref=e1180]: 100%
+              - generic [ref=e1181]: — Fits your budget well
+            - generic [ref=e1182]:
+              - generic [ref=e1183]: Admission Fit
+              - generic [ref=e1184]: 65%
+              - generic [ref=e1185]: — Competitive admission
+          - paragraph [ref=e1186]: UAH 74,000–UAH 111,000 / year · 48 months · English
+          - generic [ref=e1187]:
+            - paragraph [ref=e1188]: Why it matches you
+            - list [ref=e1189]:
+              - listitem [ref=e1190]:
+                - generic [ref=e1191]: ✓
+                - generic [ref=e1192]: Fits your budget (~1,680–2,457 EUR/year).
+              - listitem [ref=e1193]:
+                - generic [ref=e1194]: ✓
+                - generic [ref=e1195]: English-taught programme, matching your preference.
+              - listitem [ref=e1196]:
+                - generic [ref=e1197]: ✓
+                - generic [ref=e1198]: Kyiv is a large city — matches your city-size preference.
+          - generic [ref=e1199]:
+            - paragraph [ref=e1200]: One thing to know
+            - paragraph [ref=e1201]:
+              - generic [ref=e1202]: ⚠
+              - generic [ref=e1203]: An entrance exam is required for this programme.
+          - generic [ref=e1204]:
+            - link "View details" [ref=e1205] [cursor=pointer]:
+              - /url: programmes/3400afbc-ef48-4af2-a87d-4f270cd136c3
+            - button "Save" [ref=e1207]
+            - button "Compare" [ref=e1211]
+          - group [ref=e1212]:
+            - generic "Show details" [ref=e1213] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e1214]: ▾
+        - article [ref=e1216]:
+          - generic [ref=e1217]:
+            - paragraph [ref=e1218]: 85%
+            - paragraph [ref=e1219]: Strong Fit
+            - generic [ref=e1220]: Best Value
+          - generic [ref=e1221]:
+            - paragraph [ref=e1222]: National Technical University of Ukraine "Igor Sikorsky Kyiv Polytechnic Institute"
+            - heading [level=2] [ref=e1223]:
+              - link "Software Engineering" [ref=e1224] [cursor=pointer]:
+                - /url: programmes/66817d94-06d5-4cfe-8a5c-f70face23e71
+            - paragraph [ref=e1225]: Kyiv, Ukraine
+          - generic [ref=e1226]:
+            - generic [ref=e1227]:
+              - generic [ref=e1228]: Academic Fit
+              - generic [ref=e1229]: 100%
+              - generic [ref=e1230]: — Excellent academic fit
+            - generic [ref=e1231]:
+              - generic [ref=e1232]: Budget Fit
+              - generic [ref=e1233]: 100%
+              - generic [ref=e1234]: — Fits your budget well
+            - generic [ref=e1235]:
+              - generic [ref=e1236]: Admission Fit
+              - generic [ref=e1237]: 65%
+              - generic [ref=e1238]: — Competitive admission
+          - paragraph [ref=e1239]: UAH 74,000–UAH 111,000 / year · 48 months · English
+          - generic [ref=e1240]:
+            - paragraph [ref=e1241]: Why it matches you
+            - list [ref=e1242]:
+              - listitem [ref=e1243]:
+                - generic [ref=e1244]: ✓
+                - generic [ref=e1245]: Fits your budget (~1,680–2,457 EUR/year).
+              - listitem [ref=e1246]:
+                - generic [ref=e1247]: ✓
+                - generic [ref=e1248]: English-taught programme, matching your preference.
+              - listitem [ref=e1249]:
+                - generic [ref=e1250]: ✓
+                - generic [ref=e1251]: Kyiv is a large city — matches your city-size preference.
+          - generic [ref=e1252]:
+            - paragraph [ref=e1253]: One thing to know
+            - paragraph [ref=e1254]:
+              - generic [ref=e1255]: ⚠
+              - generic [ref=e1256]: An entrance exam is required for this programme.
+          - generic [ref=e1257]:
+            - link "View details" [ref=e1258] [cursor=pointer]:
+              - /url: programmes/66817d94-06d5-4cfe-8a5c-f70face23e71
+            - button "Save" [ref=e1260]
+            - button "Compare" [ref=e1264]
+          - group [ref=e1265]:
+            - generic "Show details" [ref=e1266] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e1267]: ▾
+        - article [ref=e1269]:
+          - generic [ref=e1270]:
+            - paragraph [ref=e1271]: 85%
+            - paragraph [ref=e1272]: Strong Fit
+            - generic [ref=e1273]: Best Academic
+          - generic [ref=e1274]:
+            - paragraph [ref=e1275]: Lviv Polytechnic National University
+            - heading [level=2] [ref=e1276]:
+              - link "Management" [ref=e1277] [cursor=pointer]:
+                - /url: programmes/3623fb5e-535d-4220-994d-2aa8ef84c10c
+            - paragraph [ref=e1278]: Lviv, Ukraine
+          - generic [ref=e1279]:
+            - generic [ref=e1280]:
+              - generic [ref=e1281]: Academic Fit
+              - generic [ref=e1282]: 100%
+              - generic [ref=e1283]: — Excellent academic fit
+            - generic [ref=e1284]:
+              - generic [ref=e1285]: Admission Fit
+              - generic [ref=e1286]: 80%
+              - generic [ref=e1287]: — Good admission chances
+          - paragraph [ref=e1288]: $1,750 / year · 48 months · English
+          - generic [ref=e1289]:
+            - paragraph [ref=e1290]: Why it matches you
+            - list [ref=e1291]:
+              - listitem [ref=e1292]:
+                - generic [ref=e1293]: ✓
+                - generic [ref=e1294]: English-taught programme, matching your preference.
+              - listitem [ref=e1295]:
+                - generic [ref=e1296]: ✓
+                - generic [ref=e1297]: Lviv is a large city — matches your city-size preference.
+              - listitem [ref=e1298]:
+                - generic [ref=e1299]: ✓
+                - generic [ref=e1300]: "Application deadline: October 15, 2026."
+          - generic [ref=e1301]:
+            - paragraph [ref=e1302]: One thing to know
+            - paragraph [ref=e1303]:
+              - generic [ref=e1304]: ⚠
+              - generic [ref=e1305]: An entrance exam is required for this programme.
+          - generic [ref=e1306]:
+            - link "View details" [ref=e1307] [cursor=pointer]:
+              - /url: programmes/3623fb5e-535d-4220-994d-2aa8ef84c10c
+            - button "Save" [ref=e1309]
+            - button "Compare" [ref=e1313]
+          - group [ref=e1314]:
+            - generic "Show details" [ref=e1315] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e1316]: ▾
+        - article [ref=e1318]:
+          - generic [ref=e1319]:
+            - paragraph [ref=e1320]: 84%
+            - paragraph [ref=e1321]: Strong Fit
+            - generic [ref=e1322]: Best Value
+          - generic [ref=e1323]:
+            - paragraph [ref=e1324]: Taras Shevchenko National University of Kyiv
+            - heading [level=2] [ref=e1325]:
+              - link "International Business, Commerce and Finance" [ref=e1326] [cursor=pointer]:
+                - /url: programmes/506955f3-f954-4caf-89e9-1ac611f6d935
+            - paragraph [ref=e1327]: Kyiv, Ukraine
+          - generic [ref=e1328]:
+            - generic [ref=e1329]:
+              - generic [ref=e1330]: Academic Fit
+              - generic [ref=e1331]: 100%
+              - generic [ref=e1332]: — Excellent academic fit
+            - generic [ref=e1333]:
+              - generic [ref=e1334]: Budget Fit
+              - generic [ref=e1335]: 100%
+              - generic [ref=e1336]: — Fits your budget well
+            - generic [ref=e1337]:
+              - generic [ref=e1338]: Admission Fit
+              - generic [ref=e1339]: 60%
+              - generic [ref=e1340]: — Competitive admission
+          - paragraph [ref=e1341]: €1,990 / year · 48 months · English
+          - generic [ref=e1342]:
+            - paragraph [ref=e1343]: Why it matches you
+            - list [ref=e1344]:
+              - listitem [ref=e1345]:
+                - generic [ref=e1346]: ✓
+                - generic [ref=e1347]: Fits your budget (~7,990–7,990 EUR/year).
+              - listitem [ref=e1348]:
+                - generic [ref=e1349]: ✓
+                - generic [ref=e1350]: English-taught programme, matching your preference.
+              - listitem [ref=e1351]:
+                - generic [ref=e1352]: ✓
+                - generic [ref=e1353]: Kyiv is a large city — matches your city-size preference.
+          - generic [ref=e1354]:
+            - paragraph [ref=e1355]: One thing to know
+            - paragraph [ref=e1356]:
+              - generic [ref=e1357]: ⚠
+              - generic [ref=e1358]: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+          - generic [ref=e1359]:
+            - link "View details" [ref=e1360] [cursor=pointer]:
+              - /url: programmes/506955f3-f954-4caf-89e9-1ac611f6d935
+            - button "Save" [ref=e1362]
+            - button "Compare" [ref=e1366]
+          - group [ref=e1367]:
+            - generic "Show details" [ref=e1368] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e1369]: ▾
+        - article [ref=e1371]:
+          - generic [ref=e1372]:
+            - paragraph [ref=e1373]: 84%
+            - paragraph [ref=e1374]: Strong Fit
+            - generic [ref=e1375]: Best Value
+          - generic [ref=e1376]:
+            - paragraph [ref=e1377]: Taras Shevchenko National University of Kyiv
+            - heading [level=2] [ref=e1378]:
+              - 'link "Philology: English Studies and Two Foreign Languages" [ref=e1379] [cursor=pointer]':
+                - /url: programmes/e3be5936-48d4-44f1-abc7-b87fb98d1c93
+            - paragraph [ref=e1380]: Kyiv, Ukraine
+          - generic [ref=e1381]:
+            - generic [ref=e1382]:
+              - generic [ref=e1383]: Academic Fit
+              - generic [ref=e1384]: 100%
+              - generic [ref=e1385]: — Excellent academic fit
+            - generic [ref=e1386]:
+              - generic [ref=e1387]: Budget Fit
+              - generic [ref=e1388]: 100%
+              - generic [ref=e1389]: — Fits your budget well
+            - generic [ref=e1390]:
+              - generic [ref=e1391]: Admission Fit
+              - generic [ref=e1392]: 60%
+              - generic [ref=e1393]: — Competitive admission
+          - paragraph [ref=e1394]: €1,990 / year · 48 months · English
+          - generic [ref=e1395]:
+            - paragraph [ref=e1396]: Why it matches you
+            - list [ref=e1397]:
+              - listitem [ref=e1398]:
+                - generic [ref=e1399]: ✓
+                - generic [ref=e1400]: Fits your budget (~7,990–7,990 EUR/year).
+              - listitem [ref=e1401]:
+                - generic [ref=e1402]: ✓
+                - generic [ref=e1403]: English-taught programme, matching your preference.
+              - listitem [ref=e1404]:
+                - generic [ref=e1405]: ✓
+                - generic [ref=e1406]: Kyiv is a large city — matches your city-size preference.
+          - generic [ref=e1407]:
+            - paragraph [ref=e1408]: One thing to know
+            - paragraph [ref=e1409]:
+              - generic [ref=e1410]: ⚠
+              - generic [ref=e1411]: Based on your general budget range, not an exact figure — add a precise amount for a more accurate score.
+          - generic [ref=e1412]:
+            - link "View details" [ref=e1413] [cursor=pointer]:
+              - /url: programmes/e3be5936-48d4-44f1-abc7-b87fb98d1c93
+            - button "Save" [ref=e1415]
+            - button "Compare" [ref=e1419]
+          - group [ref=e1420]:
+            - generic "Show details" [ref=e1421] [cursor=pointer]:
+              - text: Show details
+              - generic [ref=e1422]: ▾
+  - button "Open Next.js Dev Tools" [ref=e1428] [cursor=pointer]
+  - alert [ref=e1432]
+```
+
+# Test source
+
+```ts
+  1  | import { test, expect } from '../fixtures/auth';
+  2  | 
+  3  | test.describe('Authenticated Flow', () => {
+  4  |   test('can access discover after sign-in', async ({ authenticatedPage }) => {
+  5  |     const page = authenticatedPage;
+  6  |     
+  7  |     await page.goto('/en/discover');
+  8  |     await expect(page).toHaveURL(/.*\/discover/);
+  9  |     await expect(page.locator('h1')).toContainText('Discover');
+  10 |   });
+  11 | 
+  12 |   test('discover shows programme cards', async ({ authenticatedPage }) => {
+  13 |     const page = authenticatedPage;
+  14 |     
+  15 |     await page.goto('/en/discover');
+  16 |     await expect(page.locator('a[href^="/en/programmes/"]').first()).toBeVisible({ timeout: 10000 });
+  17 |   });
+  18 | 
+  19 |   test('can open programme detail', async ({ authenticatedPage }) => {
+  20 |     const page = authenticatedPage;
+  21 |     
+  22 |     await page.goto('/en/discover');
+  23 |     const firstLink = page.locator('a[href^="/en/programmes/"]').first();
+> 24 |     await firstLink.click();
+     |                     ^ Error: locator.click: Target page, context or browser has been closed
+  25 |     
+  26 |     await expect(page).toHaveURL(/\/en\/programmes\/[^/]+/);
+  27 |     await expect(page.locator('h1')).toBeVisible();
+  28 |     await expect(page.locator('text=Key facts')).toBeVisible();
+  29 |   });
+  30 | });
+```

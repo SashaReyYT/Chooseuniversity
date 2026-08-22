@@ -5,6 +5,7 @@ import type {
   MatchMessage,
 } from "@/lib/matching/engine";
 import type { BestForLabel } from "@/lib/matching/best-for";
+import { annualLivingCost } from "@/lib/matching/utils";
 
 export type DiscoverTranslator = Awaited<
   ReturnType<typeof getTranslations<"Discover">>
@@ -14,6 +15,8 @@ export type DiscoverKey = Parameters<DiscoverTranslator>[0];
 export type MatchingTranslator = Awaited<
   ReturnType<typeof getTranslations>
 >;
+
+export { annualLivingCost };
 
 /**
  * Shared between the discover/saved list cards and the programme detail

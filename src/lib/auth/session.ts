@@ -35,3 +35,21 @@ export async function requireUser(): Promise<User> {
   }
   return user;
 }
+
+/**
+ * Auth-first gate for the "find your university" flow: the questionnaire
+ * and match results are account features, so an anonymous visitor (or a
+ * session-less request) is asked to create an account / sign in first.
+ * `nextPath` is where the auth screens send them afterwards — the quiz,
+ * per the product flow ("authorize first, then the test").
+ */
+export async function requireRealUser(nextPath: string): Promise<User> {
+  const user = await getCurrentUser();
+  if (!user || user.is_anonymous === true) {
+    const locale = await getLocale();
+    redirect(
+      `/${locale}/sign-up?next=${encodeURIComponent(nextPath)}`,
+    );
+  }
+  return user;
+}

@@ -118,6 +118,8 @@ export class MatchingService {
       support_preference: profileRow.support_preference,
       english_level: profileRow.english_level,
       math_background: profileRow.math_background,
+      career_priorities: profileRow.career_priorities ?? [],
+      lifestyle_preferences: profileRow.lifestyle_preferences ?? [],
       testScores: testScores.map((s) => ({
         test_type: s.test_type,
         qualification_id: s.qualification_id,
@@ -206,6 +208,15 @@ export class MatchingService {
  * "best_match"/"highest_match"/unset falls back to the existing
  * highest-Match-Score-first behavior. Exported (not just used internally)
  * so it can be unit-tested without a Supabase client.
+ *
+ * Tie-breaking for best_match/highest_match (deterministic so the same
+ * programme always lands at index 0 when several hit 100%):
+ *  1. overallScore desc
+ *  2. confidence desc (high > medium > low)
+ *  3. failed hard requirements asc
+ *  4. concerns count asc
+ *  5. tuition_min asc (cheaper wins ties)
+ *  6. university name asc (stable)
  */
 export function sortRankedMatches(
   ranked: RankedMatch[],
@@ -213,9 +224,6 @@ export function sortRankedMatches(
 ): void {
   switch (sortBy) {
     case "lowest_tuition":
-      // tuition_min may be NULL only for programmes whose official pages
-      // state no public figure — those sort last, exactly like unknown
-      // living costs below.
       ranked.sort(
         (a, b) =>
           (a.programme.tuition_min ?? Number.POSITIVE_INFINITY) -
@@ -232,6 +240,29 @@ export function sortRankedMatches(
     case "best_match":
     case "highest_match":
     default:
-      ranked.sort((a, b) => (b.match.overallScore ?? -1) - (a.match.overallScore ?? -1));
+      ranked.sort((a, b) => {
+        const sa = a.match.overallScore ?? -1;
+        const sb = b.match.overallScore ?? -1;
+        if (sa !== sb) return sb - sa;
+
+        const confidenceOrder = { high: 3, medium: 2, low: 1 };
+        const ca = confidenceOrder[a.match.confidence] ?? 0;
+        const cb = confidenceOrder[b.match.confidence] ?? 0;
+        if (ca !== cb) return cb - ca;
+
+        const failedA = a.match.hardRequirements.filter((r) => r.status === "fail").length;
+        const failedB = b.match.hardRequirements.filter((r) => r.status === "fail").length;
+        if (failedA !== failedB) return failedA - failedB;
+
+        const concernsA = a.match.concerns.length;
+        const concernsB = b.match.concerns.length;
+        if (concernsA !== concernsB) return concernsA - concernsB;
+
+        const tuitionA = a.programme.tuition_min ?? Number.POSITIVE_INFINITY;
+        const tuitionB = b.programme.tuition_min ?? Number.POSITIVE_INFINITY;
+        if (tuitionA !== tuitionB) return tuitionA - tuitionB;
+
+        return a.programme.university.name.localeCompare(b.programme.university.name);
+      });
   }
 }

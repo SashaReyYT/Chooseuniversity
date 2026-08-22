@@ -2,6 +2,7 @@ import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { requireRealUser } from "@/lib/auth/session";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import { ProfileService } from "@/lib/services/profile.service";
@@ -14,6 +15,10 @@ import { OnboardingForm } from "@/components/onboarding-form";
  * requirements. Every fieldset stays mounted (hidden via CSS), so the
  * single form POST collects every step's values regardless of which step
  * was last visible — see `OnboardingForm`.
+ *
+ * Auth-first: anonymous visitors are sent to sign-up (with `next`
+ * pointing back here) before they can take the quiz, so the answers
+ * always land on a real account.
  */
 export default async function OnboardingPage({
   params,
@@ -25,11 +30,9 @@ export default async function OnboardingPage({
   }
   setRequestLocale(locale);
 
-  const supabase = await createServerSupabaseClient();
+  const user = await requireRealUser("/onboarding");
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = await createServerSupabaseClient();
 
   const referenceData = new ReferenceDataRepository(supabase);
   const [

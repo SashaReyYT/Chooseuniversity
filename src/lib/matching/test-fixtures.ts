@@ -155,6 +155,8 @@ export function makeProfile(
     support_preference: null,
     english_level: "b2",
     math_background: "good",
+    career_priorities: [],
+    lifestyle_preferences: [],
     testScores: [
       { test_type: "IELTS", qualification_id: "qual-ielts", score: 7.0, cefr_equivalent: "c1" },
     ],

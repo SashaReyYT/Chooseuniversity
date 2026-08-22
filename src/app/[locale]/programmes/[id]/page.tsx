@@ -31,6 +31,8 @@ import {
 import { annualLivingCost } from "@/lib/matching/utils";
 import type { ProgrammeStudyMode, SourceType } from "@/types/database";
 import { AppShell } from "@/components/app-shell";
+import { Suspense } from "react";
+import { ProgrammeSkeleton } from "@/components/skeleton-wrappers";
 
 /** Compile-time checked message keys of the ProgrammeDetails namespace (mirrors DiscoverKey in match-display). */
 type ProgrammeDetailsKey = Parameters<
@@ -190,8 +192,9 @@ export default async function ProgrammeDetailsPage({
       : [];
 
   return (
-    <AppShell>
-      <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-10">
+    <Suspense fallback={<ProgrammeSkeleton />}>
+      <AppShell>
+        <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-10">
       <Link
         href="/discover"
         className="font-label-caps text-label-caps text-primary underline"
@@ -199,41 +202,52 @@ export default async function ProgrammeDetailsPage({
         ← {t("backToDiscover")}
       </Link>
 
-      <div className="space-y-8">
-        {/* Match + heading */}
-        <div className="space-y-3">
-          {match?.overallScore != null ? (
-            <div className="flex items-center gap-4">
-              <p className="font-display-xl text-display-xl text-primary leading-none">
-                {match.overallScore}%
-              </p>
-              {match.overallLabel && (
-                <p className="font-headline-sm text-headline-sm text-on-surface-variant">
-                  {tDiscover(LABEL_KEYS[match.overallLabel])}
+<div className="space-y-8">
+          {/* Match + heading */}
+          <div className="space-y-3">
+            {match?.overallScore != null ? (
+              <div className="flex items-center gap-4">
+                <p className="font-display-xl text-display-xl text-primary leading-none">
+                  {match.overallScore}%
                 </p>
-              )}
-            </div>
-          ) : (
-            <p className="font-body-sm text-body-sm text-on-surface-variant italic">
-              {tDiscover("noScoreHint")}
+                {match.overallLabel && (
+                  <p className="font-headline-sm text-headline-sm text-on-surface-variant">
+                    {tDiscover(LABEL_KEYS[match.overallLabel])}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="font-body-sm text-body-sm text-on-surface-variant italic">
+                {tDiscover("noScoreHint")}
+              </p>
+            )}
+
+            <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
+              {programme.name}
+            </h1>
+            {programme.degree_title && (
+              <p className="font-label-caps text-label-caps text-secondary">
+                {programme.degree_title}
+              </p>
+            )}
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              {programme.university.name} · {programme.university.city},{" "}
+              {programme.university.country.name}
             </p>
+          </div>
+
+          {/* Can I get in? — Admission outlook */}
+          {match && (
+            <section className="rounded-xl border border-outline-variant/40 bg-surface-container-low p-6 space-y-4">
+              <h2 className="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+                <span className="material-symbols-outlined" aria-hidden="true">how_to_reg</span>
+                {t("admissionOutlook")}
+              </h2>
+              <AdmissionOutlook match={match} t={t} profile={profile} programme={programme} />
+            </section>
           )}
 
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
-            {programme.name}
-          </h1>
-          {programme.degree_title && (
-            <p className="font-label-caps text-label-caps text-secondary">
-              {programme.degree_title}
-            </p>
-          )}
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            {programme.university.name} · {programme.university.city},{" "}
-            {programme.university.country.name}
-          </p>
-        </div>
-
-        {/* Actions */}
+          {/* Actions */}
         <div className="flex flex-wrap gap-3">
           <form action={toggleSaveAction}>
             <input type="hidden" name="programmeId" value={programme.id} />
@@ -395,6 +409,144 @@ export default async function ProgrammeDetailsPage({
             />
           </dl>
         </section>
+
+        {/* Consolidated Estimated Yearly Cost */}
+        {(() => {
+          const tuitionMin = programme.tuition_min ?? 0;
+          const tuitionMax = programme.tuition_max ?? 0;
+          const livingMonthly = programme.estimated_living_cost_monthly ?? 0;
+          const accommodationMonthlyMin = programme.accommodation?.estimated_monthly_cost_min ?? 0;
+          const accommodationMonthlyMax = programme.accommodation?.estimated_monthly_cost_max ?? accommodationMonthlyMin;
+          const applicationFee = programme.application_fee_amount ?? 0;
+          const currency = programme.tuition_currency ?? programme.living_cost_currency ?? "EUR";
+
+          const hasCostData = tuitionMin > 0 || livingMonthly > 0 || accommodationMonthlyMin > 0 || applicationFee > 0;
+          if (!hasCostData) return null;
+
+          const annualLiving = livingMonthly * 12;
+          const annualAccommodationMin = accommodationMonthlyMin * 12;
+          const annualAccommodationMax = accommodationMonthlyMax * 12;
+
+          const totalMin = tuitionMin + annualLiving + annualAccommodationMin + applicationFee;
+          const totalMax = tuitionMax + annualLiving + annualAccommodationMax + applicationFee;
+
+          const money = (amount: number) =>
+            new Intl.NumberFormat(uiLocale, {
+              style: "currency",
+              currency,
+              maximumFractionDigits: 0,
+            }).format(amount);
+
+          return (
+            <section className="rounded-xl border border-primary/40 bg-primary-fixed/10 p-6 space-y-4" aria-labelledby="yearly-cost-heading">
+              <h2 id="yearly-cost-heading" className="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+                <span className="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span>
+                {t("estimatedYearlyCost")}
+              </h2>
+              <dl className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-1">
+                  <dt className="font-label-caps text-label-caps text-on-surface-variant">{t("costTuition")}</dt>
+                  <dd className="font-data-lg text-data-lg text-primary">
+                    {tuitionMin > 0 ? (tuitionMax > tuitionMin ? `${money(tuitionMin)}–${money(tuitionMax)}` : money(tuitionMin)) : t("notSpecified")}
+                  </dd>
+                </div>
+                <div className="space-y-1">
+                  <dt className="font-label-caps text-label-caps text-on-surface-variant">{t("costLiving")}</dt>
+                  <dd className="font-data-lg text-data-lg text-primary">
+                    {livingMonthly > 0 ? money(annualLiving) : t("notSpecified")}
+                  </dd>
+                </div>
+                <div className="space-y-1">
+                  <dt className="font-label-caps text-label-caps text-on-surface-variant">{t("costAccommodation")}</dt>
+                  <dd className="font-data-lg text-data-lg text-primary">
+                    {accommodationMonthlyMin > 0 ? (annualAccommodationMax > annualAccommodationMin ? `${money(annualAccommodationMin)}–${money(annualAccommodationMax)}` : money(annualAccommodationMin)) : t("notSpecified")}
+                  </dd>
+                </div>
+                <div className="space-y-1">
+                  <dt className="font-label-caps text-label-caps text-on-surface-variant">{t("costApplicationFee")}</dt>
+                  <dd className="font-data-lg text-data-lg text-primary">
+                    {applicationFee > 0 ? money(applicationFee) : t("notSpecified")}
+                  </dd>
+                </div>
+              </dl>
+              <div className="pt-4 border-t border-primary/20 flex items-center justify-between">
+                <p className="font-headline-md text-headline-md text-primary">
+                  {t("costTotalYearly")}
+                </p>
+                <p className="font-display-md text-display-md text-primary">
+                  {totalMax > totalMin ? `${money(totalMin)}–${money(totalMax)}` : money(totalMin)}
+                </p>
+              </div>
+              <p className="font-body-sm text-body-sm text-on-surface-variant">
+                {t("costEstimateDisclaimer")}
+              </p>
+            </section>
+          );
+        })()}
+
+        {/* What you should know — prominent concerns */}
+        {match && match.concerns.length > 0 && (
+          <section className="rounded-xl border border-warning/40 bg-warning-fixed/10 p-6 space-y-4" aria-labelledby="what-you-should-know-heading">
+            <h2 id="what-you-should-know-heading" className="font-headline-sm text-headline-sm text-warning flex items-center gap-2">
+              <span className="material-symbols-outlined" aria-hidden="true">priority_high</span>
+              {t("whatYouShouldKnow")}
+            </h2>
+            <ul className="space-y-2">
+              {match.concerns.slice(0, 3).map((concern, index) => (
+                <li key={index} className="font-body-sm text-body-sm text-on-surface flex items-start gap-2">
+                  <span className="shrink-0 text-warning" aria-hidden="true">⚠</span>
+                  <span>{tMatching && renderMatchMessage(concern, tMatching)}</span>
+                </li>
+              ))}
+            </ul>
+            {match.concerns.length > 3 && (
+              <details className="group">
+                <summary className="cursor-pointer font-label-caps text-label-caps text-warning underline list-none inline-flex items-center gap-1">
+                  {t("showMoreConcerns", { count: match.concerns.length - 3 })}
+                  <span className="transition-transform group-open:rotate-180" aria-hidden="true">▾</span>
+                </summary>
+                <ul className="mt-2 space-y-2">
+                  {match.concerns.slice(3).map((concern, index) => (
+                    <li key={index} className="font-body-sm text-body-sm text-on-surface flex items-start gap-2">
+                      <span className="shrink-0 text-warning" aria-hidden="true">⚠</span>
+                      <span>{tMatching && renderMatchMessage(concern, tMatching)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </section>
+        )}
+
+        {/* Data confidence & freshness indicator */}
+        {match && (
+          <section className="rounded-lg border border-outline-variant/40 bg-surface-container-low p-4" aria-labelledby="data-confidence-heading">
+            <h3 id="data-confidence-heading" className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wide flex items-center gap-2">
+              <span className="material-symbols-outlined" aria-hidden="true">verified</span>
+              {t("dataConfidence")}
+            </h3>
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-sm">
+              <span className="flex items-center gap-1">
+                <span className={`inline-block w-2 h-2 rounded-full ${
+                  match.confidence === "high" ? "bg-success" : match.confidence === "medium" ? "bg-warning" : "bg-error"
+                }`} aria-hidden="true"></span>
+                {t(match.confidence === "high" ? "confidenceHigh" : match.confidence === "medium" ? "confidenceMedium" : "confidenceLow")}
+              </span>
+              {programme.tuition_updated_at && (
+                <span className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-xs" aria-hidden="true">calendar_today</span>
+                  {t("tuitionVerified", { date: new Intl.DateTimeFormat(uiLocale, { dateStyle: "medium" }).format(new Date(programme.tuition_updated_at)) })}
+                </span>
+              )}
+              {programme.requirements_updated_at && (
+                <span className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-xs" aria-hidden="true">calendar_today</span>
+                  {t("requirementsVerified", { date: new Intl.DateTimeFormat(uiLocale, { dateStyle: "medium" }).format(new Date(programme.requirements_updated_at)) })}
+                </span>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* About this programme */}
         {programme.description && (
@@ -585,9 +737,12 @@ export default async function ProgrammeDetailsPage({
         {/* Match breakdown */}
         {match && tMatching && (
           <section className="space-y-4">
-            <h2 className="font-headline-sm text-headline-sm text-primary">
-              {t("matchBreakdown")}
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="font-headline-sm text-headline-sm text-primary">
+                {t("matchBreakdown")}
+              </h2>
+              <MatchTransparencyHint t={t} />
+            </div>
 
             {match.dimensions.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -967,8 +1122,15 @@ export default async function ProgrammeDetailsPage({
           )}
         </section>
       </div>
+
+      {/* Next steps */}
+      {match && (
+        <NextSteps t={t} programme={programme} match={match} />
+      )}
+
       </main>
-    </AppShell>
+      </AppShell>
+    </Suspense>
   );
 }
 
@@ -980,6 +1142,207 @@ function Fact({ label, value }: { label: string; value: string }) {
       </dt>
       <dd className="font-body-sm text-body-sm text-on-surface">{value}</dd>
     </div>
+  );
+}
+
+/** Admission outlook — human-readable "Can I get in?" summary. */
+function AdmissionOutlook({
+  match,
+  t,
+  profile,
+  programme,
+}: {
+  match: MatchResult;
+  t: Awaited<ReturnType<typeof getTranslations<"ProgrammeDetails">>>;
+  profile: { english_level: string | null; math_background: string | null; current_education_level: string | null; current_gpa: number | null } | null;
+  programme: { academic_requirements: { entrance_exam_required: boolean | null; min_gpa: number | null; gpa_scale: number | null } | null; test_requirements: Array<{ qualification: { name: string } }> | null } | null;
+}) {
+  const checks = [];
+
+  // Education level
+  if (profile?.current_education_level) {
+    checks.push({
+      label: "Education requirement",
+      status: "meets" as const,
+      detail: t("admissionCheckEducation", { level: profile.current_education_level }),
+    });
+  }
+
+  // GPA
+  if (profile?.current_gpa != null && programme?.academic_requirements?.min_gpa != null) {
+    const meets = profile.current_gpa >= programme.academic_requirements.min_gpa!;
+    checks.push({
+      label: "GPA",
+      status: meets ? "meets" : "fails" as const,
+      detail: meets
+        ? t("admissionCheckGpaMet", { your: profile.current_gpa, required: programme.academic_requirements.min_gpa })
+        : t("admissionCheckGpaBelow", { your: profile.current_gpa, required: programme.academic_requirements.min_gpa }),
+    });
+  } else if (programme?.academic_requirements?.min_gpa != null) {
+    checks.push({
+      label: "GPA",
+      status: "check" as const,
+      detail: t("admissionCheckGpaUnknown", { required: programme.academic_requirements.min_gpa }),
+    });
+  }
+
+  // English level
+  if (profile?.english_level) {
+    const userLevel = profile.english_level;
+    const levelOrder = { a0: 0, a1: 1, a2: 2, b1: 3, b2: 4, c1: 5, c2: 6 };
+    const requiredLevel = "b2"; // default assumption
+    const userIdx = levelOrder[userLevel as keyof typeof levelOrder] ?? 3;
+    const reqIdx = levelOrder[requiredLevel as keyof typeof levelOrder] ?? 3;
+    const meets = userIdx >= reqIdx;
+    checks.push({
+      label: "Language",
+      status: meets ? "meets" : "check" as const,
+      detail: meets
+        ? t("admissionCheckLanguageMet", { level: userLevel.toUpperCase() })
+        : t("admissionCheckLanguageBelow", { level: userLevel.toUpperCase(), required: requiredLevel.toUpperCase() }),
+    });
+  } else if (programme?.test_requirements?.length) {
+    checks.push({
+      label: "Language",
+      status: "check" as const,
+      detail: t("admissionCheckLanguageRequired"),
+    });
+  }
+
+  // Entrance exam
+  if (programme?.academic_requirements?.entrance_exam_required) {
+    checks.push({
+      label: "Entrance exam",
+      status: "check" as const,
+      detail: t("admissionCheckExamRequired"),
+    });
+  }
+
+  // Application deadline
+  checks.push({
+    label: "Application deadline",
+    status: "check" as const,
+    detail: t("admissionCheckDeadline"),
+  });
+
+  // Overall outlook
+  const fails = checks.filter((c) => c.status === "fails").length;
+  const outlook = fails === 0 ? "Good" : fails === 1 ? "Competitive" : "Challenging";
+
+  return (
+    <div className="space-y-3">
+      <dl className="space-y-3">
+        {checks.map((check, idx) => (
+          <div key={idx} className="flex items-start gap-3">
+            <span className={`shrink-0 material-symbols-outlined text-base ${
+              check.status === "meets" ? "text-success" : check.status === "fails" ? "text-error" : "text-warning"
+            }`} aria-hidden="true">
+              {check.status === "meets" ? "check_circle" : check.status === "fails" ? "cancel" : "help"}
+            </span>
+            <div>
+              <p className="font-body-sm text-body-sm text-on-surface">
+                <span className="font-medium">{check.label}:</span> {check.detail}
+              </p>
+            </div>
+          </div>
+        ))}
+      </dl>
+      <p className="font-label-caps text-label-caps text-primary pt-2 border-t border-outline-variant/40">
+        {t("admissionOutlook", { outlook: t(`admissionOutlook${outlook}`) })}
+      </p>
+    </div>
+  );
+}
+
+/** Next steps — what to do after choosing this programme. */
+function NextSteps({
+  t,
+  programme,
+  match,
+}: {
+  t: Awaited<ReturnType<typeof getTranslations<"ProgrammeDetails">>>;
+  programme: ProgrammeWithDetails;
+  match: MatchResult;
+}) {
+  const deadline = programme.application_deadline ? new Date(programme.application_deadline) : null;
+  const hasDeadline = deadline && deadline > new Date();
+
+  return (
+    <section className="rounded-xl border border-outline-variant/40 bg-surface-container-low p-6 space-y-4">
+      <h2 className="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+        <span className="material-symbols-outlined" aria-hidden="true">directions</span>
+        {t("nextSteps")}
+      </h2>
+      <ol className="space-y-3">
+        <li className="flex items-start gap-3">
+          <span className="shrink-0 w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-caps text-label-caps text-xs">1</span>
+          <div>
+            <p className="font-body-sm text-body-sm text-on-surface">{t("nextStepCheckEligibility")}</p>
+            <p className="font-body-xs text-body-xs text-on-surface-variant">{t("nextStepCheckEligibilityDesc")}</p>
+          </div>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="shrink-0 w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-caps text-label-caps text-xs">2</span>
+          <div>
+            <p className="font-body-sm text-body-sm text-on-surface">{t("nextStepLanguageCert")}</p>
+            <p className="font-body-xs text-body-xs text-on-surface-variant">{t("nextStepLanguageCertDesc")}</p>
+          </div>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="shrink-0 w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-caps text-label-caps text-xs">3</span>
+          <div>
+            <p className="font-body-sm text-body-sm text-on-surface">{t("nextStepPrepareDocs")}</p>
+            <p className="font-body-xs text-body-xs text-on-surface-variant">{t("nextStepPrepareDocsDesc")}</p>
+          </div>
+        </li>
+        {hasDeadline && (
+          <li className="flex items-start gap-3">
+            <span className="shrink-0 w-6 h-6 rounded-full bg-warning text-on-warning flex items-center justify-center font-label-caps text-label-caps text-xs">4</span>
+            <div>
+              <p className="font-body-sm text-body-sm text-on-surface">{t("nextStepApplyBefore", { date: deadline.toLocaleDateString() })}</p>
+              <p className="font-body-xs text-body-xs text-on-surface-variant">{t("nextStepApplyBeforeDesc")}</p>
+            </div>
+          </li>
+        )}
+      </ol>
+      {(programme.application_url || programme.university.official_application_url) && (
+        <a
+          href={programme.application_url || programme.university.official_application_url!}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block mt-4 font-label-caps text-label-caps px-6 py-3 rounded-full bg-primary text-on-primary hover:bg-on-primary-fixed-variant transition-all active:scale-95 shadow-md"
+        >
+          {t("viewOfficialApplication")}
+          <span className="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+        </a>
+      )}
+    </section>
+  );
+}
+
+/** Match transparency hint — "How is this score calculated?" */
+function MatchTransparencyHint({ t }: { t: Awaited<ReturnType<typeof getTranslations<"ProgrammeDetails">>> }) {
+  return (
+    <details className="group rounded-lg border border-outline-variant/40 bg-surface-container-low p-4 space-y-2">
+      <summary className="flex items-center gap-2 font-label-caps text-label-caps text-primary cursor-pointer list-none">
+        <span className="material-symbols-outlined" aria-hidden="true">info</span>
+        {t("howIsScoreCalculated")}
+        <span className="material-symbols-outlined ml-auto transition-transform group-open:rotate-180" aria-hidden="true">expand_more</span>
+      </summary>
+      <div className="pl-9 space-y-1 font-body-sm text-body-sm text-on-surface-variant">
+        <p>{t("scoreCalculationExplanation")}</p>
+        <ul className="list-disc list-inside space-y-1">
+          <li>{t("scoreDimAcademic")}</li>
+          <li>{t("scoreDimBudget")}</li>
+          <li>{t("scoreDimAdmission")}</li>
+          <li>{t("scoreDimLanguage")}</li>
+          <li>{t("scoreDimLocation")}</li>
+          <li>{t("scoreDimFormat")}</li>
+          <li>{t("scoreDimSupport")}</li>
+        </ul>
+        <p className="pt-2">{t("scoreCalculationNote")}</p>
+      </div>
+    </details>
   );
 }
 

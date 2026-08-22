@@ -1,4 +1,4 @@
-import { hasLocale } from "next-intl";
+﻿import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
@@ -7,8 +7,11 @@ import { SignInForm } from "@/components/sign-in-form";
 
 export default async function SignInPage({
   params,
-}: PageProps<"/[locale]/sign-in">) {
+  searchParams,
+}: PageProps<"/[locale]/sign-in"> & { searchParams?: Promise<Record<string, string | undefined>> }) {
   const { locale } = await params;
+  const sp = await searchParams;
+  const next = sp?.next ?? "/onboarding";
 
   if (!hasLocale(routing.locales, locale)) {
     notFound();
@@ -28,11 +31,11 @@ export default async function SignInPage({
         </p>
       </div>
 
-      <SignInForm />
+      <SignInForm next={next} />
 
       <p className="font-body-sm text-body-sm text-on-surface-variant">
         {t("newHere")}{" "}
-        <Link href="/sign-up" className="text-primary hover:underline">
+        <Link href={`/sign-up?next=${encodeURIComponent(next)}`} className="text-primary hover:underline">
           {t("createAccount")}
         </Link>
       </p>

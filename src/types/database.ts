@@ -678,6 +678,7 @@ export type Database = {
           application_fee_currency: string | null
           application_url: string | null
           career_notes: string | null
+          career_tags: string[] | null
           created_at: string
           degree_level: Database["public"]["Enums"]["degree_level"]
           degree_title: string | null
@@ -690,16 +691,19 @@ export type Database = {
           intake_start: string | null
           language_code: string
           living_cost_currency: string | null
+          lifestyle_tags: string[] | null
           name: string
           programme_url: string | null
           published: boolean
           required_documents: string[]
+          requirements_updated_at: string | null
           scholarship_notes: string | null
           slug: string | null
           study_mode: Database["public"]["Enums"]["programme_study_mode"] | null
           tuition_currency: string | null
           tuition_max: number | null
           tuition_min: number | null
+          tuition_updated_at: string | null
           university_id: string
           updated_at: string
         }
@@ -709,6 +713,7 @@ export type Database = {
           application_fee_currency?: string | null
           application_url?: string | null
           career_notes?: string | null
+          career_tags?: string[] | null
           created_at?: string
           degree_level: Database["public"]["Enums"]["degree_level"]
           degree_title?: string | null
@@ -720,6 +725,7 @@ export type Database = {
           id?: string
           intake_start?: string | null
           language_code: string
+          lifestyle_tags?: string[] | null
           living_cost_currency?: string | null
           name: string
           programme_url?: string | null
@@ -742,6 +748,7 @@ export type Database = {
           application_fee_currency?: string | null
           application_url?: string | null
           career_notes?: string | null
+          career_tags?: string[] | null
           created_at?: string
           degree_level?: Database["public"]["Enums"]["degree_level"]
           degree_title?: string | null
@@ -753,6 +760,7 @@ export type Database = {
           id?: string
           intake_start?: string | null
           language_code?: string
+          lifestyle_tags?: string[] | null
           living_cost_currency?: string | null
           name?: string
           programme_url?: string | null
@@ -903,6 +911,7 @@ export type Database = {
       }
       universities: {
         Row: {
+          arrival_info_url: string | null
           city: string
           city_size: string | null
           country_code: string
@@ -910,7 +919,9 @@ export type Database = {
           created_at: string
           description: string | null
           founded_year: number | null
+          housing_url: string | null
           id: string
+          international_office_url: string | null
           international_student_percentage: number | null
           latitude: number | null
           logo_url: string | null
@@ -924,6 +935,7 @@ export type Database = {
           slug: string | null
           student_count: number | null
           updated_at: string
+          visa_support_url: string | null
           website_url: string | null
         }
         Insert: {
@@ -1259,6 +1271,8 @@ export type Database = {
           budget_max: number | null
           budget_min: number | null
           budget_mode: Database["public"]["Enums"]["budget_mode"]
+          career_priorities: string[] | null
+          lifestyle_preferences: string[] | null
           created_at: string
           current_education_level:
             | Database["public"]["Enums"]["education_level"]
@@ -1321,6 +1335,7 @@ export type Database = {
           location_preference_type?:
             | Database["public"]["Enums"]["location_preference_type"]
             | null
+          lifestyle_preferences?: string[] | null
           math_background?:
             | Database["public"]["Enums"]["math_background"]
             | null
@@ -1370,6 +1385,7 @@ export type Database = {
           location_preference_type?:
             | Database["public"]["Enums"]["location_preference_type"]
             | null
+          lifestyle_preferences?: string[] | null
           math_background?:
             | Database["public"]["Enums"]["math_background"]
             | null

@@ -1,4 +1,4 @@
-import { hasLocale } from "next-intl";
+﻿import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -11,7 +11,7 @@ import { ProfileService } from "@/lib/services/profile.service";
 import { MatchingService, type RankedMatch } from "@/lib/services/matching.service";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import { renderMatchMessage } from "@/components/match-display";
-import { QuickMatchForm } from "@/components/quick-match-form";
+import { AuthNav } from "@/components/auth-nav";
 
 /**
  * Landing page (spec §9 visual reference: `unifind_premium_landing_page_updated`).
@@ -63,73 +63,65 @@ export default async function Home({
 
   const tMatching = topMatch ? await getTranslations("Matching") : null;
 
-  const referenceData = new ReferenceDataRepository(supabase);
-  const [fieldsOfStudy, supportedCountries] = await Promise.all([
-    referenceData.listFieldsOfStudy(),
-    referenceData.listSupportedCountries(),
-  ]);
-
   return (
     <div className="pb-16 md:pb-0">
       <AppNav />
       <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-8 pb-16 space-y-section-gap overflow-hidden">
-      <header className="flex items-center justify-between gap-4">
-        <span className="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">
-          {tNav("brand")}
-        </span>
-        <LanguageSwitcher />
-      </header>
+        <header className="flex items-center justify-between gap-4">
+          <span className="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">
+            {tNav("brand")}
+          </span>
+          <div className="flex items-center gap-3">
+            <AuthNav />
+            <LanguageSwitcher />
+          </div>
+        </header>
 
-      <section className="relative space-y-6 flex flex-col items-center text-center">
-        <div className="space-y-4 max-w-2xl mx-auto z-10">
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
-            {t("heading")}
-          </h1>
-          <p className="font-body-md text-body-md md:font-body-lg md:text-body-lg text-on-surface-variant max-w-xl mx-auto px-4">
-            {t("description")}
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto px-4 z-10 mt-2">
-          <Link
-            href="/profile"
-            className="bg-primary text-on-primary font-label-caps text-label-caps px-8 py-4 rounded-full hover:bg-on-primary-fixed-variant transition-all active:scale-95 shadow-md text-center"
-          >
-            {t("ctaPrimary")}
-          </Link>
-          <Link
-            href="/discover"
-            className="bg-transparent text-primary font-label-caps text-label-caps px-8 py-4 rounded-full border border-primary hover:bg-surface-container transition-all active:scale-95 text-center"
-          >
-            {t("ctaSecondary")}
-          </Link>
-        </div>
-
-        {topMatch && tMatching ? (
-          <FeaturedMatch
-            rankedMatch={topMatch}
-            t={t}
-            tDiscover={tDiscover}
-            tMatching={tMatching}
-          />
-        ) : (
-          <div className="w-full max-w-md mx-auto mt-12 relative rounded-xl overflow-hidden ambient-shadow border border-outline-variant/40 bg-surface-container-lowest p-6">
-            <p className="font-label-caps text-label-caps text-on-surface-variant mb-2">
-              {t("matchScoreLabel")}
-            </p>
-            <p className="font-body-sm text-body-sm text-on-surface-variant italic">
-              {profile ? t("featuredNoMatches") : t("featuredNoProfile")}
+        <section className="relative space-y-6 flex flex-col items-center text-center">
+          <div className="space-y-4 max-w-2xl mx-auto z-10">
+            <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
+              {t("heading")}
+            </h1>
+            <p className="font-body-md text-body-md md:font-body-lg md:text-body-lg text-on-surface-variant max-w-xl mx-auto px-4">
+              {t("description")}
             </p>
           </div>
-        )}
-      </section>
 
-      <QuickMatchForm
-        fieldsOfStudy={fieldsOfStudy}
-        supportedCountries={supportedCountries}
-      />
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto px-4 z-10 mt-2">
+            <Link
+              href="/onboarding"
+              className="bg-primary text-on-primary font-label-caps text-label-caps px-8 py-4 rounded-full hover:bg-on-primary-fixed-variant transition-all active:scale-95 shadow-md text-center"
+            >
+              {t("ctaPrimary")}
+            </Link>
+            <Link
+              href="/discover"
+              className="bg-transparent text-primary font-label-caps text-label-caps px-8 py-4 rounded-full border border-primary hover:bg-surface-container transition-all active:scale-95 text-center"
+            >
+              {t("ctaSecondary")}
+            </Link>
+          </div>
 
-      <HowItWorks t={t} />
+          {topMatch && tMatching ? (
+            <FeaturedMatch
+              rankedMatch={topMatch}
+              t={t}
+              tDiscover={tDiscover}
+              tMatching={tMatching}
+            />
+          ) : (
+            <div className="w-full max-w-md mx-auto mt-12 relative rounded-xl overflow-hidden ambient-shadow border border-outline-variant/40 bg-surface-container-lowest p-6">
+              <p className="font-label-caps text-label-caps text-on-surface-variant mb-2">
+                {t("matchScoreLabel")}
+              </p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant italic">
+                {profile ? t("featuredNoMatches") : t("featuredNoProfile")}
+              </p>
+            </div>
+          )}
+        </section>
+
+        <HowItWorks t={t} />
       </main>
     </div>
   );

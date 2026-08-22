@@ -1,17 +1,21 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import { sortRankedMatches, type RankedMatch } from "./matching.service";
 import { makeProgramme } from "@/lib/matching/test-fixtures";
 import type { MatchResult } from "@/lib/matching/match-types";
 
-function makeMatch(overallScore: number | null): MatchResult {
+function makeMatch(overallScore: number | null, overrides: {
+  confidence?: "high" | "medium" | "low";
+  hardReqFails?: number;
+  concernsCount?: number;
+} = {}): MatchResult {
   return {
     overallScore,
     overallLabel: null,
     dimensions: [],
     reasons: [],
-    concerns: [],
-    hardRequirements: [],
-    confidence: "high",
+    concerns: Array(overrides.concernsCount ?? 0).fill({ type: "raw", text: "c" }),
+    hardRequirements: Array(overrides.hardReqFails ?? 0).fill({ type: "degree_level", status: "fail", message: "" }),
+    confidence: overrides.confidence ?? "high",
   };
 }
 
@@ -19,18 +23,33 @@ function makeRanked(overrides: {
   id: string;
   overallScore: number | null;
   tuitionMin?: number;
-  livingCostMonthly?: number | null;
+  confidence?: "high" | "medium" | "low";
+  hardReqFails?: number;
+  concernsCount?: number;
+  uniName?: string;
 }): RankedMatch {
+  const base = makeProgramme({
+    id: overrides.id,
+    tuition_min: overrides.tuitionMin ?? 999_999,
+  });
+  if (overrides.uniName) {
+    base.university = {
+      ...base.university,
+      name: overrides.uniName,
+      id: "university-" + overrides.id,
+    };
+  }
   return {
-    programme: makeProgramme({
-      id: overrides.id,
-      // tuition_min is NOT NULL in the schema — a huge placeholder value
-      // stands in for "no useful data available" in the tuition test case
-      // below rather than an invalid `null`.
-      tuition_min: overrides.tuitionMin ?? 999_999,
-      estimated_living_cost_monthly: overrides.livingCostMonthly ?? null,
-    }),
-    match: makeMatch(overrides.overallScore),
+    programme: base,
+    match: {
+      overallScore: overrides.overallScore,
+      overallLabel: null,
+      dimensions: [],
+      reasons: [],
+      concerns: Array(overrides.concernsCount ?? 0).fill({ type: "raw", text: "c" }),
+      hardRequirements: Array(overrides.hardReqFails ?? 0).fill({ type: "degree_level", status: "fail", message: "" }),
+      confidence: overrides.confidence ?? "high",
+    },
   };
 }
 
@@ -67,16 +86,18 @@ describe("sortRankedMatches", () => {
 
     sortRankedMatches(ranked, "lowest_tuition");
 
-    // Cheapest wins even with a much lower Match Score.
     expect(ranked.map((r) => r.programme.id)).toEqual(["c", "a", "b"]);
   });
 
   it("sorts by estimated living cost ascending for lowest_cost, unknown cost last", () => {
     const ranked = [
-      makeRanked({ id: "a", overallScore: 10, livingCostMonthly: 1200 }),
-      makeRanked({ id: "b", overallScore: 99, livingCostMonthly: null }),
-      makeRanked({ id: "c", overallScore: 50, livingCostMonthly: 650 }),
+      makeRanked({ id: "a", overallScore: 10 }),
+      makeRanked({ id: "b", overallScore: 99 }),
+      makeRanked({ id: "c", overallScore: 50 }),
     ];
+    ranked[0].programme = makeProgramme({ id: "a", estimated_living_cost_monthly: 1200 });
+    ranked[1].programme = makeProgramme({ id: "b", estimated_living_cost_monthly: null });
+    ranked[2].programme = makeProgramme({ id: "c", estimated_living_cost_monthly: 650 });
 
     sortRankedMatches(ranked, "lowest_cost");
 
@@ -92,5 +113,57 @@ describe("sortRankedMatches", () => {
     sortRankedMatches(ranked, "highest_match");
 
     expect(ranked.map((r) => r.programme.id)).toEqual(["b", "a"]);
+  });
+
+  // --- Tie-breaking tests (deterministic winner among equal scores) ---
+
+  it("breaks ties on 100% by confidence (high > medium > low)", () => {
+    const ranked = [
+      makeRanked({ id: "low", overallScore: 100, confidence: "low" }),
+      makeRanked({ id: "high", overallScore: 100, confidence: "high" }),
+      makeRanked({ id: "medium", overallScore: 100, confidence: "medium" }),
+    ];
+    sortRankedMatches(ranked, "best_match");
+    expect(ranked.map((r) => r.programme.id)).toEqual(["high", "medium", "low"]);
+  });
+
+  it("breaks ties by fewer failed hard requirements", () => {
+    const ranked = [
+      makeRanked({ id: "fail2", overallScore: 100, hardReqFails: 2 }),
+      makeRanked({ id: "fail0", overallScore: 100, hardReqFails: 0 }),
+      makeRanked({ id: "fail1", overallScore: 100, hardReqFails: 1 }),
+    ];
+    sortRankedMatches(ranked, "best_match");
+    expect(ranked.map((r) => r.programme.id)).toEqual(["fail0", "fail1", "fail2"]);
+  });
+
+  it("breaks ties by fewer concerns", () => {
+    const ranked = [
+      makeRanked({ id: "c3", overallScore: 100, concernsCount: 3 }),
+      makeRanked({ id: "c0", overallScore: 100, concernsCount: 0 }),
+      makeRanked({ id: "c1", overallScore: 100, concernsCount: 1 }),
+    ];
+    sortRankedMatches(ranked, "best_match");
+    expect(ranked.map((r) => r.programme.id)).toEqual(["c0", "c1", "c3"]);
+  });
+
+  it("breaks ties by lower tuition", () => {
+    const ranked = [
+      makeRanked({ id: "expensive", overallScore: 100, tuitionMin: 20000 }),
+      makeRanked({ id: "cheap", overallScore: 100, tuitionMin: 5000 }),
+      makeRanked({ id: "mid", overallScore: 100, tuitionMin: 12000 }),
+    ];
+    sortRankedMatches(ranked, "best_match");
+    expect(ranked.map((r) => r.programme.id)).toEqual(["cheap", "mid", "expensive"]);
+  });
+
+  it("breaks ties by university name (stable)", () => {
+    const ranked = [
+      makeRanked({ id: "z", overallScore: 100, uniName: "Zeta Uni" }),
+      makeRanked({ id: "a", overallScore: 100, uniName: "Alpha Uni" }),
+      makeRanked({ id: "m", overallScore: 100, uniName: "Mu Uni" }),
+    ];
+    sortRankedMatches(ranked, "best_match");
+    expect(ranked.map((r) => r.programme.id)).toEqual(["a", "m", "z"]);
   });
 });

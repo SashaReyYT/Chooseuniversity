@@ -109,4 +109,76 @@ export class ReferenceDataRepository {
     if (error) throw error;
     return data ?? [];
   }
+
+  /**
+   * Get university with accommodation, sources, and related data for the university page.
+   */
+  async getUniversityWithDetails(id: string) {
+    const { data, error } = await this.supabase
+      .from("universities")
+      .select(
+        `
+        *,
+        country:countries(*),
+        accommodation(*),
+        sources:source_links(
+          *,
+          source:sources(*)
+        )
+      `,
+      )
+      .eq("id", id)
+      .eq("published", true)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") return null;
+      throw error;
+    }
+    return data as unknown as {
+      id: string;
+      name: string;
+      city: string;
+      city_size: string | null;
+      country_code: string;
+      country: { code: string; name: string };
+      founded_year: number | null;
+      description: string | null;
+      short_description: string | null;
+      logo_url: string | null;
+      cover_image_url: string | null;
+      website_url: string | null;
+      official_application_url: string | null;
+      international_office_url: string | null;
+      housing_url: string | null;
+      visa_support_url: string | null;
+      arrival_info_url: string | null;
+      ownership_type: string | null;
+      student_count: number | null;
+      international_student_percentage: number | null;
+      ranking_data: unknown;
+      accommodation: {
+        dormitory_available: boolean;
+        dormitory_name: string | null;
+        room_type: string | null;
+        estimated_monthly_cost_min: number | null;
+        estimated_monthly_cost_max: number | null;
+        currency: string | null;
+        estimated_deposit: number | null;
+        estimated_capacity: number | null;
+        distance_from_campus_km: number | null;
+        official_link: string | null;
+      } | null;
+      sources: Array<{
+        fact_key: string;
+        source: {
+          id: string;
+          name: string;
+          type: string;
+          url: string;
+          notes: string | null;
+        };
+      }>;
+    } | null;
+  }
 }

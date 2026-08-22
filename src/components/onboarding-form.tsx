@@ -149,7 +149,8 @@ function useStepDefinitions(ctx: {
         { id: "exam", titleKey: "step8Title", subtitleKey: "step8Subtitle", visible: ctx.examVisible },
         { id: "subjects", titleKey: "step9Title", subtitleKey: "step9Subtitle", visible: ctx.subjectsVisible },
         { id: "budget", titleKey: "step10Title", subtitleKey: "step10Subtitle", visible: true },
-        { id: "extra", titleKey: "step11Title", subtitleKey: "step11Subtitle", visible: true },
+        { id: "lifestyle", titleKey: "step11Title", subtitleKey: "step11Subtitle", visible: true },
+        { id: "extra", titleKey: "step12Title", subtitleKey: "step12Subtitle", visible: true },
       ] as const,
     [ctx.proficiencyVisible, ctx.examVisible, ctx.subjectsVisible],
   );
@@ -183,6 +184,12 @@ function deriveInitialRequirements(profile: UserProfileRow | null): string[] {
   return selected;
 }
 
+/** Re-derives which lifestyle checkboxes an existing profile answers to. */
+function deriveInitialLifestyle(profile: UserProfileRow | null): string[] {
+  if (!profile) return [];
+  return profile.lifestyle_preferences ?? [];
+}
+
 const REQUIREMENT_OPTIONS = [
   { value: "scholarship", labelKey: "reqScholarship" },
   { value: "dormitory", labelKey: "reqDormitory" },
@@ -192,6 +199,19 @@ const REQUIREMENT_OPTIONS = [
   { value: "big_city", labelKey: "reqBigCity" },
   { value: "small_city", labelKey: "reqSmallCity" },
   { value: "nothing", labelKey: "reqNothing" },
+] as const;
+
+export const LIFESTYLE_OPTIONS = [
+  { value: "large_city", labelKey: "lifestyleLargeCity" },
+  { value: "student_city", labelKey: "lifestyleStudentCity" },
+  { value: "affordable", labelKey: "lifestyleAffordable" },
+  { value: "vibrant_nightlife", labelKey: "lifestyleNightlife" },
+  { value: "cultural_scene", labelKey: "lifestyleCulture" },
+  { value: "international_community", labelKey: "lifestyleInternational" },
+  { value: "safe_environment", labelKey: "lifestyleSafe" },
+  { value: "good_transport", labelKey: "lifestyleTransport" },
+  { value: "bike_friendly", labelKey: "lifestyleBike" },
+  { value: "green_spaces", labelKey: "lifestyleGreen" },
 ] as const;
 
 /** Q7 — CEFR levels (C2 → A0), stored verbatim in `user_language_proficiency.level`. */
@@ -256,6 +276,9 @@ export function OnboardingForm({
   );
   const [requirements, setRequirements] = useState<string[]>(() =>
     deriveInitialRequirements(existingProfile),
+  );
+  const [lifestyle, setLifestyle] = useState<string[]>(() =>
+    existingProfile?.lifestyle_preferences ?? [],
   );
 
   // Q8 (national exam) only makes sense for residents of a mapped country
@@ -390,6 +413,15 @@ export function OnboardingForm({
       if (value === "big_city") next = next.filter((v) => v !== "small_city");
       if (value === "small_city") next = next.filter((v) => v !== "big_city");
       return [...next, value];
+    });
+  }
+
+  function toggleLifestyle(value: string) {
+    setLifestyle((current) => {
+      if (current.includes(value)) {
+        return current.filter((v) => v !== value);
+      }
+      return [...current, value];
     });
   }
 
@@ -724,7 +756,51 @@ export function OnboardingForm({
           />
         </div>
 
-        {/* Q11 — extra requirements */}
+        {/* Q11 — lifestyle preferences */}
+        <div className={currentStep.id === "lifestyle" ? "space-y-4" : "hidden"}>
+          <div className="space-y-1">
+            <span className={formLabelClassName}>{t("lifestyleLabel")}</span>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">
+              {t("lifestyleHelp")}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {LIFESTYLE_OPTIONS.map((option) => {
+              const checked = lifestyle.includes(option.value);
+              return (
+                <label
+                  key={option.value}
+                  className={`group relative flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-center cursor-pointer transition-colors ${
+                    checked
+                      ? "border-primary bg-primary-fixed/20"
+                      : "border-outline-variant bg-surface-container-lowest"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    name={option.value}
+                    value="true"
+                    checked={checked}
+                    onChange={() => toggleLifestyle(option.value)}
+                    className="peer sr-only"
+                  />
+                  <span className="w-4 h-4 rounded border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center text-on-primary">
+                    {checked && (
+                      <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
+                        check
+                      </span>
+                    )}
+                  </span>
+                  <span className="font-headline-sm text-headline-sm text-primary">
+                    {t(option.labelKey)}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Q12 — extra requirements */}
         <div className={currentStep.id === "extra" ? "space-y-4" : "hidden"}>
           <p className="font-body-sm text-body-sm text-on-surface-variant">
             {t("requirementsHelp")}

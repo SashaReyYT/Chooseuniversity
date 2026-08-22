@@ -1,0 +1,33 @@
+------WebKitFormBoundaryPW9vApBEPwdq8Gey
+Content-Disposition: form-data; name="_1_$ACTION_REF_1"
+
+
+------WebKitFormBoundaryPW9vApBEPwdq8Gey
+Content-Disposition: form-data; name="_1_$ACTION_1:0"
+
+{"id":"60524208df6bd9d33460d65c6b811cde2629264295","bound":"$@1"}
+------WebKitFormBoundaryPW9vApBEPwdq8Gey
+Content-Disposition: form-data; name="_1_$ACTION_1:1"
+
+[{"error":null}]
+------WebKitFormBoundaryPW9vApBEPwdq8Gey
+Content-Disposition: form-data; name="_1_$ACTION_KEY"
+
+k79f8fc9b8abe56d64f51d198844652ee
+------WebKitFormBoundaryPW9vApBEPwdq8Gey
+Content-Disposition: form-data; name="_1_next"
+
+/onboarding
+------WebKitFormBoundaryPW9vApBEPwdq8Gey
+Content-Disposition: form-data; name="_1_email"
+
+e2e-test@example.com
+------WebKitFormBoundaryPW9vApBEPwdq8Gey
+Content-Disposition: form-data; name="_1_password"
+
+TestPassword123!
+------WebKitFormBoundaryPW9vApBEPwdq8Gey
+Content-Disposition: form-data; name="0"
+
+[{"error":null},"$K1"]
+------WebKitFormBoundaryPW9vApBEPwdq8Gey--

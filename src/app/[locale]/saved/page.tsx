@@ -89,6 +89,8 @@ export default async function SavedPage({
         support_preference: profileData.profile.support_preference,
         english_level: profileData.profile.english_level,
         math_background: profileData.profile.math_background,
+        career_priorities: profileData.profile.career_priorities ?? [],
+        lifestyle_preferences: profileData.profile.lifestyle_preferences ?? [],
         testScores: profileData.testScores.map((s) => ({
           test_type: s.test_type,
           qualification_id: s.qualification_id,

@@ -10,8 +10,20 @@ import { FavouritesService } from "@/lib/services/favourites.service";
 import { ComparisonService } from "@/lib/services/comparison.service";
 import { ProgrammesRepository } from "@/lib/repositories/programmes.repository";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
+import { UserMatchWeightsRepository } from "@/lib/repositories/user-match-weights.repository";
 import { ProgrammeCard } from "@/components/programme-card";
 import { AppShell } from "@/components/app-shell";
+import { MatchChangesWrapper } from "@/components/match-changes-wrapper";
+import { Suspense } from "react";
+import { DiscoverSkeleton } from "@/components/skeleton-wrappers";
+import { TopMatchesClient } from "@/components/top-matches-client";
+import { DebouncedSearch } from "@/components/debounced-search";
+import {
+  formatTuition,
+  LABEL_KEYS,
+  DIMENSION_KEYS,
+} from "@/components/match-display";
+import { updatePriorityAction } from "@/lib/matching/actions";
 
 export default async function DiscoverPage({
   params,
@@ -26,15 +38,22 @@ export default async function DiscoverPage({
   setRequestLocale(locale);
 
   const t = await getTranslations("Discover");
-  const uiLocale = await getLocale();
+  const tDiscover = await getTranslations("Discover");
+    const uiLocale = await getLocale();
   const supabase = await createServerSupabaseClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect({ href: "/", locale });
+  // Auth-first: trying to find a university without an account sends the
+  // visitor to sign-up first, and only afterwards into the questionnaire
+  // (`next=/onboarding`) — matches are an account feature.
+  if (!user || user.is_anonymous === true) {
+    redirect({
+      href: `/sign-up?next=${encodeURIComponent("/onboarding")}`,
+      locale,
+    });
     return;
   }
 
@@ -64,6 +83,8 @@ export default async function DiscoverPage({
         support_preference: profileData.profile.support_preference,
         english_level: profileData.profile.english_level,
         math_background: profileData.profile.math_background,
+        career_priorities: profileData.profile.career_priorities ?? [],
+        lifestyle_preferences: profileData.profile.lifestyle_preferences ?? [],
         testScores: profileData.testScores.map((s) => ({
           test_type: s.test_type,
           qualification_id: s.qualification_id,
@@ -87,6 +108,7 @@ export default async function DiscoverPage({
   const fieldOfStudyFilter = sp?.fieldOfStudy ?? "";
   const degreeFilter = sp?.degree ?? "";
   const languageFilter = sp?.language ?? "";
+  const countryFilter = sp?.country ?? "";
   const sortBy = (sp?.sort as "best_match" | "lowest_tuition" | "highest_match" | "lowest_cost") ?? "best_match";
 
   const [entries, saved, comparisons] = await Promise.all([
@@ -118,6 +140,12 @@ export default async function DiscoverPage({
     comparisons[0]?.programmes.map((p) => p.id) ?? [],
   );
   const defaultComparisonName = t("heading");
+
+  // Load user's custom match weights (priority preferences)
+  const weightsRepo = new UserMatchWeightsRepository(supabase);
+  const weights = (profileData?.profile
+    ? await weightsRepo.findByUserId(user.id)
+    : null) ?? {};
 
   // Get filter options
   const referenceDataRepo = new ReferenceDataRepository(supabase);
@@ -178,6 +206,7 @@ export default async function DiscoverPage({
     if (fieldOfStudyFilter) params.set("fieldOfStudy", fieldOfStudyFilter);
     if (degreeFilter) params.set("degree", degreeFilter);
     if (languageFilter) params.set("language", languageFilter);
+    if (countryFilter) params.set("country", countryFilter);
     params.set("sort", value);
     const qs = params.toString();
     return `/${locale}/discover${qs ? `?${qs}` : ""}`;
@@ -189,6 +218,40 @@ export default async function DiscoverPage({
       : -1;
 
   // For search form action — uses GET to preserve query params (locale-aware)
+
+  // Top matches for recommendations section — categorised as Best Fit / Safe Choice / Ambitious
+  const topMatches = (() => {
+    const withScore = entries.filter((e) => e.match?.overallScore != null);
+    const top3 = withScore.slice(0, 3);
+    return top3.map((entry, idx) => {
+      const score = entry.match!.overallScore!;
+      let category: "best" | "safe" | "ambitious";
+      let categoryKey: string;
+      let categoryDescKey: string;
+
+      if (idx === 0 && score >= 90) {
+        category = "best";
+        categoryKey = "categoryBestFit";
+        categoryDescKey = "categoryBestFitDesc";
+      } else if (score >= 80) {
+        category = "safe";
+        categoryKey = "categorySafeChoice";
+        categoryDescKey = "categorySafeChoiceDesc";
+      } else {
+        category = "ambitious";
+        categoryKey = "categoryAmbitious";
+        categoryDescKey = "categoryAmbitiousDesc";
+      }
+
+      return {
+        entry,
+        category,
+        categoryKey,
+        categoryDescKey,
+        idx,
+      };
+    });
+  })();
 
   return (
     <AppShell>
@@ -226,9 +289,21 @@ export default async function DiscoverPage({
                 </span>
               ))}
             </div>
-          )}
-        </section>
+)}
+    </section>
+  )}
+
+      {/* Your top matches — human-readable recommendations with Safe/Best/Ambitious categorisation */}
+      {topMatches.length > 0 && (
+        <TopMatchesClient
+          topMatches={topMatches}
+          locale={locale}
+          uiLocale={uiLocale}
+        />
       )}
+
+      {/* Match score changes after profile update */}
+      <MatchChangesWrapper />
 
       {/* Search and filters (§35, §36) */}
       <form
@@ -239,13 +314,11 @@ export default async function DiscoverPage({
       >
         <div className="flex-1 min-w-0">
           <label htmlFor="search-q" className="sr-only">{t("searchLabel")}</label>
-          <input
-            id="search-q"
-            name="q"
-            type="search"
+          <DebouncedSearch
             defaultValue={searchQuery}
             placeholder={t("searchPlaceholder")}
-            className="w-full font-body-md text-body-md bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
+            locale={locale}
+            debounceMs={300}
           />
         </div>
         <div className="flex gap-3 flex-wrap">
@@ -277,6 +350,16 @@ export default async function DiscoverPage({
             <option value="">{t("allLanguages")}</option>
             {languages.map((language) => (
               <option key={language.code} value={language.code}>{language.name}</option>
+            ))}
+          </select>
+          <select
+            name="country"
+            defaultValue={countryFilter}
+            className="font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3"
+          >
+            <option value="">{t("allCountries")}</option>
+            {countries.map((country) => (
+              <option key={country.code} value={country.code}>{country.name}</option>
             ))}
           </select>
           <button
@@ -315,6 +398,67 @@ export default async function DiscoverPage({
         </Link>
       </div>
 
+      {/* What matters most — priority weighting (collapsible) */}
+      {profileData?.profile && (
+        <section className="space-y-4" aria-labelledby="priorities-heading">
+          <details className="group">
+            <summary className="flex items-center justify-between cursor-pointer font-headline-sm text-headline-sm text-primary list-none">
+              <span className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary" aria-hidden="true">tune</span>
+                {t("whatMattersMost")}
+              </span>
+              <span className="material-symbols-outlined text-on-surface-variant transition-transform group-open:rotate-180" aria-hidden="true">expand_more</span>
+            </summary>
+            <div className="mt-4 animate-in fade-in-20">
+              <form action={updatePriorityAction} className="space-y-4">
+                <input type="hidden" name="locale" value={locale} />
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {[
+                    { key: "budget", label: t("priorityBudget"), icon: "attach_money", color: "text-green-600" },
+                    { key: "admission", label: t("priorityAdmission"), icon: "how_to_reg", color: "text-blue-600" },
+                    { key: "academic", label: t("priorityAcademic"), icon: "school", color: "text-purple-600" },
+                    { key: "location", label: t("priorityLocation"), icon: "location_on", color: "text-orange-600" },
+                    { key: "career", label: t("priorityCareer"), icon: "work", color: "text-indigo-600" },
+                  ].map(({ key, label, icon, color }) => {
+                    const dimensionKey = key as keyof typeof weights;
+                    const currentWeight = weights[dimensionKey] ?? 1;
+                    return (
+                      <button
+                        key={key}
+                        type="submit"
+                        name="priority"
+                        value={key}
+                        className={`relative rounded-xl border-2 p-4 text-left transition-all ${
+                          currentWeight > 1
+                            ? "border-primary bg-primary-fixed/10"
+                            : "border-outline-variant/40 hover:border-primary/50"
+                        }`}
+                      >
+                        <input type="hidden" name={`weight_${key}`} value={currentWeight > 1 ? "1" : "2"} />
+                        <div className="flex items-center gap-3">
+                          <span className={`material-symbols-outlined ${color}`} aria-hidden="true">
+                            {icon}
+                          </span>
+                          <span className="font-label-caps text-label-caps text-primary">{label}</span>
+                        </div>
+                        {currentWeight > 1 && (
+                          <span className="absolute top-2 right-2 material-symbols-outlined text-primary" aria-hidden="true">
+                            check_circle
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  {t("priorityHint")}
+                </p>
+              </form>
+            </div>
+          </details>
+        </section>
+      )}
+
       {entries.length === 0 ? (
         <p className="font-body-md text-body-md text-on-surface-variant">
           {t("empty")}
@@ -325,24 +469,26 @@ export default async function DiscoverPage({
             {t("resultCount", { count: entries.length })}
           </p>
           <div className="space-y-6">
-            {entries.map(({ programme, match }, index) => (
-              <div key={programme.id} className="relative">
-                {index === topMatchIndex && (
-                  <span className="absolute -top-3 left-4 z-10 font-label-caps text-label-caps text-on-primary bg-primary rounded-full px-4 py-1">
-                    {t("topMatchLabel")}
-                  </span>
-                )}
-                <ProgrammeCard
-                  programme={programme}
-                  match={match}
-                  profile={matchProfile}
-                  isSaved={savedProgrammeIds.has(programme.id)}
-                  isInComparison={comparedProgrammeIds.has(programme.id)}
-                  t={t}
-                  defaultComparisonName={defaultComparisonName}
-                />
-              </div>
-            ))}
+            <Suspense fallback={<DiscoverSkeleton />}>
+              {entries.map(({ programme, match }, index) => (
+                <div key={programme.id} className="relative">
+                  {index === topMatchIndex && (
+                    <span className="absolute -top-3 left-4 z-10 font-label-caps text-label-caps text-on-primary bg-primary rounded-full px-4 py-1">
+                      {t("topMatchLabel")}
+                    </span>
+                  )}
+                  <ProgrammeCard
+                    programme={programme}
+                    match={match}
+                    profile={matchProfile}
+                    isSaved={savedProgrammeIds.has(programme.id)}
+                    isInComparison={comparedProgrammeIds.has(programme.id)}
+                    t={t}
+                    defaultComparisonName={defaultComparisonName}
+                  />
+                </div>
+              ))}
+            </Suspense>
           </div>
         </>
       )}
