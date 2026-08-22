@@ -16,24 +16,10 @@ const intlMiddleware = createIntlMiddleware(routing);
  * rather than constructing a fresh `NextResponse.next()`, or it would
  * silently discard the locale redirect.
  *
- * The Supabase part refreshes the session, and — because V1 has no
- * signup/login — silently establishes an anonymous session for any
- * visitor who doesn't have one yet. Supabase's anonymous sign-in
- * (`auth.signInAnonymously()`) creates a real `auth.users` row (flagged
- * `is_anonymous`) with a stable UUID, persisted via the same session
- * cookies as a normal account. That means the existing schema and RLS
- * policies (all keyed on `auth.uid()`, see
- * `supabase/migrations/0006_row_level_security.sql`) work completely
- * unchanged for anonymous visitors — a saved programme or profile row is
- * just as owner-scoped as it would be for a signed-up user.
- *
- * This is also the upgrade path the product spec asks for ("design the
- * data model so future authenticated profiles can be attached to a user
- * ID"): Supabase supports linking an email/password (or OAuth identity)
- * onto an existing anonymous session later via `auth.updateUser()`,
- * which keeps the same `auth.uid()` — so a future "create an account"
- * flow can convert an anonymous user in place, with all their existing
- * saved programmes/profile intact, rather than needing a migration.
+ * Anonymous sign-in is NOT used (Supabase "Allow anonymous sign-ins" disabled).
+ * The middleware only refreshes existing sessions.
+ * Pages that require auth (onboarding, results, etc.) will redirect to sign-up
+ * if no authenticated user is found — see `requireRealUser` in session.ts.
  */
 export async function proxy(request: NextRequest) {
   const response = intlMiddleware(request);
@@ -44,10 +30,6 @@ export async function proxy(request: NextRequest) {
   if (!supabaseUrl || !supabaseAnonKey) {
     return response;
   }
-
-  // Skip Supabase session handling for auth pages to avoid conflicts
-  const url = new URL(request.url);
-  const isAuthPage = url.pathname.includes("/sign-in") || url.pathname.includes("/sign-up") || url.pathname.includes("/onboarding");
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -62,16 +44,8 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user && !isAuthPage) {
-    const { error } = await supabase.auth.signInAnonymously();
-    if (error) {
-      console.error("Failed to start an anonymous session:", error.message);
-    }
-  }
+  // Refresh session if exists; do NOT create anonymous sessions
+  await supabase.auth.getUser();
 
   return response;
 }
