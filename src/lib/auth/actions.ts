@@ -20,9 +20,11 @@ export async function signUp(
   const t = await getTranslations("Auth");
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  // After sign-up, redirect to sign-in page so user can log in
-  // The sign-in page will then redirect to onboarding
-  const next = String(formData.get("next") ?? "/sign-in").trim();
+  // After sign-up, redirect to the next page (onboarding).
+  // When email confirmation is off, Supabase creates a session immediately,
+  // so the user is already authenticated and can proceed to onboarding.
+  // When email confirmation is on, the middleware will redirect to sign-in.
+  const next = String(formData.get("next") ?? "/onboarding").trim();
 
   if (!email || !password) {
     return { error: t("errorMissingCredentials") };
