@@ -107,7 +107,7 @@ export async function ProgrammeCard({
           {programme.university.name}
         </p>
         <h2 className="font-headline-sm text-headline-sm text-primary">
-          <Link href={`programmes/${programme.id}`} className="hover:underline">
+          <Link href={`/programmes/${programme.id}`} className="hover:underline">
             {programme.name}
           </Link>
         </h2>
@@ -183,7 +183,7 @@ export async function ProgrammeCard({
       {/* 6. Actions */}
       <div className="flex flex-wrap gap-3 pt-2 border-t border-outline-variant/20">
         <Link
-          href={`programmes/${programme.id}`}
+          href={`/programmes/${programme.id}`}
           className="font-label-caps text-label-caps text-primary border border-primary rounded-full px-6 py-3 hover:bg-surface-container transition-all active:scale-95"
         >
           {t("viewDetails")}

@@ -240,7 +240,7 @@ export default async function UniversityPage({ params }: UniversityPageProps) {
                     {progs.map((programme) => (
                       <Link
                         key={programme.id}
-                        href={`/${locale}/programmes/${programme.id}`}
+                        href={`/programmes/${programme.id}`}
                         className="rounded-xl border border-outline-variant/40 bg-surface-container-low p-4 hover:border-primary/50 transition-colors"
                       >
                         <h4 className="font-headline-sm text-headline-sm text-primary line-clamp-1">

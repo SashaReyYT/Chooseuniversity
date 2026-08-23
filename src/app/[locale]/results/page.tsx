@@ -6,6 +6,8 @@ import { Link } from "@/i18n/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ProfileService } from "@/lib/services/profile.service";
 import { MatchingService } from "@/lib/services/matching.service";
+import { FavouritesService } from "@/lib/services/favourites.service";
+import { toggleSaveAction } from "@/lib/favourites/toggle-save-action";
 import { AppShell } from "@/components/app-shell";
 import { Suspense } from "react";
 import { ResultsSkeleton } from "@/components/skeleton-wrappers";
@@ -44,6 +46,9 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   }
 
   const matches = await new MatchingService(supabase).listMatchesForUser(user.id);
+
+  const saved = await new FavouritesService(supabase).listSavedProgrammesForUser(user.id);
+  const savedProgrammeIds = new Set(saved.map((s) => s.programme.id));
 
   const referenceData = new ReferenceDataRepository(supabase);
   const [fieldsOfStudy, languages, countries] = await Promise.all([
@@ -179,9 +184,39 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
                         {categoryLabel}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-headline-sm text-headline-sm text-primary line-clamp-1">
-                          {entry.programme.name}
-                        </h3>
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="font-headline-sm text-headline-sm text-primary line-clamp-1">
+                            {entry.programme.name}
+                          </h3>
+                          <form action={toggleSaveAction} className="shrink-0">
+                            <input type="hidden" name="programmeId" value={entry.programme.id} />
+                            <input type="hidden" name="isSaved" value={String(savedProgrammeIds.has(entry.programme.id))} />
+                            <button
+                              type="submit"
+                              aria-label={savedProgrammeIds.has(entry.programme.id) ? tDiscover("unsave") : tDiscover("save")}
+                              className={`flex items-center gap-2 font-label-caps text-label-caps px-4 py-2 rounded-full border transition-all active:scale-95 ${
+                                savedProgrammeIds.has(entry.programme.id)
+                                  ? "bg-primary text-on-primary border-primary"
+                                  : "bg-transparent text-primary border-primary hover:bg-surface-container"
+                              }`}
+                            >
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill={savedProgrammeIds.has(entry.programme.id) ? "currentColor" : "none"}
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                              </svg>
+                              {savedProgrammeIds.has(entry.programme.id) ? tDiscover("unsave") : tDiscover("save")}
+                            </button>
+                          </form>
+                        </div>
                         <p className="font-body-sm text-body-sm text-on-surface-variant">
                           {entry.programme.university.name} · {entry.programme.university.city}
                         </p>
@@ -215,7 +250,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
                     </div>
 
                     <Link
-                      href={`/${locale}/programmes/${entry.programme.id}`}
+                      href={`/programmes/${entry.programme.id}`}
                       className="inline-block font-label-caps text-label-caps text-primary underline hover:text-primary/80"
                     >
                       {t("viewDetails")}

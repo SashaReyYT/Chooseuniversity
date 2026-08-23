@@ -13,6 +13,20 @@
 -- figure fluctuates year to year a rounded value is stored. Uncertain
 -- fields are left NULL rather than invented.
 
+-- Schema parity first: the app's generated types (and the university detail
+-- page) already reference these four URL columns, but no earlier migration
+-- ever created them — any UPDATE touching them fails with 42703.
+alter table universities
+  add column if not exists housing_url text,
+  add column if not exists international_office_url text,
+  add column if not exists visa_support_url text,
+  add column if not exists arrival_info_url text;
+
+comment on column universities.housing_url is 'University dormitory/accommodation information page.';
+comment on column universities.international_office_url is 'International-office contact/admissions page for foreign applicants.';
+comment on column universities.visa_support_url is 'Visa-support guidance for international students.';
+comment on column universities.arrival_info_url is 'Arrival/orientation information for new international students.';
+
 -- ============================================================
 -- Part 1 — enrich existing universities
 -- ============================================================

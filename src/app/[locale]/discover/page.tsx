@@ -196,15 +196,15 @@ export default async function DiscoverPage({
     { value: "highest_match", label: t("sortTopAcademic") },
   ];
   const sortHref = (value: string) => {
-    const params = new URLSearchParams();
-    if (searchQuery) params.set("q", searchQuery);
-    if (fieldOfStudyFilter) params.set("fieldOfStudy", fieldOfStudyFilter);
-    if (degreeFilter) params.set("degree", degreeFilter);
-    if (languageFilter) params.set("language", languageFilter);
-    if (countryFilter) params.set("country", countryFilter);
-    params.set("sort", value);
-    const qs = params.toString();
-    return `/${locale}/discover${qs ? `?${qs}` : ""}`;
+    // next-intl Link is locale-aware — pass the pathname WITHOUT the
+    // /en|uk prefix, otherwise it double-prefixes and 404s.
+    const query: Record<string, string> = { sort: value };
+    if (searchQuery) query.q = searchQuery;
+    if (fieldOfStudyFilter) query.fieldOfStudy = fieldOfStudyFilter;
+    if (degreeFilter) query.degree = degreeFilter;
+    if (languageFilter) query.language = languageFilter;
+    if (countryFilter) query.country = countryFilter;
+    return { pathname: "/discover", query };
   };
   // Highlight the top-scored programme as the "Top Match" card.
   const topMatchIndex =
@@ -292,8 +292,8 @@ export default async function DiscoverPage({
       {topMatches.length > 0 && (
         <TopMatchesClient
           topMatches={topMatches}
-          locale={locale}
           uiLocale={uiLocale}
+          savedIds={savedProgrammeIds}
         />
       )}
 
