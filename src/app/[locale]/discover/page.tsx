@@ -20,6 +20,7 @@ import { DiscoverSkeleton } from "@/components/skeleton-wrappers";
 import { TopMatchesClient } from "@/components/top-matches-client";
 import { DebouncedSearch } from "@/components/debounced-search";
 
+import { toMatchProfile } from "@/lib/matching/profile-mapper";
 import { updatePriorityAction } from "@/lib/matching/actions";
 
 export async function generateMetadata({
@@ -72,45 +73,7 @@ export default async function DiscoverPage({
   const comparisonService = new ComparisonService(supabase);
 
   // Build match user profile for Best For labels
-  const matchProfile = profileData?.profile
-    ? {
-        current_education_level: profileData.profile.current_education_level,
-        current_gpa: profileData.profile.current_gpa,
-        current_gpa_scale: profileData.profile.current_gpa_scale,
-        budget_min: profileData.profile.budget_min,
-        budget_max: profileData.profile.budget_max,
-        budget_currency: profileData.profile.budget_currency,
-        budget_mode: profileData.profile.budget_mode,
-        preferred_degree_level: profileData.profile.preferred_degree_level,
-        preferred_country_codes: profileData.profile.preferred_country_codes,
-        preferred_cities: profileData.profile.preferred_cities,
-        preferred_field_of_study_ids: profileData.profile.preferred_field_of_study_ids,
-        preferred_language_codes: profileData.profile.preferred_language_codes,
-        location_preference_type: profileData.profile.location_preference_type,
-        preferred_ownership_type: profileData.profile.preferred_ownership_type,
-        preferred_study_format: profileData.profile.preferred_study_format,
-        support_preference: profileData.profile.support_preference,
-        english_level: profileData.profile.english_level,
-        math_background: profileData.profile.math_background,
-        career_priorities: profileData.profile.career_priorities ?? [],
-        lifestyle_preferences: profileData.profile.lifestyle_preferences ?? [],
-        testScores: profileData.testScores.map((s) => ({
-          test_type: s.test_type,
-          qualification_id: s.qualification_id,
-          score: s.score,
-          cefr_equivalent: s.cefr_equivalent,
-        })),
-        nmtScores: profileData.nmtScores.map((s) => ({
-          subject_code: s.subject_code,
-          score: s.score,
-          max_score: s.max_score,
-        })),
-        qualifications: profileData.qualifications.map((q) => ({
-          qualification_id: q.qualification_id,
-          year: q.year,
-        })),
-      }
-    : null;
+  const matchProfile = profileData ? toMatchProfile(profileData) : null;
 
   // Server-side search/filter from query params (§35, §36)
   const searchQuery = sp?.q ?? "";

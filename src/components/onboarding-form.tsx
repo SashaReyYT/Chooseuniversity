@@ -294,8 +294,8 @@ export function OnboardingForm({
   const [educationStage, setEducationStage] = useState<string>(
     existingProfile?.education_stage ?? "",
   );
-  const [selectedCountries, setSelectedCountries] = useState<string[]>(
-    existingProfile?.preferred_country_codes ?? [],
+  const [selectedCountry, setSelectedCountry] = useState<string>(
+    existingProfile?.preferred_country_codes?.[0] ?? "",
   );
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(
     existingProfile?.preferred_language_codes ?? [],
@@ -407,10 +407,9 @@ export function OnboardingForm({
   // country question first.
   const offeredLanguageCodes = useMemo(() => {
     const codes = new Set<string>();
-    const source =
-      selectedCountries.length > 0
-        ? selectedCountries
-        : supportedCountries.map((c) => c.code);
+    const source = selectedCountry
+      ? [selectedCountry]
+      : supportedCountries.map((c) => c.code);
     for (const code of source) {
       for (const languageCode of COUNTRY_LANGUAGES[code] ?? DEFAULT_COUNTRY_LANGUAGES) {
         codes.add(languageCode);
@@ -418,7 +417,7 @@ export function OnboardingForm({
     }
     codes.add("en");
     return codes;
-  }, [selectedCountries, supportedCountries]);
+  }, [selectedCountry, supportedCountries]);
 
   const languageOptions = languages
     .filter((l) => offeredLanguageCodes.has(l.code))
@@ -646,13 +645,13 @@ export function OnboardingForm({
           </div>
         </div>
 
-        {/* Q2 — target countries */}
+        {/* Q2 — target country (single select) */}
         <div className={currentStep.id === "targetCountries" ? "space-y-2" : "hidden"}>
-          <ToggleCardGroup
+          <RadioCardGroup
             name="preferred_country_codes"
             options={supportedCountryOptions}
-            defaultValues={selectedCountries}
-            onChange={setSelectedCountries}
+            value={selectedCountry}
+            onChange={setSelectedCountry}
           />
           <p className="font-body-sm text-body-sm text-on-surface-variant">
             {t("countriesComingSoonNote")}

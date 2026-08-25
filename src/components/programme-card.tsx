@@ -4,6 +4,7 @@ import { toggleSaveAction } from "@/lib/favourites/toggle-save-action";
 import { toggleCompareAction } from "@/lib/compare/toggle-compare-action";
 import type { MatchResult } from "@/lib/matching/engine";
 import type { ProgrammeWithDetails } from "@/lib/repositories/programmes.repository";
+import { SaveButton } from "@/components/save-button";
 import {
   BEST_FOR_KEYS,
   DIMENSION_KEYS,
@@ -188,35 +189,14 @@ export async function ProgrammeCard({
         >
           {t("viewDetails")}
         </Link>
-        <form action={toggleSaveAction} className="inline-block">
-          <input type="hidden" name="programmeId" value={programme.id} />
-          <input type="hidden" name="isSaved" value={String(isSaved)} />
-          <button
-            type="submit"
-            aria-label={isSaved ? t("unsave") : t("save")}
-            className={`font-label-caps text-label-caps px-4 py-3 rounded-full border transition-all active:scale-95 flex items-center gap-2 ${
-              isSaved
-                ? "bg-primary text-on-primary border-primary"
-                : "bg-transparent text-primary border-primary hover:bg-surface-container"
-            }`}
-          >
-            {/* Bookmark icon — outline when unsaved, filled when saved */}
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill={isSaved ? "currentColor" : "none"}
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-            </svg>
-            {isSaved ? t("unsave") : t("save")}
-          </button>
-        </form>
+        <SaveButton
+          action={toggleSaveAction}
+          programmeId={programme.id}
+          isSaved={isSaved}
+          labelSave={t("save")}
+          labelSaved={t("unsave")}
+          className="inline-block [&>button]:px-4 [&>button]:py-3"
+        />
         <form action={toggleCompareAction} className="inline-block">
           <input type="hidden" name="programmeId" value={programme.id} />
           <input type="hidden" name="isInComparison" value={String(isInComparison)} />
