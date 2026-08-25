@@ -35,7 +35,7 @@ from (values
 ('University of Würzburg','uni-wuerzburg','DE','Würzburg',1582,28000,'public','small','https://www.uni-wuerzburg.de/en/'),
 ('University of Münster','uni-muenster','DE','Münster',1780,44000,'public','medium','https://www.uni-muenster.de/en/'),
 ('Johannes Gutenberg University Mainz','uni-mainz','DE','Mainz',1477,33000,'public','medium','https://www.uni-mainz.de/eng/'),
-('Christian-Albrechts-Universität zu Kiel','uni-kiel','DE','Kiel',1665,25000,'small','small','https://www.uni-kiel.de/en/'),
+('Christian-Albrechts-Universität zu Kiel','uni-kiel','DE','Kiel',1665,25000,'public','small','https://www.uni-kiel.de/en/'),
 ('Leibniz University Hannover','luh-hannover','DE','Hanover',1831,30000,'public','capital_or_large','https://www.uni-hannover.de/en/'),
 ('Karlsruhe Institute of Technology','kit','DE','Karlsruhe',1825,25000,'public','medium','https://www.kit.edu/english/'),
 ('TU Darmstadt','tu-darmstadt','DE','Darmstadt',1877,25000,'public','medium','https://www.tu-darmstadt.de/en/'),
