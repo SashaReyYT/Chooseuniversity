@@ -186,7 +186,7 @@ from (values
 ('Newcastle University','newcastle-uk','GB','Newcastle upon Tyne',1834,28000,'public','medium','https://www.ncl.ac.uk/'),
 ('Cardiff University','cardiff','GB','Cardiff',1883,30000,'public','capital_or_large','https://www.cardiff.ac.uk/'),
 ('University of Exeter','exeter','GB','Exeter',1955,29000,'public','medium','https://www.exeter.ac.uk/'),
-("Queen''s University Belfast",'qub','GB','Belfast',1845,24000,'public','capital_or_large','https://www.qub.ac.uk/'),
+('Queen''s University Belfast','qub','GB','Belfast',1845,24000,'public','capital_or_large','https://www.qub.ac.uk/'),
 ('University of Aberdeen','aberdeen','GB','Aberdeen',1495,14000,'public','small','https://www.abdn.ac.uk/'),
 ('University of Bath','bath','GB','Bath',1966,20000,'public','small','https://www.bath.ac.uk/'),
 ('Lancaster University','lancaster','GB','Lancaster',1964,16000,'public','small','https://www.lancaster.ac.uk/'),
