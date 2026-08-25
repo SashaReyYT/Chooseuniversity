@@ -1,0 +1,24 @@
+name: Currency sync
+
+on:
+  schedule:
+    # Tuesdays 05:00 UTC — ECB publishes daily rates ~16:00 CET; Tuesday
+    # catches Monday's fix and survives weekend publication gaps.
+    - cron: "0 5 * * 2"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: .  # deps needed only for undici/fetch polyfill-free runtime? plain fetch suffices; npm ci kept for future imports
+      - name: Trigger rate refresh
+        run: |
+          curl -fsS -X POST \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.SITE_URL }}/api/cron/currency"

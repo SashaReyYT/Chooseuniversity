@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useTranslations } from "next-intl";
 import { submitOnboardingAction } from "@/lib/onboarding/actions";
 import { initialOnboardingActionState } from "@/lib/onboarding/types";
@@ -195,15 +195,21 @@ function deriveInitialCityFormat(profile: UserProfileRow | null): string {
 /** Re-derives the city features multi-select from existing profile. */
 function deriveInitialCityFeatures(profile: UserProfileRow | null): string[] {
   if (!profile) return [];
+  const prefs = profile.lifestyle_preferences ?? [];
   const selected: string[] = [];
-  if (profile.lifestyle_preferences?.includes("affordable-living")) selected.push("cost");
-  if (profile.lifestyle_preferences?.includes("vibrant-nightlife")) selected.push("nightlife");
-  if (profile.lifestyle_preferences?.includes("cultural-scene")) selected.push("culture");
-  if (profile.lifestyle_preferences?.includes("international-community")) selected.push("international");
-  if (profile.lifestyle_preferences?.includes("safe")) selected.push("safe");
-  if (profile.lifestyle_preferences?.includes("transport")) selected.push("transport");
-  if (profile.lifestyle_preferences?.includes("bike")) selected.push("bike");
-  if (profile.lifestyle_preferences?.includes("green")) selected.push("green");
+  if (prefs.includes("affordable")) selected.push("cost");
+  if (prefs.includes("vibrant_nightlife")) selected.push("nightlife");
+  if (prefs.includes("cultural_scene")) selected.push("culture");
+  if (prefs.includes("international_community")) selected.push("international");
+  if (prefs.includes("safe_environment")) selected.push("safe");
+  if (prefs.includes("good_transport")) selected.push("transport");
+  if (prefs.includes("bike_friendly")) selected.push("bike");
+  if (prefs.includes("green_spaces")) selected.push("green");
+  // Legacy kebab-case values from before the engine-vocabulary fix.
+  if (prefs.includes("affordable-living")) selected.push("cost");
+  if (prefs.includes("vibrant-nightlife")) selected.push("nightlife");
+  if (prefs.includes("cultural-scene")) selected.push("culture");
+  if (prefs.includes("international-community")) selected.push("international");
   return selected;
 }
 
@@ -338,8 +344,42 @@ export function OnboardingForm({
   );
   const stepCount = visibleSteps.length;
   const [stepIndex, setStepIndex] = useState(0);
+
+  // Resume where the user left off within this browser session — an F5
+  // mid-questionnaire no longer throws them back to step one. Cleared on
+  // successful submit (server redirect) and when steps shift visibility.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = Number(sessionStorage.getItem("unifind_wizard_step"));
+    if (Number.isInteger(stored) && stored > 0 && stored < visibleSteps.length) {
+      // Deferred to a macrotask per react-compiler guidance (same pattern
+      // as use-match-changes) — avoids synchronous setState in effects.
+      setTimeout(() => setStepIndex(stored), 0);
+    }
+  }, [visibleSteps.length]);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("unifind_wizard_step", String(stepIndex));
+    }
+  }, [stepIndex]);
+
   const currentStep = visibleSteps[Math.min(stepIndex, stepCount - 1)];
   const formRef = useRef<HTMLFormElement>(null);
+  const stepPanelRef = useRef<HTMLDivElement>(null);
+  const firstRender = useRef(true);
+
+  // A11y: after every step change, move keyboard focus to the top of the
+  // freshly revealed panel and scroll it into view (skipped on first mount).
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    const el = stepPanelRef.current;
+    if (!el) return;
+    el.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentStep.id]);
 
   function goNext() {
     setStepIndex((current) => Math.min(stepCount - 1, current + 1));
@@ -523,6 +563,32 @@ export function OnboardingForm({
           question's tiles must never scroll under it — see the footer
           comment). */}
       <main className="mx-auto w-full max-w-[800px] flex-grow space-y-8 px-margin-mobile md:px-margin-desktop py-8 pb-48 md:py-10">
+      {/* SR-only step announcer for screen-reader users */}
+      <p role="status" aria-live="polite" className="sr-only">
+        {t("stepAria", { current: Math.min(stepIndex, stepCount - 1) + 1, total: stepCount })}
+      </p>
+
+      {/* Segmented progress bar */}
+      <div
+        className="flex gap-1.5"
+        role="progressbar"
+        aria-valuemin={1}
+        aria-valuemax={stepCount}
+        aria-valuenow={Math.min(stepIndex, stepCount - 1) + 1}
+        aria-label={t("stepAria", { current: Math.min(stepIndex, stepCount - 1) + 1, total: stepCount })}
+      >
+        {visibleSteps.map((s, i) => (
+          <span
+            key={s.id}
+            aria-hidden="true"
+            className={`h-1 flex-1 rounded-full transition-colors ${
+              i <= stepIndex ? "bg-primary" : "bg-outline-variant/50"
+            }`}
+          />
+        ))}
+      </div>
+
+      <div ref={stepPanelRef} tabIndex={-1} className="outline-none">
         <section className="space-y-2">
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
             {t(currentStep.titleKey)}
@@ -968,6 +1034,7 @@ export function OnboardingForm({
             </div>
           </div>
         </div>
+      </div>
       </div>
 
         {state.error && (

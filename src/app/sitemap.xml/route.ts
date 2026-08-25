@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getGuides } from "@/content/guides";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://unifind.org";
 
@@ -39,7 +40,18 @@ export async function GET() {
     priority: 0.8,
   }));
 
-  const allUrls = [...staticPages, ...programmeUrls, ...universityUrls];
+  const allUrls = [
+    ...staticPages,
+    ...getGuides("en").map((g) => ({
+      url: `${BASE_URL}/en/guides/${g.slug}`,
+      lastmod: g.updated,
+      changefreq: "monthly",
+      priority: 0.7,
+    })),
+    { url: `${BASE_URL}/en/guides`, lastmod: new Date().toISOString(), changefreq: "monthly", priority: 0.7 },
+    ...programmeUrls,
+    ...universityUrls,
+  ];
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"

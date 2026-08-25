@@ -24,6 +24,12 @@ export default async function AdminDashboardPage({
     { label: t("dashboardParsingErrors"), value: metrics.importErrorCount },
   ];
 
+  const usageCards = [
+    { label: t("metricsCompletedQuestionnaires"), value: metrics.completedQuestionnaires },
+    { label: t("metricsSavedProgrammes"), value: metrics.savedProgrammesCount },
+    { label: t("metricsComparisons"), value: metrics.comparisonsCount },
+  ];
+
   return (
     <div className="space-y-8">
       <h2 className="font-headline-sm text-headline-sm text-primary">
@@ -45,6 +51,27 @@ export default async function AdminDashboardPage({
           </div>
         ))}
       </dl>
+
+      <section className="space-y-3">
+        <h3 className="font-headline-sm text-headline-sm text-primary">
+          {t("metricsUsageHeading")}
+        </h3>
+        <dl className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {usageCards.map((card) => (
+            <div
+              key={card.label}
+              className="rounded-xl border border-outline-variant/60 bg-surface-container-lowest p-5 space-y-1"
+            >
+              <dt className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wide">
+                {card.label}
+              </dt>
+              <dd className="font-data-lg text-data-lg text-primary">
+                {card.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
 
       <section className="space-y-3">
         <h3 className="font-headline-sm text-headline-sm text-primary">
@@ -82,6 +109,18 @@ export default async function AdminDashboardPage({
           className="inline-block font-label-caps text-label-caps text-primary underline"
         >
           {t("dashboardViewAll")}
+        </Link>
+      </section>
+
+      <section className="space-y-3">
+        <h3 className="font-headline-sm text-headline-sm text-primary">
+          {t("issuesTitle")}
+        </h3>
+        <Link
+          href="/admin/issues"
+          className="inline-block font-label-caps text-label-caps text-primary border border-primary rounded-full px-6 py-3 hover:bg-surface-container transition-colors"
+        >
+          {t("issuesOpenList")}
         </Link>
       </section>
     </div>

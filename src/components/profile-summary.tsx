@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { DeleteAccountZone } from "@/components/delete-account-zone";
 import type { Database } from "@/types/database";
 
 type UserProfileRow = Database["public"]["Tables"]["user_profiles"]["Row"];
@@ -210,8 +211,8 @@ export async function ProfileSummary({
         <Row
           label={t("cityFeaturesLabel")}
           value={
-            (profile.lifestyle_preferences ?? []).length > 0
-              ? (profile.lifestyle_preferences ?? []).join(", ")
+            dedupeLifestyle(profile.lifestyle_preferences ?? []).length > 0
+              ? dedupeLifestyle(profile.lifestyle_preferences ?? []).join(", ")
               : null
           }
         />
@@ -220,6 +221,43 @@ export async function ProfileSummary({
           value={requirements.length > 0 ? requirements.join(", ") : null}
         />
       </section>
+
+      {/* Danger zone — GDPR-style self-service deletion */}
+      <section className="pt-4 border-t border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <p className="font-body-sm text-body-sm text-on-surface-variant">
+          {t("deleteAccountHint")}
+        </p>
+        <DeleteAccountZone />
+      </section>
     </main>
   );
+}
+
+/** Canonical engine-vocabulary tags only, kebab legacy dropped, deduped. */
+function dedupeLifestyle(prefs: string[]): string[] {
+  const map: Record<string, string> = {
+    "affordable": "affordable",
+    "vibrant_nightlife": "vibrant_nightlife",
+    "cultural_scene": "cultural_scene",
+    "international_community": "international_community",
+    "safe_environment": "safe_environment",
+    "good_transport": "good_transport",
+    "bike_friendly": "bike_friendly",
+    "green_spaces": "green_spaces",
+    // legacy → canonical
+    "affordable-living": "affordable",
+    "vibrant-nightlife": "vibrant_nightlife",
+    "cultural-scene": "cultural_scene",
+    "international-community": "international_community",
+    "safe": "safe_environment",
+    "transport": "good_transport",
+    "bike": "bike_friendly",
+    "green": "green_spaces",
+  };
+  const out = new Set<string>();
+  for (const p of prefs) {
+    const canon = map[p];
+    if (canon) out.add(canon);
+  }
+  return [...out];
 }

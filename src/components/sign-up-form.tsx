@@ -1,9 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { signUp } from "@/lib/auth/actions";
 import type { AuthFormState } from "@/lib/auth/types";
+import { Turnstile } from "@/components/turnstile";
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
 const initialState: AuthFormState = { error: null };
 
@@ -14,6 +17,8 @@ interface SignUpFormProps {
 export function SignUpForm({ next = "/onboarding" }: SignUpFormProps) {
   const t = useTranslations("Auth");
   const [state, formAction, isPending] = useActionState(signUp, initialState);
+  const [, setTurnstileToken] = useState<string | null>(null);
+  const handleToken = useCallback((token: string | null) => setTurnstileToken(token), []);
 
   return (
     <form action={formAction} className="space-y-4 max-w-sm">
@@ -59,6 +64,8 @@ export function SignUpForm({ next = "/onboarding" }: SignUpFormProps) {
       {state.error && (
         <p className="font-body-sm text-body-sm text-error">{state.error}</p>
       )}
+
+      <Turnstile siteKey={TURNSTILE_SITE_KEY} onToken={handleToken} />
 
       <button
         type="submit"

@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { AuthNav } from "@/components/auth-nav";
+import { GlobalSearch } from "@/components/global-search";
 
 /**
  * Top app bar. Navigation lives in `AppNav` (the single nav concept —
@@ -25,7 +26,10 @@ export async function Header() {
           {tNav("brand")}
         </Link>
 
-        <AuthNav />
+        <div className="flex items-center gap-3">
+          <GlobalSearch />
+          <AuthNav />
+        </div>
       </div>
     </header>
   );

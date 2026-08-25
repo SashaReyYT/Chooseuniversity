@@ -1,4 +1,5 @@
 import { hasLocale } from "next-intl";
+import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
@@ -20,6 +21,19 @@ import { TopMatchesClient } from "@/components/top-matches-client";
 import { DebouncedSearch } from "@/components/debounced-search";
 
 import { updatePriorityAction } from "@/lib/matching/actions";
+
+export async function generateMetadata({
+  params: _params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  // Filtered views duplicate content — canonical points at the clean URL
+  // so crawlers consolidate ranking signals.
+  return {
+    alternates: { canonical: "/discover" },
+    title: "Discover",
+  };
+}
 
 export default async function DiscoverPage({
   params,
@@ -195,22 +209,45 @@ export default async function DiscoverPage({
     { value: "lowest_cost", label: t("sortLowestCost") },
     { value: "highest_match", label: t("sortTopAcademic") },
   ];
-  const sortHref = (value: string) => {
-    // next-intl Link is locale-aware — pass the pathname WITHOUT the
-    // /en|uk prefix, otherwise it double-prefixes and 404s.
-    const query: Record<string, string> = { sort: value };
-    if (searchQuery) query.q = searchQuery;
-    if (fieldOfStudyFilter) query.fieldOfStudy = fieldOfStudyFilter;
-    if (degreeFilter) query.degree = degreeFilter;
-    if (languageFilter) query.language = languageFilter;
-    if (countryFilter) query.country = countryFilter;
-    return { pathname: "/discover", query };
-  };
   // Highlight the top-scored programme as the "Top Match" card.
   const topMatchIndex =
     sortBy === "best_match" && profileData?.profile
       ? entries.findIndex((e) => e.match?.overallScore != null)
       : -1;
+
+  // ---- Pagination + intake filter --------------------------------------
+  const PAGE_SIZE = 24;
+  const intakeFilter = sp?.intake ?? "";
+  const intakeFiltered =
+    intakeFilter === ""
+      ? entries
+      : entries.filter(({ programme }) => {
+          if (!programme.intake_start) return true; // unknown → keep visible
+          const m = new Date(programme.intake_start).getUTCMonth() + 1;
+          return intakeFilter === "fall" ? m >= 7 : m < 7;
+        });
+  const shownCount = Math.min(
+    Math.max(1, Number(sp?.n ?? PAGE_SIZE) || PAGE_SIZE),
+    intakeFiltered.length,
+  );
+  const visibleEntries = intakeFiltered.slice(0, shownCount);
+
+  // Current filter state as a query object — reused by sort chips and the
+  // load-more link. Deliberately excludes `n` so new filters reset paging.
+  const activeQuery: Record<string, string> = {};
+  if (searchQuery) activeQuery.q = searchQuery;
+  if (fieldOfStudyFilter) activeQuery.fieldOfStudy = fieldOfStudyFilter;
+  if (degreeFilter) activeQuery.degree = degreeFilter;
+  if (languageFilter) activeQuery.language = languageFilter;
+  if (countryFilter) activeQuery.country = countryFilter;
+  if (intakeFilter) activeQuery.intake = intakeFilter;
+
+  const sortHref = (value: string) => ({
+    // next-intl Link is locale-aware — pass the pathname WITHOUT the
+    // /en|uk prefix, otherwise it double-prefixes and 404s.
+    pathname: "/discover",
+    query: { ...activeQuery, sort: value },
+  });
 
   // For search form action — uses GET to preserve query params (locale-aware)
 
@@ -356,6 +393,16 @@ export default async function DiscoverPage({
               <option key={country.code} value={country.code}>{country.name}</option>
             ))}
           </select>
+          <select
+            name="intake"
+            defaultValue={intakeFilter}
+            aria-label={t("intakeLabel")}
+            className="font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3"
+          >
+            <option value="">{t("intakeAny")}</option>
+            <option value="fall">{t("intakeFall")}</option>
+            <option value="spring">{t("intakeSpring")}</option>
+          </select>
           <button
             type="submit"
             className="font-label-caps text-label-caps text-on-primary bg-primary rounded-full px-6 py-3 hover:bg-primary/90 transition-all active:scale-95"
@@ -460,11 +507,11 @@ export default async function DiscoverPage({
       ) : (
         <>
           <p className="font-body-sm text-body-sm text-on-surface-variant">
-            {t("resultCount", { count: entries.length })}
+            {t("resultCount", { count: intakeFiltered.length })}
           </p>
           <div className="space-y-6">
             <Suspense fallback={<DiscoverSkeleton />}>
-              {entries.map(({ programme, match }, index) => (
+              {visibleEntries.map(({ programme, match }, index) => (
                 <div key={programme.id} className="relative">
                   {index === topMatchIndex && (
                     <span className="absolute -top-3 left-4 z-10 font-label-caps text-label-caps text-on-primary bg-primary rounded-full px-4 py-1">
@@ -484,6 +531,19 @@ export default async function DiscoverPage({
               ))}
             </Suspense>
           </div>
+
+          {/* Load-more pagination — `n` accumulates so each click extends
+              the rendered list without duplicating DOM. New searches/filters
+              omit `n`, resetting to the first page. */}
+          {entries.length > shownCount && (
+            <Link
+              href={{ pathname: "/discover", query: { ...activeQuery, n: String(shownCount + PAGE_SIZE) } }}
+              className="block w-full rounded-full border border-primary py-4 text-center font-label-caps text-label-caps text-primary transition-all hover:bg-surface-container active:scale-[0.99]"
+              role="button"
+            >
+              {t("loadMore", { count: Math.min(PAGE_SIZE, entries.length - shownCount) })}
+            </Link>
+          )}
         </>
       )}
       </main>

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { Link } from "@/i18n/navigation";
 import { formPrimaryButtonClassName } from "@/components/form-styles";
 
@@ -28,6 +29,7 @@ export default function LocaleError({
 
   useEffect(() => {
     console.error(error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (

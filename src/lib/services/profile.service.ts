@@ -11,6 +11,7 @@ import {
 } from "@/lib/repositories/user-language-proficiency.repository";
 import type { CefrLevel } from "@/types/database";
 import { MatchingService } from "@/lib/services/matching.service";
+import { invalidateUserMatches } from "@/lib/matching/match-cache";
 
 /** Matches the `user_subject_strengths.level` check constraint — a plainer
  * 3-point subset of the `math_background` enum (`poor`, not `weak`), used
@@ -135,14 +136,21 @@ export interface SubjectStrengthInput {
   ) {
     const existing = await this.userProfile.findByUserId(userId);
 
+    let result;
     if (existing) {
-      return this.userProfile.update(userId, changes);
+      result = await this.userProfile.update(userId, changes);
+    } else {
+      result = await this.userProfile.create({
+        id: userId,
+        ...changes,
+      } as UserProfileInsert);
     }
 
-    return this.userProfile.create({
-      id: userId,
-      ...changes,
-    } as UserProfileInsert);
+    // Any profile write changes match scores — drop cached lists so the
+    // next Discover/Results visit recomputes instead of serving stale data.
+    invalidateUserMatches(userId);
+
+    return result;
   }
 
   /**

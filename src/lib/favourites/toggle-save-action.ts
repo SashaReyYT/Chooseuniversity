@@ -1,14 +1,15 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { FavouritesService } from "@/lib/services/favourites.service";
 
 /**
  * Toggles a programme's saved status for the current user. Used from a
- * plain `<form action={toggleSaveAction}>` — Next.js automatically
- * refreshes the invoking page's Server Components after a form action
- * completes (as long as it doesn't redirect), so the "Saved" state on
- * /saved updates without any client-side state management here.
+ * plain `<form action={toggleSaveAction}>`. `revalidatePath("/", "layout")`
+ * refreshes every Server Component after the write, so the button flips to
+ * "Saved" immediately on the same page (results, discover, programme,
+ * saved) without a manual reload.
  */
 export async function toggleSaveAction(formData: FormData): Promise<void> {
   const supabase = await createServerSupabaseClient();
@@ -29,4 +30,10 @@ export async function toggleSaveAction(formData: FormData): Promise<void> {
   } else {
     await favourites.save(user.id, programmeId);
   }
+
+  // Targeted revalidation — layout-wide would invalidate every ISR page
+  // (including all university profiles) for a single bookmark toggle.
+  revalidatePath("/saved");
+  revalidatePath("/discover");
+  revalidatePath("/results");
 }

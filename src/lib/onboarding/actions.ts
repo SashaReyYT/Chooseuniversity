@@ -38,6 +38,23 @@ import type {
 const RESIDENCE_EXAM_MAP: Record<string, "nmt"> = { UA: "nmt" };
 
 /**
+ * Broad field-of-study direction (Q5 category label) → the career tags
+ * the matching engine's Career Fit intersects against programme
+ * `career_tags`. Values must be members of CAREER_TAGS in
+ * `score-extended.ts`.
+ */
+function careerTagsForCategory(category: string): string[] {
+  const c = category.toLowerCase();
+  if (/engineer|technolog|informatic|computer/.test(c)) return ["software", "startups", "research"];
+  if (/business|economic|management|finance|commerce/.test(c)) return ["business", "finance"];
+  if (/medic|health|pharm/.test(c)) return ["medicine"];
+  if (/art|design|music|architect/.test(c)) return ["design"];
+  if (/social|law|education|humanit|journalis/.test(c)) return ["public_sector"];
+  if (/science|natural|biolog|chem|physic|math/.test(c)) return ["research", "academia"];
+  return [];
+}
+
+/**
  * Q3 (education stage) also decides `current_education_level`,
  * `has_graduated`, and `preferred_degree_level` — asked as a single
  * question rather than three, per the migration's design (see
@@ -128,20 +145,29 @@ export async function submitOnboardingAction(
       ? "student_city"
       : null;
 
-  // Map city features to lifestyle_preferences
+  // Map city features to lifestyle_preferences — values MUST match the
+  // matching engine's LifestyleTag union (score-extended.ts) exactly.
   const cityFeatureMap: Record<string, string> = {
-    cost: "affordable-living",
-    nightlife: "vibrant-nightlife",
-    culture: "cultural-scene",
-    international: "international-community",
-    safe: "safe",
-    transport: "transport",
-    bike: "bike",
-    green: "green",
+    cost: "affordable",
+    nightlife: "vibrant_nightlife",
+    culture: "cultural_scene",
+    international: "international_community",
+    safe: "safe_environment",
+    transport: "good_transport",
+    bike: "bike_friendly",
+    green: "green_spaces",
   };
-const _lifestylePreferences = cityFeatures
+  const _lifestylePreferences = cityFeatures
       .map((v) => cityFeatureMap[v])
       .filter((v): v is string => v != null);
+
+  // Derive career priorities from the chosen broad direction so the
+  // Career Fit dimension has a profile side to intersect with.
+  const careerTags = careerTagsForCategory(String(formData.get("field_category") ?? ""));
+
+  // Most students are flexible on delivery mode until told otherwise —
+  // keeps Study-Format Fit applicable instead of permanently "no data".
+  const preferredStudyFormat = "either" as const;
 
   // Q12 — new requirements (support + admission)
   const wantsScholarship = formData.get("scholarship") != null;
@@ -254,6 +280,8 @@ const _lifestylePreferences = cityFeatures
       math_background: mapMathStrength(mathStrength),
       english_level: englishLevel,
       lifestyle_preferences: _lifestylePreferences,
+      career_priorities: careerTags,
+      preferred_study_format: preferredStudyFormat,
     });
 
     // Q7 — per-language proficiency.

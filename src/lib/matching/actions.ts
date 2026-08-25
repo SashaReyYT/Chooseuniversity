@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import type { MatchWeights } from "@/lib/matching/match-types";
 import { UserMatchWeightsRepository } from "@/lib/repositories/user-match-weights.repository";
 import { MatchingService } from "@/lib/services/matching.service";
+import { invalidateUserMatches } from "@/lib/matching/match-cache";
 
 export async function updateMatchWeightsAction(
   locale: string,
@@ -46,6 +47,7 @@ export async function updateMatchWeightsAction(
   try {
     const repo = new UserMatchWeightsRepository(supabase);
     await repo.upsert(user.id, weights);
+    invalidateUserMatches(user.id);
     revalidatePath(`/${locale}/discover`);
     revalidatePath(`/${locale}/profile`);
     return { success: true };
@@ -92,6 +94,7 @@ export async function updatePriorityAction(
   try {
     const repo = new UserMatchWeightsRepository(supabase);
     await repo.upsert(user.id, weights);
+    invalidateUserMatches(user.id);
     revalidatePath(`/${locale}/discover`);
     revalidatePath(`/${locale}/profile`);
   } catch (error) {

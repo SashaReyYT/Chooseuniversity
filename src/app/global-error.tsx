@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
+
 /**
  * Catches errors thrown by the root layout itself (rare — e.g. next-intl
  * failing to load messages at all). Must render its own <html>/<body>
@@ -13,11 +16,17 @@
  * only the last-resort fallback underneath it.
  */
 export default function GlobalError({
+  error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    console.error(error);
+    Sentry.captureException(error);
+  }, [error]);
+
   return (
     <html lang="en">
       <body style={{ fontFamily: "sans-serif", padding: "4rem 1.5rem" }}>

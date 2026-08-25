@@ -199,6 +199,51 @@ export type Database = {
         }
         Relationships: []
       }
+      data_issue_reports: {
+        Row: {
+          id: string
+          programme_id: string
+          reported_by: string | null
+          field: string
+          message: string
+          status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          programme_id: string
+          reported_by?: string | null
+          field: string
+          message: string
+          status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          programme_id?: string
+          reported_by?: string | null
+          field?: string
+          message?: string
+          status?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_issue_reports_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_issue_reports_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       faculties: {
         Row: {
           created_at: string
@@ -766,6 +811,7 @@ export type Database = {
           programme_url?: string | null
           published?: boolean
           required_documents?: string[]
+          requirements_updated_at?: string | null
           scholarship_notes?: string | null
           slug?: string | null
           study_mode?:
@@ -774,6 +820,7 @@ export type Database = {
           tuition_currency?: string | null
           tuition_max?: number | null
           tuition_min?: number | null
+          tuition_updated_at?: string | null
           university_id?: string
           updated_at?: string
         }
@@ -850,6 +897,7 @@ export type Database = {
       saved_programmes: {
         Row: {
           created_at: string
+          folder: string
           id: string
           note: string | null
           programme_id: string
@@ -857,6 +905,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          folder?: string
           id?: string
           note?: string | null
           programme_id: string
@@ -864,6 +913,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          folder?: string
           id?: string
           note?: string | null
           programme_id?: string
@@ -1318,6 +1368,7 @@ export type Database = {
           budget_max?: number | null
           budget_min?: number | null
           budget_mode?: Database["public"]["Enums"]["budget_mode"]
+          career_priorities?: string[] | null
           created_at?: string
           current_education_level?:
             | Database["public"]["Enums"]["education_level"]
@@ -1368,6 +1419,7 @@ export type Database = {
           budget_max?: number | null
           budget_min?: number | null
           budget_mode?: Database["public"]["Enums"]["budget_mode"]
+          career_priorities?: string[] | null
           created_at?: string
           current_education_level?:
             | Database["public"]["Enums"]["education_level"]

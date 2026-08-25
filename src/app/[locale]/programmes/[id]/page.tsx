@@ -33,6 +33,9 @@ import type { ProgrammeStudyMode, SourceType } from "@/types/database";
 import { AppShell } from "@/components/app-shell";
 import { Suspense } from "react";
 import { ProgrammeSkeleton } from "@/components/skeleton-wrappers";
+import { TrackView } from "@/components/track-view";
+import { SimilarProgrammes } from "@/components/similar-programmes";
+import { ReportIssueForm } from "@/components/report-issue-form";
 
 /** Compile-time checked message keys of the ProgrammeDetails namespace (mirrors DiscoverKey in match-display). */
 type ProgrammeDetailsKey = Parameters<
@@ -194,7 +197,37 @@ export default async function ProgrammeDetailsPage({
   return (
     <Suspense fallback={<ProgrammeSkeleton />}>
       <AppShell>
-        <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-10">
+      <TrackView event="programme_viewed" props={{ programmeId: id }} />
+      {/* SEO structured data — Course + Offer */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Course",
+            name: programme.name,
+            description: programme.description ?? undefined,
+            provider: {
+              "@type": "CollegeOrUniversity",
+              name: programme.university.name,
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: programme.university.city,
+                addressCountry: programme.university.country_code,
+              },
+            },
+            offers: programme.tuition_min != null
+              ? {
+                  "@type": "Offer",
+                  price: programme.tuition_min,
+                  priceCurrency: programme.tuition_currency ?? "EUR",
+                  category: `${programme.degree_level} · ${programme.duration_months} months`,
+                }
+              : undefined,
+          }),
+        }}
+      />
+      <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-10">
       <Link
         href="/discover"
         className="font-label-caps text-label-caps text-primary underline"
@@ -767,6 +800,37 @@ export default async function ProgrammeDetailsPage({
               </div>
             )}
 
+            {/* Actionable hints — dimensions excluded because the PROFILE
+                is missing data, with a one-click fix link. */}
+            {(() => {
+              const fixable = match.dimensions.filter((d) => !d.applicable);
+              if (fixable.length === 0) return null;
+              const hintKeys = fixable.map(
+                (d) => `hint_${d.key}` as Parameters<typeof t>[0],
+              );
+              return (
+                <div className="rounded-xl border border-info/40 bg-info-fixed/5 p-5 space-y-2">
+                  <h3 className="font-label-caps text-label-caps text-primary uppercase tracking-wide">
+                    {t("raiseScoreHeading")}
+                  </h3>
+                  <ul className="space-y-1.5">
+                    {hintKeys.map((key) => (
+                      <li
+                        key={key}
+                        className="font-body-sm text-body-sm text-on-surface flex items-start gap-2"
+                      >
+                        <span className="text-success shrink-0" aria-hidden="true">✓</span>
+                        <span>{t(key)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/profile" className="inline-block font-label-caps text-label-caps text-primary underline">
+                    {t("raiseScoreCta")}
+                  </Link>
+                </div>
+              );
+            })()}
+
             {match.reasons.length > 0 && (
               <div className="space-y-1">
                 <p className="font-label-caps text-label-caps text-on-surface-variant">
@@ -1014,6 +1078,12 @@ export default async function ProgrammeDetailsPage({
             </p>
           )}
         </section>
+
+        {/* Similar programmes — same field of study, other universities */}
+        <SimilarProgrammes programmeId={id} fieldOfStudyId={programme.field_of_study_id} />
+
+        {/* Crowdsourced corrections */}
+        <ReportIssueForm programmeId={id} />
 
         {/* Sources (§41) */}
         {allSources.length > 0 && (

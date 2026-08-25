@@ -1,6 +1,6 @@
 import { hasLocale } from "next-intl";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -10,9 +10,14 @@ import { AppShell } from "@/components/app-shell";
 import { formatTuition } from "@/components/match-display";
 import { Suspense } from "react";
 import { UniversitySkeleton } from "@/components/skeleton-wrappers";
+import { UniLogo } from "@/components/uni-logo";
 import type { ProgrammeWithDetails } from "@/lib/repositories/programmes.repository";
 
-type UniversityPageProps = PageProps<"/[locale]/universities/[id]">;
+export const revalidate = 3600;
+
+interface UniversityPageProps {
+  params: Promise<{ locale: string; id: string }>;
+}
 
 export default async function UniversityPage({ params }: UniversityPageProps) {
   const { locale, id } = await params;
@@ -25,16 +30,9 @@ export default async function UniversityPage({ params }: UniversityPageProps) {
   const t = await getTranslations("University");
   const tDiscover = await getTranslations("Discover");
   const uiLocale = await getLocale();
+  // Public catalogue content — no session read here so the page qualifies
+  // for ISR (cookies would force it dynamic).
   const supabase = await createServerSupabaseClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect(`/${locale}`);
-    return;
-  }
 
   const referenceData = new ReferenceDataRepository(supabase);
   const programmesRepo = new ProgrammesRepository(supabase);
@@ -66,6 +64,24 @@ export default async function UniversityPage({ params }: UniversityPageProps) {
   return (
     <Suspense fallback={<UniversitySkeleton />}>
       <AppShell>
+      {/* SEO structured data — CollegeOrUniversity */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollegeOrUniversity",
+            name: university.name,
+            url: university.website_url ?? undefined,
+            foundingDate: university.founded_year ?? undefined,
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: university.city,
+              addressCountry: university.country_code,
+            },
+          }),
+        }}
+      />
       <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-10">
         <Link
           href="/discover"
@@ -75,9 +91,12 @@ export default async function UniversityPage({ params }: UniversityPageProps) {
         </Link>
 
         <header className="space-y-4">
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
-            {university.name}
-          </h1>
+          <div className="flex items-center gap-4">
+            <UniLogo name={university.name} className="w-16 h-16 text-2xl" />
+            <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">
+              {university.name}
+            </h1>
+          </div>
           <p className="font-body-md text-body-md text-on-surface-variant">
             {university.city}, {university.country.name}
             {university.founded_year != null && ` · ${t("founded", { year: university.founded_year })}`}

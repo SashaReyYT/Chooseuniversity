@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { signIn } from "@/lib/auth/actions";
 import type { AuthFormState } from "@/lib/auth/types";
 
@@ -56,6 +57,15 @@ export function SignInForm({ next = "/onboarding" }: SignInFormProps) {
       {state.error && (
         <p className="font-body-sm text-body-sm text-error">{state.error}</p>
       )}
+
+      <div className="text-right">
+        <Link
+          href="/forgot-password"
+          className="font-body-sm text-body-sm text-primary hover:underline"
+        >
+          {t("forgotLink")}
+        </Link>
+      </div>
 
       <button
         type="submit"

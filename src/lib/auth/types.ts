@@ -6,4 +6,6 @@
  */
 export interface AuthFormState {
   error: string | null;
+  /** Set by the recovery-email action so the form can show a neutral "sent" note without confirming whether the address exists. */
+  sent?: boolean;
 }

@@ -39,8 +39,15 @@ export function checkDegreeLevel(
     };
   }
 
-  // Ordering: high_school < foundation < bachelor < master < phd.
-  // A user at or above the required level passes; below it fails.
+  // Prior-education ordering: what the user must ALREADY hold to enter.
+  //   high_school(0) < foundation(1) < bachelor(2) < master(3) < phd(4)
+  //
+  // A high-school graduate applying to a bachelor's programme is the
+  // EXPECTED trajectory, not a failure — `required = 'bachelor'` on a
+  // master's means "you need a BA", but `required = null` (or implicit
+  // secondary) on a bachelor's is satisfied by finishing school. The datafill
+  // now only sets required_degree_level on master/phd programmes where a
+  // prior degree genuinely gates entry, so this check fires correctly.
   const ORDER: Record<string, number> = {
     high_school: 0,
     foundation: 1,
@@ -55,6 +62,21 @@ export function checkDegreeLevel(
   if (userRank >= requiredRank) {
     return { type: "degree_level", status: "pass", message: "" };
   }
+
+  // Trajectory exception: applying to a foundation/bachelor's programme
+  // from secondary school is the normal educational path, not a failure.
+  // Keyed off the PROGRAMME's own degree_level (not required_degree_level)
+  // so a master's requiring a BA still gates correctly.
+  const progLevel = programme.degree_level;
+  const progRank = ORDER[progLevel] ?? -1;
+
+  if (
+    progRank <= 2 && // foundation or bachelor programme
+    userRank >= 0    // at least secondary education level
+  ) {
+    return { type: "degree_level", status: "pass", message: "" };
+  }
+
   return {
     type: "degree_level",
     status: "fail",
@@ -108,10 +130,14 @@ export function checkMathBackground(
   if (userRank >= requiredRank) {
     return { type: "math_background", status: "pass", message: "" };
   }
+  // Self-assessed math below the requirement is a soft signal, not a
+  // hard gate (audit M7): the user might be underestimating themselves.
+  // Degrade to "unknown" so the dimension is excluded from scoring rather
+  // than producing a false fail.
   return {
     type: "math_background",
-    status: "fail",
-    message: "hardRequirement.mathBackgroundFail",
+    status: "unknown",
+    message: "hardRequirement.mathBackgroundBelow",
   };
 }
 

@@ -17,6 +17,20 @@ jobs:
       - run: npm ci
       - name: Generate route types
         run: npx next typegen
+      # Guard against the types/schema drift that caused PGRST204/42703:
+      # regenerate Database types from the linked project and fail the build
+      # if they differ from what's committed. Needs SUPABASE_ACCESS_TOKEN +
+      # a linked ref (supabase/config.toml). Skips when no token is set so
+      # forks still pass.
+      - name: Regenerate database types (drift guard)
+        if: ${{ env.SUPABASE_ACCESS_TOKEN != '' }}
+        continue-on-error: false
+        run: |
+          npm i -g supabase@2.115.1-beta.13
+          npx supabase gen types typescript --linked > src/types/database.generated.ts
+          git diff --exit-code src/types/database.generated.ts || (echo "::error::src/types/database.ts is stale — run 'npm run db:types' and commit" && exit 1)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       - name: Typecheck
         run: npx tsc --noEmit
       - name: Lint

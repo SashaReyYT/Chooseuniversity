@@ -8,6 +8,11 @@ import { UserNmtScoresRepository } from "@/lib/repositories/user-nmt-scores.repo
 import { UserQualificationsRepository } from "@/lib/repositories/user-qualifications.repository";
 import { UserMatchWeightsRepository } from "@/lib/repositories/user-match-weights.repository";
 import { computeMatchScore } from "@/lib/matching/engine";
+import {
+  matchCacheKey,
+  cacheGet,
+  cacheSet,
+} from "@/lib/matching/match-cache";
 import type { CurrencyRateTable } from "@/lib/matching/currency";
 import type {
   MatchResult,
@@ -159,6 +164,20 @@ export class MatchingService {
     userId: string,
     filters: MatchSearchFilters = {},
   ): Promise<RankedMatch[]> {
+    // Profile first: its updated_at is part of the cache key, so any edit
+    // to the questionnaire naturally produces a fresh computation while
+    // repeat visits within the TTL skip the heavy catalogue pass entirely.
+    const profileRow = await this.userProfile.findByUserId(userId);
+    if (!profileRow) {
+      throw new Error(
+        `No profile found for user ${userId} — complete onboarding before requesting matches.`,
+      );
+    }
+
+    const cacheKey = matchCacheKey(userId, profileRow.updated_at, filters);
+    const cached = cacheGet<RankedMatch[]>(cacheKey);
+    if (cached) return cached;
+
     const [programmes, currencyRates, { profile, weights }] = await Promise.all([
       this.programmes.search(filters),
       this.loadCurrencyRates(),
@@ -178,6 +197,7 @@ export class MatchingService {
 
     sortRankedMatches(ranked, filters.sortBy);
 
+    cacheSet(cacheKey, ranked);
     return ranked;
   }
 

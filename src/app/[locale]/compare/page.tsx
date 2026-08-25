@@ -20,6 +20,7 @@ import type { MatchDimensionKey } from "@/lib/matching/match-types";
 import { DIMENSION_KEYS, formatTuition, annualLivingCost, type DiscoverTranslator } from "@/components/match-display";
 import { formDangerButtonClassName, formInputClassName, formSecondaryButtonClassName } from "@/components/form-styles";
 import { AppShell } from "@/components/app-shell";
+import { TrackView } from "@/components/track-view";
 
 export default async function ComparePage({
   params,
@@ -97,6 +98,7 @@ export default async function ComparePage({
 
   return (
     <AppShell>
+      <TrackView event="compare_opened" />
       <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-8">
       <div className="space-y-1">
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">

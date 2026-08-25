@@ -1,0 +1,17 @@
+name: Data freshness pass
+
+on:
+  schedule:
+    # 1st of January and July — semi-annual staleness sweep.
+    - cron: "0 6 1 1,7 *"
+  workflow_dispatch:
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Flag stale catalogue rows
+        run: |
+          curl -fsS -X POST \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.SITE_URL }}/api/cron/data-freshness"

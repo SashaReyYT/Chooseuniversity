@@ -11,11 +11,17 @@ import { ComparisonService } from "@/lib/services/comparison.service";
 import { ProgrammeCard } from "@/components/programme-card";
 import { AppShell } from "@/components/app-shell";
 import type { MatchResult } from "@/lib/matching/engine";
+import { updateSavedFolder, updateSavedNote } from "@/lib/favourites/saved-meta-actions";
 
 export default async function SavedPage({
   params,
-}: PageProps<"/[locale]/saved">) {
+  searchParams,
+}: PageProps<"/[locale]/saved"> & {
+  searchParams?: Promise<Record<string, string | undefined>>;
+}) {
   const { locale } = await params;
+  const sp = await searchParams;
+  const activeFolder = sp?.folder ?? "all";
 
   if (!hasLocale(routing.locales, locale)) {
     notFound();
@@ -68,6 +74,29 @@ export default async function SavedPage({
   );
   const defaultComparisonName = tDiscover("heading");
 
+  // Folder/note metadata lives on the raw saved rows — fetched separately
+  // because listSavedProgrammesForUser hydrates programme details instead.
+  const { data: metaRows } = await supabase
+    .from("saved_programmes")
+    .select("programme_id, note, folder")
+    .eq("user_id", user.id);
+  const metaById = new Map(
+    (metaRows ?? []).map((m) => [
+      m.programme_id,
+      { note: m.note, folder: m.folder },
+    ]),
+  );
+
+  const FOLDERS = ["all", "none", "dream", "target", "safety"] as const;
+  const folderFiltered =
+    activeFolder === "all"
+      ? saved
+      : saved.filter((s) => (metaById.get(s.programme.id)?.folder ?? "none") === activeFolder);
+
+  const groupIf = (
+    predicate: (item: typeof saved[number]) => boolean,
+  ) => folderFiltered.filter(predicate);
+
   // Build match profile for Best For labels
   const matchProfile = profileData?.profile
     ? {
@@ -109,32 +138,92 @@ export default async function SavedPage({
       }
     : null;
 
-  // Group by match level (§37)
-  const excellentMatches = saved.filter(({ programme }) => {
+  // Group by match level (§37), respecting the active folder filter
+  const excellentMatches = groupIf(({ programme }) => {
     const m = matchesById.get(programme.id);
     return m?.overallLabel === "Excellent Fit";
   });
-  const strongMatches = saved.filter(({ programme }) => {
+  const strongMatches = groupIf(({ programme }) => {
     const m = matchesById.get(programme.id);
     return m?.overallLabel === "Strong Fit";
   });
-  const otherSaved = saved.filter(({ programme }) => {
+  const otherSaved = groupIf(({ programme }) => {
     const m = matchesById.get(programme.id);
     return !m || (m.overallLabel !== "Excellent Fit" && m.overallLabel !== "Strong Fit");
   });
 
-  const renderProgrammeCard = (savedItem: { programme: import("@/lib/repositories/programmes.repository").ProgrammeWithDetails }) => (
-    <ProgrammeCard
-      key={savedItem.programme.id}
-      programme={savedItem.programme}
-      match={matchesById.get(savedItem.programme.id) ?? null}
-      profile={matchProfile}
-      isSaved
-      isInComparison={comparedProgrammeIds.has(savedItem.programme.id)}
-      t={tDiscover}
-      defaultComparisonName={defaultComparisonName}
-    />
-  );
+  const folderTabs: { value: string; labelKey: "folderAll" | "folderNone" | "folderDream" | "folderTarget" | "folderSafety" }[] = [
+    { value: "all", labelKey: "folderAll" },
+    { value: "none", labelKey: "folderNone" },
+    { value: "dream", labelKey: "folderDream" },
+    { value: "target", labelKey: "folderTarget" },
+    { value: "safety", labelKey: "folderSafety" },
+  ];
+
+  const renderProgrammeCard = (savedItem: { programme: import("@/lib/repositories/programmes.repository").ProgrammeWithDetails }) => {
+    const meta = metaById.get(savedItem.programme.id);
+    return (
+      <div key={savedItem.programme.id} className="space-y-3">
+        <ProgrammeCard
+          programme={savedItem.programme}
+          match={matchesById.get(savedItem.programme.id) ?? null}
+          profile={matchProfile}
+          isSaved
+          isInComparison={comparedProgrammeIds.has(savedItem.programme.id)}
+          t={tDiscover}
+          defaultComparisonName={defaultComparisonName}
+        />
+
+        {/* Folder triage */}
+        <form action={updateSavedFolder} className="flex flex-wrap items-center gap-2 -mt-2">
+          <input type="hidden" name="programmeId" value={savedItem.programme.id} />
+          <span className="font-label-caps text-label-caps text-on-surface-variant">
+            {t("folderLabel")}
+          </span>
+          {FOLDERS.filter((f) => f !== "all").map((f) => (
+            <button
+              key={f}
+              type="submit"
+              name="folder"
+              value={f}
+              className={`font-label-caps text-label-caps rounded-full px-3 py-1.5 border transition-colors ${
+                (meta?.folder ?? "none") === f
+                  ? "bg-primary text-on-primary border-primary"
+                  : "border-outline-variant text-on-surface hover:border-primary"
+              }`}
+            >
+              {t(`folder${f.charAt(0).toUpperCase()}${f.slice(1)}` as Parameters<typeof t>[0])}
+            </button>
+          ))}
+        </form>
+
+        {/* Private note — column existed in schema, surfaced here */}
+        <details className="group">
+          <summary className="cursor-pointer font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors inline-flex items-center gap-1 list-none">
+            <span className="material-symbols-outlined text-base" aria-hidden="true">edit_note</span>
+            {(meta?.note?.trim()?.length ?? 0) > 0 ? t("noteEditHas") : t("noteEditEmpty")}
+          </summary>
+          <form action={updateSavedNote} className="mt-2 space-y-2 max-w-md">
+            <input type="hidden" name="programmeId" value={savedItem.programme.id} />
+            <textarea
+              name="note"
+              rows={3}
+              maxLength={500}
+              defaultValue={meta?.note ?? ""}
+              placeholder={t("notePlaceholder")}
+              className="w-full font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <button
+              type="submit"
+              className="font-label-caps text-label-caps text-primary border border-primary rounded-full px-4 py-2 hover:bg-surface-container transition-colors"
+            >
+              {t("noteSave")}
+            </button>
+          </form>
+        </details>
+      </div>
+    );
+  };
 
   return (
     <AppShell>
@@ -148,6 +237,24 @@ export default async function SavedPage({
         </p>
       </div>
 
+      {/* Folder triage tabs */}
+      <nav className="flex flex-wrap gap-2" aria-label={t("foldersNav")}>
+        {folderTabs.map((tab) => (
+          <Link
+            key={tab.value}
+            href={tab.value === "all" ? "/saved" : `/saved?folder=${tab.value}`}
+            aria-current={activeFolder === tab.value ? "true" : undefined}
+            className={`font-label-caps text-label-caps rounded-full px-4 py-2 border transition-colors ${
+              activeFolder === tab.value
+                ? "bg-primary text-on-primary border-primary"
+                : "border-outline-variant text-on-surface hover:border-primary"
+            }`}
+          >
+            {t(tab.labelKey)}
+          </Link>
+        ))}
+      </nav>
+
       {saved.length === 0 ? (
         <div className="space-y-4">
           <p className="font-body-md text-body-md text-on-surface-variant">
@@ -160,10 +267,14 @@ export default async function SavedPage({
             {t("browseCta")}
           </Link>
         </div>
+      ) : folderFiltered.length === 0 ? (
+        <p className="font-body-md text-body-md text-on-surface-variant">
+          {t("folderEmpty")}
+        </p>
       ) : (
         <div className="space-y-8">
           <p className="font-body-sm text-body-sm text-on-surface-variant">
-            {t("count", { count: saved.length })}
+            {t("count", { count: folderFiltered.length })}
           </p>
 
           {excellentMatches.length > 0 && (

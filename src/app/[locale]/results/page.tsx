@@ -8,6 +8,8 @@ import { ProfileService } from "@/lib/services/profile.service";
 import { MatchingService } from "@/lib/services/matching.service";
 import { FavouritesService } from "@/lib/services/favourites.service";
 import { toggleSaveAction } from "@/lib/favourites/toggle-save-action";
+import { SaveButton } from "@/components/save-button";
+import { TopMatchCard } from "@/components/top-match-card";
 import { AppShell } from "@/components/app-shell";
 import { Suspense } from "react";
 import { ResultsSkeleton } from "@/components/skeleton-wrappers";
@@ -165,97 +167,35 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
             <div className="space-y-4">
               <Suspense fallback={<ResultsSkeleton />}>
                 {categorisedTop.map(({ entry, category, categoryLabel, categoryDesc }) => (
-                  <article
+                  <TopMatchCard
                     key={entry.programme.id}
-                    className={`relative rounded-xl border border-outline-variant/40 bg-surface-container-low p-6 space-y-4 ${
-                      category === "best" ? "border-primary/50 shadow-lg" : ""
-                    }`}
-                  >
-                    <div className="flex items-start gap-4">
-                      <span
-                        className={`shrink-0 font-label-caps text-label-caps rounded-full px-3 py-1 ${
-                          category === "best"
-                            ? "bg-primary text-on-primary"
-                            : category === "safe"
-                            ? "bg-success text-on-success"
-                            : "bg-warning text-on-warning"
-                        }`}
-                      >
-                        {categoryLabel}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-3">
-                          <h3 className="font-headline-sm text-headline-sm text-primary line-clamp-1">
-                            {entry.programme.name}
-                          </h3>
-                          <form action={toggleSaveAction} className="shrink-0">
-                            <input type="hidden" name="programmeId" value={entry.programme.id} />
-                            <input type="hidden" name="isSaved" value={String(savedProgrammeIds.has(entry.programme.id))} />
-                            <button
-                              type="submit"
-                              aria-label={savedProgrammeIds.has(entry.programme.id) ? tDiscover("unsave") : tDiscover("save")}
-                              className={`flex items-center gap-2 font-label-caps text-label-caps px-4 py-2 rounded-full border transition-all active:scale-95 ${
-                                savedProgrammeIds.has(entry.programme.id)
-                                  ? "bg-primary text-on-primary border-primary"
-                                  : "bg-transparent text-primary border-primary hover:bg-surface-container"
-                              }`}
-                            >
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill={savedProgrammeIds.has(entry.programme.id) ? "currentColor" : "none"}
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                aria-hidden="true"
-                              >
-                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                              </svg>
-                              {savedProgrammeIds.has(entry.programme.id) ? tDiscover("unsave") : tDiscover("save")}
-                            </button>
-                          </form>
-                        </div>
-                        <p className="font-body-sm text-body-sm text-on-surface-variant">
-                          {entry.programme.university.name} · {entry.programme.university.city}
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        <p className="font-display-lg text-display-lg text-primary leading-none">
-                          {entry.match?.overallScore}%
-                        </p>
-                        {entry.match?.overallLabel && (
-                          <p className="font-headline-sm text-headline-sm text-on-surface-variant">
-                            {tDiscover(`label${entry.match.overallLabel.replace(/\s+/g, "")}` as Parameters<typeof tDiscover>[0])}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <p className="font-body-sm text-body-sm text-on-surface-variant">
-                      {categoryDesc}
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-4 text-sm">
-                      <span className="font-body-sm text-body-sm text-on-surface-variant">
-                        {formatTuition(entry.programme, uiLocale, tDiscover)}
-                      </span>
-                      <span className="font-body-sm text-body-sm text-on-surface-variant">
-                        {entry.programme.duration_months} {tDiscover("months")}
-                      </span>
-                      <span className="font-body-sm text-body-sm text-on-surface-variant">
-                        {entry.programme.language.name}
-                      </span>
-                    </div>
-
-                    <Link
-                      href={`/programmes/${entry.programme.id}`}
-                      className="inline-block font-label-caps text-label-caps text-primary underline hover:text-primary/80"
-                    >
-                      {t("viewDetails")}
-                    </Link>
-                  </article>
+                    data={{
+                      programmeId: entry.programme.id,
+                      programmeName: entry.programme.name,
+                      universityName: entry.programme.university.name,
+                      city: entry.programme.university.city,
+                      score: entry.match?.overallScore ?? null,
+                      label:
+                        entry.match?.overallLabel != null
+                          ? tDiscover(`label${entry.match.overallLabel.replace(/\s+/g, "")}` as Parameters<typeof tDiscover>[0])
+                          : null,
+                      tuition: formatTuition(entry.programme, uiLocale, tDiscover),
+                    }}
+                    category={category}
+                    categoryLabel={categoryLabel}
+                    categoryDesc={categoryDesc}
+                    viewDetailsLabel={t("viewDetails")}
+                    localePrefix=""
+                    actions={
+                      <SaveButton
+                        action={toggleSaveAction}
+                        programmeId={entry.programme.id}
+                        isSaved={savedProgrammeIds.has(entry.programme.id)}
+                        labelSave={tDiscover("save")}
+                        labelSaved={tDiscover("unsave")}
+                      />
+                    }
+                  />
                 ))}
               </Suspense>
             </div>
