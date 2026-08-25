@@ -8,6 +8,15 @@
 -- HEIs than 30; their complete realistic inventory is included instead of
 -- padding with fictional rows.
 
+-- Ensure all referenced country codes exist
+insert into countries (code, name)
+values
+  ('AT','Austria'),('CH','Switzerland'),('DE','Germany'),('DK','Denmark'),
+  ('ES','Spain'),('FI','Finland'),('FR','France'),('GB','United Kingdom'),
+  ('IE','Ireland'),('IT','Italy'),('NL','Netherlands'),('NO','Norway'),
+  ('PT','Portugal'),('SE','Sweden')
+on conflict (code) do nothing;
+
 -- ============================================================
 -- Universities — bulk insert
 -- ============================================================
