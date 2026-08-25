@@ -397,7 +397,7 @@ select p.id, 'EUR',
   round(b.tmin*0.04), round(b.tmax*0.04),
   round(b.tmin*0.06), round(b.tmax*0.06),
   b.tmin, b.tmax,
-  'Unikchoose internal estimate', 'public_reference', current_date
+  'Unikchoose internal estimate', NULL, current_date
 from programmes p
 join universities u on u.id = p.university_id
 join (values
