@@ -194,4 +194,5 @@ from (values
 ('University of Surrey','surrey','GB','Guildford',1966,16000,'public','small','https://www.surrey.ac.uk/'),
 ('Loughborough University','loughborough','GB','Loughborough',1966,19000,'public','small','https://www.lboro.ac.uk/')
 ) as d(name,slug,cc,city,yr,students,own,csz,site)
-where not exists (select 1 from universities u where u.name = d.name);
+where not exists (select 1 from universities u where u.name = d.name)
+  and not exists (select 1 from universities u2 where u2.slug = d.slug);

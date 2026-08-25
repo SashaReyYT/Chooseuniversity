@@ -301,7 +301,8 @@ from (values
 ('Trent University','trent','CA','Peterborough',1964,9000,'public','small','https://www.trentu.ca/'),
 ('Toronto Metropolitan University','tmu','CA','Toronto',1948,45000,'public','capital_or_large','https://www.torontomu.ca/')
 ) as d(name,slug,cc,city,yr,students,own,csz,site)
-where not exists (select 1 from universities u where u.name = d.name);
+where not exists (select 1 from universities u where u.name = d.name)
+  and not exists (select 1 from universities u2 where u2.slug = d.slug);
 
 -- ============================================================
 -- Template English programmes for every university without any
