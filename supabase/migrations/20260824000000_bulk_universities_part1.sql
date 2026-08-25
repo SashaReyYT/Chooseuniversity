@@ -169,7 +169,7 @@ from (values
 ('University College London','ucl','GB','London',1826,44000,'public','capital_or_large','https://www.ucl.ac.uk/'),
 ('University of Edinburgh','edinburgh','GB','Edinburgh',1583,41000,'public','capital_or_large','https://www.ed.ac.uk/'),
 ('University of Manchester','manchester','GB','Manchester',1824,40000,'public','capital_or_large','https://www.manchester.ac.uk/'),
-("King''s College London",'kcl','GB','London',1829,33000,'public','capital_or_large','https://www.kcl.ac.uk/'),
+('King''s College London','kcl','GB','London',1829,33000,'public','capital_or_large','https://www.kcl.ac.uk/'),
 ('London School of Economics','lse','GB','London',1895,11000,'public','capital_or_large','https://www.lse.ac.uk/'),
 ('University of Bristol','bristol','GB','Bristol',1876,25000,'public','capital_or_large','https://www.bristol.ac.uk/'),
 ('University of Warwick','warwick','GB','Coventry',1965,24000,'public','medium','https://warwick.ac.uk/'),

@@ -277,7 +277,7 @@ from (values
 ('University of Alberta','ualberta','CA','Edmonton',1908,44000,'public','capital_or_large','https://www.ualberta.ca/'),
 ('Université de Montréal','udem','CA','Montreal',1878,58000,'public','capital_or_large','https://www.umontreal.ca/en/'),
 ('McMaster University','mcmaster','CA','Hamilton',1887,37000,'public','small','https://www.mcmaster.ca/'),
-("Queen''s University at Kingston",'queens-ca','CA','Kingston',1841,30000,'public','small','https://www.queensu.ca/'),
+('Queen''s University at Kingston','queens-ca','CA','Kingston',1841,30000,'public','small','https://www.queensu.ca/'),
 ('University of Calgary','ucalgary','CA','Calgary',1966,37000,'public','capital_or_large','https://www.ucalgary.ca/'),
 ('Western University','western-on','CA','London',1878,34000,'public','small','https://www.uwo.ca/'),
 ('University of Ottawa','uottawa','CA','Ottawa',1848,48000,'public','capital_or_large','https://www2.uottawa.ca/en'),
