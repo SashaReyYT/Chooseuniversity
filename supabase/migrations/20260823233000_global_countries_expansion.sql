@@ -308,9 +308,9 @@ update programmes p set
       then ARRAY['research','academia']
     else p.career_tags
     end
-from universities u
-join fields_of_study f on f.id = p.field_of_study_id
-where p.university_id = u.id
+from universities u, fields_of_study f
+where f.id = p.field_of_study_id
+  and p.university_id = u.id
   and (p.career_tags is null or p.career_tags='{}' or p.career_notes is null);
 
 -- D3. Lifestyle tags incl. the newly added cities --------------------------
