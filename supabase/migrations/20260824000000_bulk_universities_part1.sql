@@ -103,7 +103,7 @@ from (values
 ('University of Calabria','unical','IT','Arcavacata di Rende',1972,30000,'public','small','https://www.unical.it/international'),
 ('University of Salerno','unisa-it','IT','Fisciano',1968,34000,'public','small','https://www.unisa.it/en'),
 ('University of Messina','unime','IT','Messina',1548,27000,'public','small','https://www.unime.it/en'),
-("Gran Sasso Science Institute",'gssi','IT','L''Aquila',2012,400,'public','small','https://www.gssi.it/'),
+('Gran Sasso Science Institute','gssi','IT','L''Aquila',2012,400,'public','small','https://www.gssi.it/'),
 ('University of Udine','uniud','IT','Udine',1978,15000,'public','small','https://www.uniud.it/en'),
 ('Politecnico di Torino','polito','IT','Torino',1859,35000,'public','capital_or_large','https://www.polito.it/english/'),
 ('Bocconi University','bocconi','IT','Milano',1902,15000,'private','capital_or_large','https://www.unibocconi.eu/'),
