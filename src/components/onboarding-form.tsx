@@ -50,6 +50,7 @@ const RESIDENCE_EXAM_MAP: Record<string, "nmt"> = { UA: "nmt" };
  * languages for countries they didn't choose).
  */
 const COUNTRY_LANGUAGES: Record<string, string[]> = {
+  UA: ["uk", "en"],
   CZ: ["cs", "en"],
   DE: ["de", "en"],
   AT: ["de", "en"],
@@ -63,11 +64,11 @@ const COUNTRY_LANGUAGES: Record<string, string[]> = {
   GB: ["en"],
   IE: ["en"],
   US: ["en"],
-  CA: ["en"],
-  SE: ["en"],
-  DK: ["en"],
-  FI: ["en"],
-  NO: ["en"],
+  CA: ["en", "fr"],
+  SE: ["sv", "en"],
+  DK: ["da", "en"],
+  FI: ["fi", "sv", "en"],
+  NO: ["no", "en"],
 };
 const DEFAULT_COUNTRY_LANGUAGES = ["en"];
 
