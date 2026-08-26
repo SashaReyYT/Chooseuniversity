@@ -172,23 +172,30 @@ export default async function DiscoverPage({
     { value: "lowest_cost", label: t("sortLowestCost") },
     { value: "highest_match", label: t("sortTopAcademic") },
   ];
-  // Highlight the top-scored programme as the "Top Match" card.
-  const topMatchIndex =
-    sortBy === "best_match" && profileData?.profile
-      ? entries.findIndex((e) => e.match?.overallScore != null)
-      : -1;
-
-  // ---- Pagination + intake filter --------------------------------------
+  // ---- Pagination + intake filter + dedup top matches ------------------
   const PAGE_SIZE = 24;
   const intakeFilter = sp?.intake ?? "";
-  const intakeFiltered =
-    intakeFilter === ""
+
+  // Top-match programme IDs — excluded from the list below so the same
+  // university doesn't appear twice on one page.
+  const topMatchIds = new Set(
+    profileData?.profile
       ? entries
-      : entries.filter(({ programme }) => {
-          if (!programme.intake_start) return true; // unknown → keep visible
-          const m = new Date(programme.intake_start).getUTCMonth() + 1;
-          return intakeFilter === "fall" ? m >= 7 : m < 7;
-        });
+          .filter((e) => e.match?.overallScore != null)
+          .slice(0, 3)
+          .map((e) => e.programme.id)
+      : [],
+  );
+
+  const intakeFiltered = (intakeFilter === ""
+    ? entries
+    : entries.filter(({ programme }) => {
+        if (!programme.intake_start) return true;
+        const m = new Date(programme.intake_start).getUTCMonth() + 1;
+        return intakeFilter === "fall" ? m >= 7 : m < 7;
+      })
+  ).filter(({ programme }) => !topMatchIds.has(programme.id));
+
   const shownCount = Math.min(
     Math.max(1, Number(sp?.n ?? PAGE_SIZE) || PAGE_SIZE),
     intakeFiltered.length,
@@ -474,13 +481,8 @@ export default async function DiscoverPage({
           </p>
           <div className="space-y-6">
             <Suspense fallback={<DiscoverSkeleton />}>
-              {visibleEntries.map(({ programme, match }, index) => (
+              {visibleEntries.map(({ programme, match }) => (
                 <div key={programme.id} className="relative">
-                  {index === topMatchIndex && (
-                    <span className="absolute -top-3 left-4 z-10 font-label-caps text-label-caps text-on-primary bg-primary rounded-full px-4 py-1">
-                      {t("topMatchLabel")}
-                    </span>
-                  )}
                   <ProgrammeCard
                     programme={programme}
                     match={match}

@@ -324,6 +324,9 @@ export function OnboardingForm({
   const [requirementsNew, setRequirementsNew] = useState<string[]>(() =>
     deriveInitialRequirementsNew(existingProfile),
   );
+  const [supportPreference, setSupportPreference] = useState<string>(
+    existingProfile?.support_preference ?? "",
+  );
 
   // Q8 (national exam) only makes sense for residents of a mapped country
   // who have finished school — grades 9–11 skip it entirely (no NMT
@@ -1026,6 +1029,46 @@ export function OnboardingForm({
                     </span>
                     <span className="font-headline-sm text-headline-sm text-primary">
                       {t(option.labelKey)}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Support preference — enables the International Support Fit dimension */}
+          <div className="pt-4 border-t border-outline-variant/20">
+            <h4 className="font-label-caps text-label-caps text-on-surface-variant mb-1">
+              {t("supportPrefLabel")}
+            </h4>
+            <p className="font-body-xs text-body-xs text-on-surface-variant mb-3">
+              {t("supportPrefHint")}
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: "wants_support", labelKey: "supportPrefYes" },
+                { value: "no_preference", labelKey: "supportPrefNo" },
+              ].map((opt) => {
+                const checked = supportPreference === opt.value;
+                return (
+                  <label
+                    key={opt.value}
+                    className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 cursor-pointer transition-colors ${
+                      checked
+                        ? "border-primary bg-primary-fixed/20"
+                        : "border-outline-variant bg-surface-container-lowest"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="support_preference"
+                      value={opt.value}
+                      checked={checked}
+                      onChange={() => setSupportPreference(opt.value)}
+                      className="sr-only"
+                    />
+                    <span className="font-body-sm text-body-sm text-primary">
+                      {t(opt.labelKey as Parameters<typeof t>[0])}
                     </span>
                   </label>
                 );

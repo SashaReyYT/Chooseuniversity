@@ -169,6 +169,8 @@ export async function submitOnboardingAction(
   // keeps Study-Format Fit applicable instead of permanently "no data".
   const preferredStudyFormat = "either" as const;
 
+  const supportPreference = String(formData.get("support_preference") ?? "").trim();
+
   // Q12 — new requirements (support + admission)
   const wantsScholarship = formData.get("scholarship") != null;
   const wantsDormitory = formData.get("dormitory") != null;
@@ -282,6 +284,7 @@ export async function submitOnboardingAction(
       lifestyle_preferences: _lifestylePreferences,
       career_priorities: careerTags,
       preferred_study_format: preferredStudyFormat,
+      support_preference: supportPreference || null,
     });
 
     // Q7 — per-language proficiency.
