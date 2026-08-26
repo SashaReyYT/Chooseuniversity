@@ -44,10 +44,6 @@ export async function signUp(
   const t = await getTranslations("Auth");
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  // After sign-up, redirect to the next page (onboarding).
-  // When email confirmation is off, Supabase creates a session immediately,
-  // so the user is already authenticated and can proceed to onboarding.
-  // When email confirmation is on, the middleware will redirect to sign-in.
   const next = String(formData.get("next") ?? "/onboarding").trim();
 
   if (!email || !password) {
@@ -62,16 +58,42 @@ export async function signUp(
     return { error: t("turnstileError") };
   }
 
-  const supabase = await createServerSupabaseClient();
-  const { error } = await supabase.auth.signUp({ email, password });
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
-  if (error) {
-    return { error: error.message };
+    if (error) {
+      return { error: error.message };
+    }
+
+    // If Supabase requires email confirmation, data.session will be null.
+    // In that case redirect to sign-in so the user can log in after
+    // confirming — don't try to access protected pages without a session.
+    if (!data.session) {
+      const locale = await getLocale();
+      redirect({ href: "/sign-in", locale });
+    }
+
+    // Session established — safe to redirect to onboarding.
+    const locale = await getLocale();
+    redirect({ href: next, locale });
+    return { error: null };
+  } catch (err) {
+    // rethrow redirect errors (Next.js uses these internally)
+    if (
+      err instanceof Error &&
+      ("digest" in err || err.message === "NEXT_REDIRECT")
+    ) {
+      throw err;
+    }
+    console.error("signUp unexpected error:", err);
+    return {
+      error:
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred during registration.",
+    };
   }
-
-  const locale = await getLocale();
-  redirect({ href: next, locale });
-  return { error: null };
 }
 
 export async function signIn(
