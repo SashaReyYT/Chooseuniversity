@@ -193,24 +193,25 @@ function AddProgrammePicker({
       </h2>
       <form action={addComparisonProgrammeAction} className="flex flex-wrap items-center gap-3">
         <input type="hidden" name="defaultComparisonName" value={defaultComparisonName} />
-        <label className="sr-only" htmlFor="add-programme-select">
-          {t("addProgrammeSelectPlaceholder")}
+        <label className="sr-only" htmlFor="add-programme-search">
+          {t("addProgrammeSearchPlaceholder")}
         </label>
-        <select
-          id="add-programme-select"
+        <input
+          type="search"
+          id="add-programme-search"
           name="programmeId"
-          defaultValue=""
-          className={`${formInputClassName} w-full md:w-auto md:min-w-72`}
-        >
-          <option value="" disabled>
-            {t("addProgrammeSelectPlaceholder")}
-          </option>
+          placeholder={t("addProgrammeSearchPlaceholder")}
+          className={`${formInputClassName} w-full md:w-auto md:min-w-72 flex-1`}
+          list="programme-suggestions"
+          autoComplete="off"
+        />
+        <datalist id="programme-suggestions">
           {programmes.map((p) => (
             <option key={p.id} value={p.id}>
               {p.university.name} — {p.name}
             </option>
           ))}
-        </select>
+        </datalist>
         <button type="submit" className={formSecondaryButtonClassName}>
           {t("addProgrammeCta")}
         </button>

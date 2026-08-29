@@ -337,6 +337,18 @@ export function OnboardingForm({
   const subjectsVisible = !(examVisible && nmtScoreCount > 0);
   const proficiencyVisible = selectedLanguages.length > 0;
 
+  // Calculate maximum possible steps for this user's path (for progress bar)
+  // This ensures the progress bar shows the correct total from the start
+  const maxSteps = useMemo(() => {
+    let count = 9; // Always visible: residence, targetCountries, educationStage, startYear, fieldOfStudy, languageInstruction, budget, lifestyle, extra
+    if (proficiencyVisible) count += 1; // languageProficiency
+    if (residenceCountry in RESIDENCE_EXAM_MAP && isPastSchoolStage(educationStage)) {
+      count += 1; // exam
+      if (!(nmtScoreCount > 0)) count += 1; // subjects (if no NMT scores)
+    }
+    return count;
+  }, [proficiencyVisible, residenceCountry, educationStage, nmtScoreCount]);
+
   const steps = useStepDefinitions({
     proficiencyVisible,
     examVisible,
@@ -346,7 +358,7 @@ export function OnboardingForm({
     () => steps.filter((s) => s.visible),
     [steps],
   );
-  const stepCount = visibleSteps.length;
+  const stepCount = maxSteps; // Use max steps for progress bar
   const [stepIndex, setStepIndex] = useState(0);
 
   // Resume where the user left off within this browser session — an F5

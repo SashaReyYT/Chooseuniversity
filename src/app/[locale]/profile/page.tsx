@@ -7,6 +7,7 @@ import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repos
 import { ProfileService } from "@/lib/services/profile.service";
 import { OnboardingForm } from "@/components/onboarding-form";
 import { ProfileSummary } from "@/components/profile-summary";
+import { AppShell } from "@/components/app-shell";
 import type { Database } from "@/types/database";
 
 type UserProfileRow = Database["public"]["Tables"]["user_profiles"]["Row"];
@@ -96,14 +97,16 @@ export default async function ProfilePage({
     )?.name ?? null;
 
   return (
-    <ProfileSummary
-      profile={profile}
-      nmtScores={fullProfile.nmtScores}
-      subjectStrengths={fullProfile.subjectStrengths}
-      languageProficiency={fullProfile.languageProficiency}
-      countryNames={countryNames}
-      languageNames={languageNames}
-      fieldOfStudyName={fieldOfStudyName}
-    />
+    <AppShell>
+      <ProfileSummary
+        profile={profile}
+        nmtScores={fullProfile.nmtScores}
+        subjectStrengths={fullProfile.subjectStrengths}
+        languageProficiency={fullProfile.languageProficiency}
+        countryNames={countryNames}
+        languageNames={languageNames}
+        fieldOfStudyName={fieldOfStudyName}
+      />
+    </AppShell>
   );
 }
