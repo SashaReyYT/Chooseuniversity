@@ -4,6 +4,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://unifind.org";
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -22,6 +24,13 @@ export async function generateMetadata({
   return {
     title: `Unifind — ${t("heading")}`,
     description: t("description"),
+    alternates: {
+      languages: {
+        en: `${baseUrl}/en`,
+        uk: `${baseUrl}/uk`,
+        "x-default": `${baseUrl}/en`,
+      },
+    },
   };
 }
 

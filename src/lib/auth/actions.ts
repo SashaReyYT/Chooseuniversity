@@ -130,8 +130,12 @@ export async function signIn(
 }
 
 export async function signOut(): Promise<void> {
-  const supabase = await createServerSupabaseClient();
-  await supabase.auth.signOut();
+  try {
+    const supabase = await createServerSupabaseClient();
+    await supabase.auth.signOut();
+  } catch (err) {
+    console.error("signOut error:", err);
+  }
   revalidatePath("/", "layout");
   const locale = await getLocale();
   redirect({ href: "/", locale });
@@ -189,15 +193,19 @@ export async function updatePassword(
  * owned record; afterwards we clear cookies and go home.
  */
 export async function deleteAccount(): Promise<void> {
-  const supabase = await createServerSupabaseClient();
-  // The SQL function ships in migration 20260824002000; the generated
-  // Database type's Functions map hasn't been regenerated yet, hence the
-  // targeted cast instead of waiting on codegen.
-  const rpc = supabase.rpc as unknown as (
-    fn: string,
-  ) => ReturnType<typeof supabase.rpc>;
-  await rpc("delete_own_account");
-  await supabase.auth.signOut();
+  try {
+    const supabase = await createServerSupabaseClient();
+    // The SQL function ships in migration 20260824002000; the generated
+    // Database type's Functions map hasn't been regenerated yet, hence the
+    // targeted cast instead of waiting on codegen.
+    const rpc = supabase.rpc as unknown as (
+      fn: string,
+    ) => ReturnType<typeof supabase.rpc>;
+    await rpc("delete_own_account");
+    await supabase.auth.signOut();
+  } catch (err) {
+    console.error("deleteAccount error:", err);
+  }
   revalidatePath("/", "layout");
   const locale = await getLocale();
   redirect({ href: "/", locale });
