@@ -1,6 +1,7 @@
 import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { requireRealUser } from "@/lib/auth/session";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -59,6 +60,11 @@ export default async function OnboardingPage({
           languageProficiency: [],
         },
   ]);
+
+  // If user already has a completed profile, redirect to results
+  if (fullProfile.profile) {
+    redirect({ href: "/results", locale });
+  }
 
   return (
     <OnboardingForm
