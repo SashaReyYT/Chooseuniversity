@@ -695,6 +695,7 @@ export default async function ProgrammeDetailsPage({
                     <th className="py-2 pr-4 font-normal">{t("vsRequirement")}</th>
                     <th className="py-2 pr-4 font-normal">{t("vsYou")}</th>
                     <th className="py-2 pr-4 font-normal">{t("vsStatus")}</th>
+                    <th className="py-2 pr-4 font-normal">{t("vsReason")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -742,6 +743,13 @@ export default async function ProgrammeDetailsPage({
                             <span aria-hidden="true">{style.icon}</span>
                             <span>{t(style.labelKey)}</span>
                           </p>
+                        </td>
+                        <td className="py-3">
+                          {row.status === "no" && row.reason && (
+                            <p className="font-body-sm text-body-sm text-error">
+                              {row.reason}
+                            </p>
+                          )}
                         </td>
                       </tr>
                     );

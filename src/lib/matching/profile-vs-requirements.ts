@@ -32,6 +32,8 @@ export interface ProfileVsRequirementRow {
   you: string | null;
   /** What the programme requires; null when the programme publishes nothing. */
   requirement: string | null;
+  /** Human-readable reason for the status (especially for "no"). */
+  reason: string | null;
 }
 
 export interface VsUserInput {
@@ -128,6 +130,7 @@ export function compareEnglish(
       status: "no",
       you: bestUserEnglish(input),
       requirement: null,
+      reason: "Програма не вимагає мовного сертифіката",
     };
   }
 
@@ -152,6 +155,7 @@ export function compareEnglish(
         status: meets ? "yes" : "no",
         you: `${req.qualification.name} ${formatScore(user.score)}`,
         requirement: `${req.qualification.name} ${req.minimum_score_display ?? ""}`,
+        reason: meets ? null : `Ваш бал ${formatScore(user.score)} нижче ніж потрібні ${req.minimum_score_display ?? req.minimum_score}`,
       };
     }
   }
@@ -167,6 +171,7 @@ export function compareEnglish(
         status: meets ? "yes" : "no",
         you: CEFR_ORDINAL_KEYS[userOrdinal]?.toUpperCase() ?? null,
         requirement: cefrReq.minimum_score_display ?? cefrReq.qualification.name,
+        reason: meets ? null : `Ваш рівень ${CEFR_ORDINAL_KEYS[userOrdinal]?.toUpperCase()} нижче ніж потрібний ${cefrReq.minimum_score_display ?? cefrReq.qualification.name}`,
       };
     }
     return {
@@ -174,6 +179,7 @@ export function compareEnglish(
       status: "no",
       you: null,
       requirement: cefrReq.minimum_score_display ?? cefrReq.qualification.name,
+      reason: "Немає даних про рівень англійської",
     };
   }
 
@@ -184,6 +190,7 @@ export function compareEnglish(
     requirement: reqs
       .map((r) => `${r.qualification.name} ${r.minimum_score_display ?? ""}`.trim())
       .join(" / "),
+    reason: "Немає відповідного мовного сертифіката",
   };
 }
 
@@ -206,11 +213,13 @@ export function compareMathematics(
       ? MATH_ORDINAL[input.profile.math_background]
       : null;
     if (userOrdinal != null && reqOrdinal != null) {
+      const meets = userOrdinal >= reqOrdinal;
       return {
         key: "mathematics",
-        status: userOrdinal >= reqOrdinal ? "yes" : "no",
+        status: meets ? "yes" : "no",
         you,
         requirement: reqMath,
+        reason: meets ? null : `Ваш рівень математики (${input.profile.math_background}) нижче ніж потрібний ${reqMath}`,
       };
     }
     return {
@@ -218,6 +227,7 @@ export function compareMathematics(
       status: "no",
       you,
       requirement: reqMath,
+      reason: "Не вказано рівень математики",
     };
   }
 
@@ -231,25 +241,32 @@ export function compareMathematics(
       status: "no",
       you,
       requirement: req.entrance_exam_notes ?? "Equivalent required qualification / entrance exam",
+      reason: "Потрібний вступний іспит з математики",
     };
   }
-  return { key: "mathematics", status: "no", you, requirement: null };
+  return { key: "mathematics", status: "no", you, requirement: null, reason: "Програма не вимагає математики" };
 }
 
 export function compareDegreeLevel(
   input: VsUserInput,
   programme: ProgrammeWithDetails,
-): ProfileVsRequirementRow {
+): ProfileVsRequirementRow | null {
   const req = programme.academic_requirements?.required_degree_level ?? null;
   const you = input.profile.current_education_level ?? null;
   if (!req) {
-    return { key: "degree_level", status: "no", you, requirement: null };
+    return null;
   }
   const userOrdinal = input.profile.current_education_level
     ? EDUCATION_ORDINAL[input.profile.current_education_level]
     : null;
   if (userOrdinal == null) {
-    return { key: "degree_level", status: "no", you: null, requirement: req };
+    return {
+      key: "degree_level",
+      status: "no",
+      you: null,
+      requirement: req,
+      reason: "Не вказано рівень освіти",
+    };
   }
   const meets = userOrdinal >= EDUCATION_ORDINAL[req];
   return {
@@ -257,6 +274,7 @@ export function compareDegreeLevel(
     status: meets ? "yes" : "no",
     you,
     requirement: req,
+    reason: meets ? null : `Ваш рівень освіти (${you}) нижче ніж потрібний ${req}`,
   };
 }
 
@@ -270,19 +288,19 @@ export function compareGpa(
       ? `${formatScore(input.profile.current_gpa)}/${formatScore(input.profile.current_gpa_scale)}`
       : null;
   if (req?.min_gpa == null || req.gpa_scale == null) {
-    return { key: "gpa", status: "no", you, requirement: null };
+    return { key: "gpa", status: "no", you, requirement: null, reason: "Програма не вимагає середній бал" };
   }
   const requirement = `${formatScore(req.min_gpa)}/${formatScore(req.gpa_scale)}`;
   if (
     input.profile.current_gpa == null ||
     input.profile.current_gpa_scale == null
   ) {
-    return { key: "gpa", status: "no", you: null, requirement };
+    return { key: "gpa", status: "no", you: null, requirement, reason: "Не вказано середній бал" };
   }
   const meets =
     input.profile.current_gpa / input.profile.current_gpa_scale >=
     req.min_gpa / req.gpa_scale;
-  return { key: "gpa", status: meets ? "yes" : "no", you, requirement };
+  return { key: "gpa", status: meets ? "yes" : "no", you, requirement, reason: meets ? null : `Ваш середній бал (${you}) нижче ніж потрібні ${requirement}` };
 }
 
 export function compareEntranceExam(
@@ -295,6 +313,7 @@ export function compareEntranceExam(
       status: req ? "yes" : "no",
       you: null,
       requirement: req ? "Not required" : null,
+      reason: req ? null : "Програма не вимагає вступного іспиту",
     };
   }
   return {
@@ -302,6 +321,7 @@ export function compareEntranceExam(
     status: "no",
     you: null,
     requirement: req.entrance_exam_notes ?? "Required",
+    reason: "Потрібний вступний іспит",
   };
 }
 
@@ -310,11 +330,13 @@ export function compareProfileVsRequirements(
   input: VsUserInput,
   programme: ProgrammeWithDetails,
 ): ProfileVsRequirementRow[] {
-  return [
+  const rows: ProfileVsRequirementRow[] = [
     compareEnglish(input, programme),
     compareMathematics(input, programme),
-    compareDegreeLevel(input, programme),
     compareGpa(input, programme),
     compareEntranceExam(programme),
   ];
+  const degreeLevel = compareDegreeLevel(input, programme);
+  if (degreeLevel) rows.push(degreeLevel);
+  return rows;
 }

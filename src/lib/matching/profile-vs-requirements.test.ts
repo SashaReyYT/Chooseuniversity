@@ -77,6 +77,7 @@ describe("compareEnglish (§39)", () => {
       status: "yes",
       you: "IELTS 7.0",
       requirement: "IELTS 6.5",
+      reason: null,
     });
   });
 
@@ -105,6 +106,7 @@ describe("compareEnglish (§39)", () => {
       status: "yes",
       you: "B2",
       requirement: "B2",
+      reason: null,
     });
   });
 
@@ -152,6 +154,7 @@ describe("compareMathematics (§39)", () => {
       status: "no",
       you: "NMT 186/200 · good",
       requirement: "Equivalent required qualification / entrance exam",
+      reason: "Потрібний вступний іспит з математики",
     });
   });
 
@@ -214,7 +217,9 @@ describe("compareDegreeLevel (§39)", () => {
         required_math_background: null,
       },
     });
-    expect(compareProfileVsRequirements(makeInput(), programme)[2].status).toBe("yes");
+    const rows = compareProfileVsRequirements(makeInput(), programme);
+    const degreeLevel = rows.find((r) => r.key === "degree_level");
+    expect(degreeLevel?.status).toBe("yes");
   });
 
   it("fails when the user's education level is below the requirement", () => {
@@ -234,7 +239,9 @@ describe("compareDegreeLevel (§39)", () => {
         required_math_background: null,
       },
     });
-    expect(compareProfileVsRequirements(makeInput(), programme)[2].status).toBe("no");
+    const rows = compareProfileVsRequirements(makeInput(), programme);
+    const degreeLevel = rows.find((r) => r.key === "degree_level");
+    expect(degreeLevel?.status).toBe("no");
   });
 });
 
@@ -298,6 +305,7 @@ describe("compareEntranceExam (§39)", () => {
       status: "no",
       you: null,
       requirement: "GAP test via SCIO",
+      reason: "Потрібний вступний іспит",
     });
   });
 
@@ -308,12 +316,52 @@ describe("compareEntranceExam (§39)", () => {
 });
 
 describe("compareProfileVsRequirements (§39)", () => {
-  it("always returns the five rows in spec order", () => {
-    const rows = compareProfileVsRequirements(makeInput(), makeProgramme());
-    expect(rows.map((r) => r.key)).toEqual([
+  it("returns required rows, degree_level only when programme has requirement", () => {
+    const programmeWithDegree = makeProgramme({
+      academic_requirements: {
+        id: "r",
+        programme_id: "p",
+        min_gpa: null,
+        gpa_scale: null,
+        required_subjects: [],
+        entrance_exam_required: false,
+        entrance_exam_notes: null,
+        portfolio_required: false,
+        interview_required: false,
+        notes: null,
+        required_degree_level: "bachelor",
+        required_math_background: null,
+      },
+    });
+    const rowsWithDegree = compareProfileVsRequirements(makeInput(), programmeWithDegree);
+    expect(rowsWithDegree.map((r) => r.key)).toEqual([
       "english",
       "mathematics",
+      "gpa",
+      "entrance_exam",
       "degree_level",
+    ]);
+
+    const programmeWithoutDegree = makeProgramme({
+      academic_requirements: {
+        id: "r",
+        programme_id: "p",
+        min_gpa: null,
+        gpa_scale: null,
+        required_subjects: [],
+        entrance_exam_required: false,
+        entrance_exam_notes: null,
+        portfolio_required: false,
+        interview_required: false,
+        notes: null,
+        required_degree_level: null,
+        required_math_background: null,
+      },
+    });
+    const rowsWithoutDegree = compareProfileVsRequirements(makeInput(), programmeWithoutDegree);
+    expect(rowsWithoutDegree.map((r) => r.key)).toEqual([
+      "english",
+      "mathematics",
       "gpa",
       "entrance_exam",
     ]);
