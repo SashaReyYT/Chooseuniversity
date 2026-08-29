@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 
 interface UniHit {
@@ -28,7 +28,34 @@ export function GlobalSearch() {
     programmes: [],
   });
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // Focus trap
+  const trapFocus = useCallback((e: KeyboardEvent) => {
+    if (!dialogRef.current) return;
+    const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+      'input, button, [href], [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (e.key === "Tab") {
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+  }, []);
 
   // Global hotkey
   useEffect(() => {
@@ -44,8 +71,15 @@ export function GlobalSearch() {
   }, []);
 
   useEffect(() => {
-    if (open) inputRef.current?.focus();
-  }, [open]);
+    if (open) {
+      inputRef.current?.focus();
+      document.addEventListener("keydown", trapFocus);
+    } else {
+      triggerRef.current?.focus();
+      document.removeEventListener("keydown", trapFocus);
+    }
+    return () => document.removeEventListener("keydown", trapFocus);
+  }, [open, trapFocus]);
 
   // Debounced search — short queries clear via the same deferred path so
   // react-compiler never sees a synchronous setState in an effect.
@@ -73,6 +107,7 @@ export function GlobalSearch() {
   if (!open) {
     return (
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Search"
@@ -93,7 +128,7 @@ export function GlobalSearch() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-24 px-4" role="dialog" aria-modal="true">
+    <div ref={dialogRef} className="fixed inset-0 z-[100] flex items-start justify-center pt-24 px-4" role="dialog" aria-modal="true" aria-label="Search">
       {/* backdrop */}
       <div className="absolute inset-0 bg-primary/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
 
@@ -113,6 +148,7 @@ export function GlobalSearch() {
             }
           }}
           placeholder="⌘K — search universities & programmes…"
+          aria-label="Search universities and programmes"
           className="w-full px-5 py-4 font-body-md text-body-md bg-transparent border-b border-outline-variant/40 focus:outline-none"
         />
 
@@ -121,7 +157,7 @@ export function GlobalSearch() {
             Nothing found.
           </p>
         ) : (
-          <ul className="max-h-96 overflow-y-auto divide-y divide-outline-variant/20">
+          <ul className="max-h-96 overflow-y-auto divide-y divide-outline-variant/20" aria-live="polite">
             {hits.universities.map((u) => (
               <li key={`u-${u.id}`}>
                 <button
