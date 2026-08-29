@@ -390,7 +390,9 @@
     "internationalOfficeLink": "International office",
     "housingLink": "Housing",
     "visaSupportLink": "Visa support",
-    "arrivalInfoLink": "Arrival information"
+    "arrivalInfoLink": "Arrival information",
+    "scholarships": "Scholarships",
+    "noScholarshipData": "No scholarship information available. Check the university's official website."
   },
   "Onboarding": {
     "heading": "Find your best-fit university",

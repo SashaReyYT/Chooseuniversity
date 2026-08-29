@@ -415,7 +415,9 @@
     "internationalOfficeLink": "Міжнародний офіс",
     "housingLink": "Житло",
     "visaSupportLink": "Візова підтримка",
-    "arrivalInfoLink": "Інформація для прибуття"
+    "arrivalInfoLink": "Інформація для прибуття",
+    "scholarships": "Стипендії",
+    "noScholarshipData": "Інформація про стипендії відсутня. Перевірте офіційний сайт університету."
   },
   "Onboarding": {
     "heading": "Знайдіть свій ідеальний університет",

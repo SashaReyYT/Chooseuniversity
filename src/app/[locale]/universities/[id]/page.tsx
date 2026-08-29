@@ -291,6 +291,32 @@ export default async function UniversityPage({ params }: UniversityPageProps) {
           )}
         </section>
 
+        {/* Scholarships aggregated from programmes */}
+        {(() => {
+          const scholarshipNotes = programmes
+            .map((p) => p.scholarship_notes)
+            .filter((note): note is string => Boolean(note));
+          const uniqueNotes = [...new Set(scholarshipNotes)];
+          if (uniqueNotes.length === 0) return null;
+          return (
+            <section className="space-y-4">
+              <h2 className="font-headline-sm text-headline-sm text-primary">
+                {t("scholarships")}
+              </h2>
+              <ul className="space-y-2">
+                {uniqueNotes.map((note, i) => (
+                  <li
+                    key={i}
+                    className="font-body-sm text-body-sm text-on-surface rounded-lg border border-outline-variant/40 bg-surface-container-low p-3"
+                  >
+                    {note}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })()}
+
         <section className="space-y-4 pt-4 border-t border-outline-variant/40">
           <h2 className="font-headline-sm text-headline-sm text-primary">
             {t("usefulLinks")}
