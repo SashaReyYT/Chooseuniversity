@@ -107,12 +107,12 @@ export default async function UniversityPage({ params }: UniversityPageProps) {
         }}
       />
       <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-10">
-        <Link
-          href="/discover"
-          className="font-label-caps text-label-caps text-primary underline"
-        >
-          ← {t("backToDiscover")}
-        </Link>
+        {/* Breadcrumbs */}
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant flex-wrap">
+          <Link href="/discover" className="hover:text-primary transition-colors">{tDiscover("heading")}</Link>
+          <span aria-hidden="true">/</span>
+          <span className="text-on-surface font-medium truncate">{university.name}</span>
+        </nav>
 
         {/* University cover image */}
         {university.cover_image_url && (

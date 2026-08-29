@@ -62,7 +62,7 @@ export function SignUpForm({ next = "/onboarding" }: SignUpFormProps) {
       </div>
 
       {state.error && (
-        <p className="font-body-sm text-body-sm text-error">{state.error}</p>
+        <p role="alert" className="font-body-sm text-body-sm text-error">{state.error}</p>
       )}
 
       <Turnstile siteKey={TURNSTILE_SITE_KEY} onToken={handleToken} />

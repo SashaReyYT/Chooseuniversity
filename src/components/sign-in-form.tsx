@@ -55,7 +55,7 @@ export function SignInForm({ next = "/onboarding" }: SignInFormProps) {
       </div>
 
       {state.error && (
-        <p className="font-body-sm text-body-sm text-error">{state.error}</p>
+        <p role="alert" className="font-body-sm text-body-sm text-error">{state.error}</p>
       )}
 
       <div className="text-right">

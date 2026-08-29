@@ -276,12 +276,14 @@ export default async function ProgrammeDetailsPage({
         }}
       />
       <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 space-y-10">
-      <Link
-        href="/discover"
-        className="font-label-caps text-label-caps text-primary underline"
-      >
-        ← {t("backToDiscover")}
-      </Link>
+      {/* Breadcrumbs */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant flex-wrap">
+        <Link href="/discover" className="hover:text-primary transition-colors">{tDiscover("heading")}</Link>
+        <span aria-hidden="true">/</span>
+        <Link href={`/universities/${programme.university.id}`} className="hover:text-primary transition-colors">{programme.university.name}</Link>
+        <span aria-hidden="true">/</span>
+        <span className="text-on-surface font-medium truncate">{programme.name}</span>
+      </nav>
 
 <div className="space-y-8">
           {/* Match + heading */}
@@ -312,7 +314,10 @@ export default async function ProgrammeDetailsPage({
               </p>
             )}
             <p className="font-body-md text-body-md text-on-surface-variant">
-              {programme.university.name} · {programme.university.city},{" "}
+              <Link href={`/universities/${programme.university.id}`} className="hover:text-primary transition-colors underline">
+                {programme.university.name}
+              </Link>
+              {" · "}{programme.university.city},{" "}
               {programme.university.country.name}
             </p>
           </div>
