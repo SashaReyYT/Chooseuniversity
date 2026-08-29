@@ -43,7 +43,7 @@ export default async function UniversitiesIndexPage({
 
   let query = supabase
     .from("universities")
-    .select("id, name, slug, city, country_code, founded_year, student_count, ownership_type")
+    .select("id, name, slug, city, country_code, founded_year, student_count, ownership_type, cover_image_url, logo_url")
     .eq("published", true)
     .order("name");
 
@@ -120,26 +120,37 @@ export default async function UniversitiesIndexPage({
           <Link
             key={u.id}
             href={`/${locale}/universities/${u.id}`}
-            className="group flex items-start gap-4 rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-5 hover:border-primary/50 transition-colors"
+            className="group flex flex-col gap-4 rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-5 hover:border-primary/50 transition-colors"
           >
-            <UniLogo name={u.name} className="w-12 h-12 text-lg shrink-0" />
-            <div className="min-w-0 space-y-1">
-              <h2 className="font-body-md text-body-md text-primary line-clamp-2 group-hover:underline">
-                {u.name}
-              </h2>
-              <p className="font-body-sm text-body-sm text-on-surface-variant truncate">
-                {u.city}
-                {u.founded_year != null && ` · ${t("foundedShort", { year: u.founded_year })}`}
-              </p>
-              <div className="flex flex-wrap gap-x-3 font-label-caps text-label-caps text-on-surface-variant">
-                {u.student_count != null && (
-                  <span>{t("studentsShort", { count: u.student_count })}</span>
-                )}
-                {u.ownership_type && (
-                  <span>
-                    {u.ownership_type === "public" ? t("public") : t("private")}
-                  </span>
-                )}
+            {u.cover_image_url && (
+              <div className="relative aspect-video w-full rounded-lg overflow-hidden -mx-5 -mt-5 mb-4">
+                <div
+                  className="absolute inset-0 bg-cover bg-center w-full h-full transition-transform duration-300 group-hover:scale-105"
+                  style={{ backgroundImage: `url('${u.cover_image_url}')` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent" />
+              </div>
+            )}
+            <div className="flex items-start gap-4">
+              <UniLogo name={u.name} className="w-12 h-12 text-lg shrink-0" />
+              <div className="min-w-0 space-y-1 flex-1">
+                <h2 className="font-body-md text-body-md text-primary line-clamp-2 group-hover:underline">
+                  {u.name}
+                </h2>
+                <p className="font-body-sm text-body-sm text-on-surface-variant truncate">
+                  {u.city}
+                  {u.founded_year != null && ` · ${t("foundedShort", { year: u.founded_year })}`}
+                </p>
+                <div className="flex flex-wrap gap-x-3 font-label-caps text-label-caps text-on-surface-variant">
+                  {u.student_count != null && (
+                    <span>{t("studentsShort", { count: u.student_count })}</span>
+                  )}
+                  {u.ownership_type && (
+                    <span>
+                      {u.ownership_type === "public" ? t("public") : t("private")}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </Link>
