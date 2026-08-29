@@ -74,7 +74,7 @@ describe("compareEnglish (§39)", () => {
     });
     expect(compareEnglish(makeInput(), programme)).toEqual({
       key: "english",
-      status: "meets",
+      status: "yes",
       you: "IELTS 7.0",
       requirement: "IELTS 6.5",
     });
@@ -85,7 +85,7 @@ describe("compareEnglish (§39)", () => {
       test_requirements: [makeTestRequirement({}, { minimum_score: 7.5, minimum_score_display: "7.5" })],
     });
     const row = compareEnglish(makeInput(), programme);
-    expect(row.status).toBe("fails");
+    expect(row.status).toBe("no");
     expect(row.you).toBe("IELTS 7.0");
     expect(row.requirement).toBe("IELTS 7.5");
   });
@@ -102,13 +102,13 @@ describe("compareEnglish (§39)", () => {
     });
     expect(compareEnglish(input, programme)).toEqual({
       key: "english",
-      status: "meets",
+      status: "yes",
       you: "B2",
       requirement: "B2",
     });
   });
 
-  it("returns unknown when the user has no comparable English data", () => {
+  it("returns no when the user has no comparable English data", () => {
     const programme = makeProgramme({
       test_requirements: [
         makeTestRequirement({ code: "toefl", name: "TOEFL" }, { minimum_score: 90, minimum_score_display: "90" }),
@@ -116,20 +116,20 @@ describe("compareEnglish (§39)", () => {
     });
     const input = makeInput({ testScores: [], profile: { ...makeInput().profile, english_level: null } });
     const row = compareEnglish(input, programme);
-    expect(row.status).toBe("unknown");
+    expect(row.status).toBe("no");
     expect(row.you).toBeNull();
   });
 
-  it("returns unknown with no requirement when the programme lists none", () => {
+  it("returns no with no requirement when the programme lists none", () => {
     const programme = makeProgramme({ test_requirements: [] });
     const row = compareEnglish(makeInput(), programme);
-    expect(row.status).toBe("unknown");
+    expect(row.status).toBe("no");
     expect(row.requirement).toBeNull();
   });
 });
 
 describe("compareMathematics (§39)", () => {
-  it("shows the user's NMT score and flags check when admission is exam-gated", () => {
+  it("shows the user's NMT score and flags no when admission is exam-gated", () => {
     const programme = makeProgramme({
       academic_requirements: {
         id: "r",
@@ -149,7 +149,7 @@ describe("compareMathematics (§39)", () => {
     const row = compareMathematics(makeInput(), programme);
     expect(row).toEqual({
       key: "mathematics",
-      status: "check",
+      status: "no",
       you: "NMT 186/200 · good",
       requirement: "Equivalent required qualification / entrance exam",
     });
@@ -172,7 +172,7 @@ describe("compareMathematics (§39)", () => {
         required_math_background: "average",
       },
     });
-    expect(compareMathematics(makeInput(), programme).status).toBe("meets");
+    expect(compareMathematics(makeInput(), programme).status).toBe("yes");
   });
 
   it("fails a mathematics background requirement the user is clearly below", () => {
@@ -192,7 +192,7 @@ describe("compareMathematics (§39)", () => {
         required_math_background: "excellent",
       },
     });
-    expect(compareMathematics(makeInput(), programme).status).toBe("fails");
+    expect(compareMathematics(makeInput(), programme).status).toBe("no");
   });
 });
 
@@ -214,7 +214,7 @@ describe("compareDegreeLevel (§39)", () => {
         required_math_background: null,
       },
     });
-    expect(compareProfileVsRequirements(makeInput(), programme)[2].status).toBe("meets");
+    expect(compareProfileVsRequirements(makeInput(), programme)[2].status).toBe("yes");
   });
 
   it("fails when the user's education level is below the requirement", () => {
@@ -234,14 +234,14 @@ describe("compareDegreeLevel (§39)", () => {
         required_math_background: null,
       },
     });
-    expect(compareProfileVsRequirements(makeInput(), programme)[2].status).toBe("fails");
+    expect(compareProfileVsRequirements(makeInput(), programme)[2].status).toBe("no");
   });
 });
 
 describe("compareGpa (§39)", () => {
   it("meets when the normalized user GPA clears the minimum", () => {
     const programme = makeProgramme();
-    expect(compareGpa(makeInput(), programme).status).toBe("meets");
+    expect(compareGpa(makeInput(), programme).status).toBe("yes");
   });
 
   it("fails when the normalized user GPA is below the minimum", () => {
@@ -261,22 +261,22 @@ describe("compareGpa (§39)", () => {
         required_math_background: null,
       },
     });
-    expect(compareGpa(makeInput(), programme).status).toBe("fails");
+    expect(compareGpa(makeInput(), programme).status).toBe("no");
   });
 
-  it("returns unknown when the user has no GPA on file", () => {
+  it("returns no when the user has no GPA on file", () => {
     const input = makeInput({
       profile: { ...makeInput().profile, current_gpa: null, current_gpa_scale: null },
     });
     const row = compareGpa(input, makeProgramme());
-    expect(row.status).toBe("unknown");
+    expect(row.status).toBe("no");
     expect(row.you).toBeNull();
     expect(row.requirement).toBe("3.2/4.0");
   });
 });
 
 describe("compareEntranceExam (§39)", () => {
-  it("is a check when an exam is required", () => {
+  it("is a no when an exam is required", () => {
     const programme = makeProgramme({
       academic_requirements: {
         id: "r",
@@ -295,15 +295,15 @@ describe("compareEntranceExam (§39)", () => {
     });
     expect(compareEntranceExam(programme)).toEqual({
       key: "entrance_exam",
-      status: "check",
+      status: "no",
       you: null,
       requirement: "GAP test via SCIO",
     });
   });
 
-  it("is a pass when no exam is required", () => {
+  it("is a yes when no exam is required", () => {
     const programme = makeProgramme();
-    expect(compareEntranceExam(programme).status).toBe("meets");
+    expect(compareEntranceExam(programme).status).toBe("yes");
   });
 });
 

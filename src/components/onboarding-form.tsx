@@ -571,26 +571,6 @@ export function OnboardingForm({
         {t("stepAria", { current: Math.min(stepIndex, stepCount - 1) + 1, total: stepCount })}
       </p>
 
-      {/* Segmented progress bar */}
-      <div
-        className="flex gap-1.5"
-        role="progressbar"
-        aria-valuemin={1}
-        aria-valuemax={stepCount}
-        aria-valuenow={Math.min(stepIndex, stepCount - 1) + 1}
-        aria-label={t("stepAria", { current: Math.min(stepIndex, stepCount - 1) + 1, total: stepCount })}
-      >
-        {visibleSteps.map((s, i) => (
-          <span
-            key={s.id}
-            aria-hidden="true"
-            className={`h-1 flex-1 rounded-full transition-colors ${
-              i <= stepIndex ? "bg-primary" : "bg-outline-variant/50"
-            }`}
-          />
-        ))}
-      </div>
-
       <div ref={stepPanelRef} tabIndex={-1} className="outline-none">
         <section className="space-y-2">
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">

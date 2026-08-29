@@ -78,6 +78,17 @@ export async function ProgrammeCard({
 
   return (
     <article className="bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-6 md:p-8 ambient-shadow space-y-5">
+      {/* University cover image */}
+      {programme.university.cover_image_url && (
+        <div className="relative h-32 md:h-40 rounded-lg overflow-hidden -mx-6 md:-mx-8 -mt-6 mb-4 border border-outline-variant/30">
+          <div
+            className="absolute inset-0 bg-cover bg-center w-full h-full"
+            style={{ backgroundImage: `url('${programme.university.cover_image_url}')` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent" />
+        </div>
+      )}
+
       {/* 1. Match badge */}
       {match?.overallScore != null ? (
         <div className="flex items-center gap-4 flex-wrap">
@@ -301,26 +312,7 @@ export async function ProgrammeCard({
               </div>
             )}
 
-            {restConcerns.length > 0 && tMatching && (
-              <div className="space-y-1">
-                <p className="font-label-caps text-label-caps text-on-surface-variant">
-                  {t("potentialConcerns")}
-                </p>
-                <ul className="space-y-1">
-                  {restConcerns.map((concern, index) => (
-                    <li
-                      key={index}
-                      className="font-body-sm text-body-sm text-warning flex items-start gap-2"
-                    >
-                      <span className="shrink-0" aria-hidden="true">
-                        ⚠
-                      </span>
-                      <span>{renderMatchMessage(concern, tMatching)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            
           </div>
         </details>
       )}

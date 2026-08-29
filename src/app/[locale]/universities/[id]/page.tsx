@@ -90,6 +90,17 @@ export default async function UniversityPage({ params }: UniversityPageProps) {
           ← {t("backToDiscover")}
         </Link>
 
+        {/* University cover image */}
+        {university.cover_image_url && (
+          <div className="relative h-48 md:h-64 rounded-xl overflow-hidden shadow-lg border border-outline-variant/30 mb-8">
+            <div
+              className="absolute inset-0 bg-cover bg-center w-full h-full"
+              style={{ backgroundImage: `url('${university.cover_image_url}')` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent" />
+          </div>
+        )}
+
         <header className="space-y-4">
           <div className="flex items-center gap-4">
             <UniLogo name={university.name} className="w-16 h-16 text-2xl" />

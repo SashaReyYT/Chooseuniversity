@@ -61,10 +61,8 @@ const VS_STATUS_STYLES: Record<
   VsStatus,
   { icon: string; iconClass: string; labelKey: ProgrammeDetailsKey }
 > = {
-  meets: { icon: "✓", iconClass: "text-success", labelKey: "vsMeets" },
-  fails: { icon: "✕", iconClass: "text-error", labelKey: "vsFails" },
-  check: { icon: "⚠", iconClass: "text-warning", labelKey: "vsCheckDetails" },
-  unknown: { icon: "—", iconClass: "text-neutral-variant", labelKey: "vsNoData" },
+  yes: { icon: "✓", iconClass: "text-success", labelKey: "vsYes" },
+  no: { icon: "✕", iconClass: "text-error", labelKey: "vsNo" },
 };
 
 const VS_ROW_LABEL_KEYS: Record<
@@ -179,6 +177,27 @@ export default async function ProgrammeDetailsPage({
     comparisons[0]?.programmes.some((p) => p.id === programme.id) ?? false;
   const defaultComparisonName = tDiscover("heading");
   const tMatching = match ? await getTranslations("Matching") : null;
+
+  const reasonsSection = match && tMatching && match.reasons.length > 0 ? (
+    <div className="space-y-1">
+      <p className="font-label-caps text-label-caps text-on-surface-variant">
+        {tDiscover("whyItMatches")}
+      </p>
+      <ul className="space-y-1">
+        {match.reasons.map((reason, index) => (
+          <li
+            key={index}
+            className="font-body-sm text-body-sm text-on-surface flex items-start gap-2"
+          >
+            <span className="text-success shrink-0" aria-hidden="true">
+              ✓
+            </span>
+            <span>{renderMatchMessage(reason, tMatching)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ) : null;
 
   const dateFormatter = new Intl.DateTimeFormat(uiLocale, { dateStyle: "long" });
 
@@ -517,40 +536,6 @@ export default async function ProgrammeDetailsPage({
           );
         })()}
 
-        {/* What you should know — prominent concerns */}
-        {match && match.concerns.length > 0 && (
-          <section className="rounded-xl border border-warning/40 bg-warning-fixed/10 p-6 space-y-4" aria-labelledby="what-you-should-know-heading">
-            <h2 id="what-you-should-know-heading" className="font-headline-sm text-headline-sm text-warning flex items-center gap-2">
-              <span className="material-symbols-outlined" aria-hidden="true">priority_high</span>
-              {t("whatYouShouldKnow")}
-            </h2>
-            <ul className="space-y-2">
-              {match.concerns.slice(0, 3).map((concern, index) => (
-                <li key={index} className="font-body-sm text-body-sm text-on-surface flex items-start gap-2">
-                  <span className="shrink-0 text-warning" aria-hidden="true">⚠</span>
-                  <span>{tMatching && renderMatchMessage(concern, tMatching)}</span>
-                </li>
-              ))}
-            </ul>
-            {match.concerns.length > 3 && (
-              <details className="group">
-                <summary className="cursor-pointer font-label-caps text-label-caps text-warning underline list-none inline-flex items-center gap-1">
-                  {t("showMoreConcerns", { count: match.concerns.length - 3 })}
-                  <span className="transition-transform group-open:rotate-180" aria-hidden="true">▾</span>
-                </summary>
-                <ul className="mt-2 space-y-2">
-                  {match.concerns.slice(3).map((concern, index) => (
-                    <li key={index} className="font-body-sm text-body-sm text-on-surface flex items-start gap-2">
-                      <span className="shrink-0 text-warning" aria-hidden="true">⚠</span>
-                      <span>{tMatching && renderMatchMessage(concern, tMatching)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
-          </section>
-        )}
-
         {/* Data confidence & freshness indicator */}
         {match && (
           <section className="rounded-lg border border-outline-variant/40 bg-surface-container-low p-4" aria-labelledby="data-confidence-heading">
@@ -767,8 +752,8 @@ export default async function ProgrammeDetailsPage({
           </section>
         )}
 
-        {/* Match breakdown */}
-        {match && tMatching && (
+{/* Match breakdown */}
+        {match && tMatching ? (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="font-headline-sm text-headline-sm text-primary">
@@ -831,49 +816,9 @@ export default async function ProgrammeDetailsPage({
               );
             })()}
 
-            {match.reasons.length > 0 && (
-              <div className="space-y-1">
-                <p className="font-label-caps text-label-caps text-on-surface-variant">
-                  {tDiscover("whyItMatches")}
-                </p>
-                <ul className="space-y-1">
-                  {match.reasons.map((reason, index) => (
-                    <li
-                      key={index}
-                      className="font-body-sm text-body-sm text-on-surface flex items-start gap-2"
-                    >
-                      <span className="text-success shrink-0" aria-hidden="true">
-                        ✓
-                      </span>
-                      <span>{renderMatchMessage(reason, tMatching)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {match.concerns.length > 0 && (
-              <div className="space-y-1">
-                <p className="font-label-caps text-label-caps text-on-surface-variant">
-                  {tDiscover("potentialConcerns")}
-                </p>
-                <ul className="space-y-1">
-                  {match.concerns.map((concern, index) => (
-                    <li
-                      key={index}
-                      className="font-body-sm text-body-sm text-warning flex items-start gap-2"
-                    >
-                      <span className="shrink-0" aria-hidden="true">
-                        ⚠
-                      </span>
-                      <span>{renderMatchMessage(concern, tMatching)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {reasonsSection}
           </section>
-        )}
+        ) : null}
 
         {/* Required documents (§40) */}
         <section className="space-y-2">

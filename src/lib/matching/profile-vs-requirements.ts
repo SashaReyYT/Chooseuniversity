@@ -23,7 +23,7 @@ export type VsRowKey =
   | "gpa"
   | "entrance_exam";
 
-export type VsStatus = "meets" | "check" | "fails" | "unknown";
+export type VsStatus = "yes" | "no";
 
 export interface ProfileVsRequirementRow {
   key: VsRowKey;
@@ -125,7 +125,7 @@ export function compareEnglish(
   if (reqs.length === 0) {
     return {
       key: "english",
-      status: "unknown",
+      status: "no",
       you: bestUserEnglish(input),
       requirement: null,
     };
@@ -149,7 +149,7 @@ export function compareEnglish(
       const meets = req.minimum_score == null || user.score >= req.minimum_score;
       return {
         key: "english",
-        status: meets ? "meets" : "fails",
+        status: meets ? "yes" : "no",
         you: `${req.qualification.name} ${formatScore(user.score)}`,
         requirement: `${req.qualification.name} ${req.minimum_score_display ?? ""}`,
       };
@@ -164,14 +164,14 @@ export function compareEnglish(
       const meets = userOrdinal >= Math.round(cefrReq.minimum_score ?? 0);
       return {
         key: "english",
-        status: meets ? "meets" : "fails",
+        status: meets ? "yes" : "no",
         you: CEFR_ORDINAL_KEYS[userOrdinal]?.toUpperCase() ?? null,
         requirement: cefrReq.minimum_score_display ?? cefrReq.qualification.name,
       };
     }
     return {
       key: "english",
-      status: "unknown",
+      status: "no",
       you: null,
       requirement: cefrReq.minimum_score_display ?? cefrReq.qualification.name,
     };
@@ -179,7 +179,7 @@ export function compareEnglish(
 
   return {
     key: "english",
-    status: "unknown",
+    status: "no",
     you: bestUserEnglish(input),
     requirement: reqs
       .map((r) => `${r.qualification.name} ${r.minimum_score_display ?? ""}`.trim())
@@ -208,14 +208,14 @@ export function compareMathematics(
     if (userOrdinal != null && reqOrdinal != null) {
       return {
         key: "mathematics",
-        status: userOrdinal >= reqOrdinal ? "meets" : "fails",
+        status: userOrdinal >= reqOrdinal ? "yes" : "no",
         you,
         requirement: reqMath,
       };
     }
     return {
       key: "mathematics",
-      status: "unknown",
+      status: "no",
       you,
       requirement: reqMath,
     };
@@ -228,12 +228,12 @@ export function compareMathematics(
   if (req?.entrance_exam_required) {
     return {
       key: "mathematics",
-      status: "check",
+      status: "no",
       you,
       requirement: req.entrance_exam_notes ?? "Equivalent required qualification / entrance exam",
     };
   }
-  return { key: "mathematics", status: "unknown", you, requirement: null };
+  return { key: "mathematics", status: "no", you, requirement: null };
 }
 
 export function compareDegreeLevel(
@@ -243,18 +243,18 @@ export function compareDegreeLevel(
   const req = programme.academic_requirements?.required_degree_level ?? null;
   const you = input.profile.current_education_level ?? null;
   if (!req) {
-    return { key: "degree_level", status: "unknown", you, requirement: null };
+    return { key: "degree_level", status: "no", you, requirement: null };
   }
   const userOrdinal = input.profile.current_education_level
     ? EDUCATION_ORDINAL[input.profile.current_education_level]
     : null;
   if (userOrdinal == null) {
-    return { key: "degree_level", status: "unknown", you: null, requirement: req };
+    return { key: "degree_level", status: "no", you: null, requirement: req };
   }
   const meets = userOrdinal >= EDUCATION_ORDINAL[req];
   return {
     key: "degree_level",
-    status: meets ? "meets" : "fails",
+    status: meets ? "yes" : "no",
     you,
     requirement: req,
   };
@@ -270,19 +270,19 @@ export function compareGpa(
       ? `${formatScore(input.profile.current_gpa)}/${formatScore(input.profile.current_gpa_scale)}`
       : null;
   if (req?.min_gpa == null || req.gpa_scale == null) {
-    return { key: "gpa", status: "unknown", you, requirement: null };
+    return { key: "gpa", status: "no", you, requirement: null };
   }
   const requirement = `${formatScore(req.min_gpa)}/${formatScore(req.gpa_scale)}`;
   if (
     input.profile.current_gpa == null ||
     input.profile.current_gpa_scale == null
   ) {
-    return { key: "gpa", status: "unknown", you: null, requirement };
+    return { key: "gpa", status: "no", you: null, requirement };
   }
   const meets =
     input.profile.current_gpa / input.profile.current_gpa_scale >=
     req.min_gpa / req.gpa_scale;
-  return { key: "gpa", status: meets ? "meets" : "fails", you, requirement };
+  return { key: "gpa", status: meets ? "yes" : "no", you, requirement };
 }
 
 export function compareEntranceExam(
@@ -292,14 +292,14 @@ export function compareEntranceExam(
   if (!req || !req.entrance_exam_required) {
     return {
       key: "entrance_exam",
-      status: req ? "meets" : "unknown",
+      status: req ? "yes" : "no",
       you: null,
       requirement: req ? "Not required" : null,
     };
   }
   return {
     key: "entrance_exam",
-    status: "check",
+    status: "no",
     you: null,
     requirement: req.entrance_exam_notes ?? "Required",
   };
