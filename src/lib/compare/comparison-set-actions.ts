@@ -85,3 +85,20 @@ export async function deleteComparisonSetAction(formData: FormData): Promise<voi
 
   redirect({ href: "/compare", locale });
 }
+
+/** Removes all programmes from a comparison set (keeps the set). */
+export async function clearComparisonAction(formData: FormData): Promise<void> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const locale = localeFromForm(formData);
+  const comparisonId = String(formData.get("comparisonId") ?? "");
+  if (!comparisonId) return;
+
+  await new ComparisonService(supabase).clearAllProgrammes(comparisonId);
+
+  redirect({ href: { pathname: "/compare", query: { comparisonId } }, locale });
+}

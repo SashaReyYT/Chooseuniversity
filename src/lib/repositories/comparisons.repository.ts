@@ -142,6 +142,15 @@ export class ComparisonsRepository {
     if (error) throw error;
   }
 
+  async clearAllItems(comparisonId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from("comparison_items")
+      .delete()
+      .eq("comparison_id", comparisonId);
+
+    if (error) throw error;
+  }
+
   async countItems(comparisonId: string): Promise<number> {
     const { count, error } = await this.supabase
       .from("comparison_items")

@@ -125,6 +125,10 @@ export class ComparisonService {
     return this.comparisons.removeItem(comparisonId, programmeId);
   }
 
+  clearAllProgrammes(comparisonId: string): Promise<void> {
+    return this.comparisons.clearAllItems(comparisonId);
+  }
+
   /** Bulk-fetches every programme referenced across all given comparisons in one query, rather than one query per comparison. */
   private async hydrate(
     comparisons: ComparisonWithItems[],

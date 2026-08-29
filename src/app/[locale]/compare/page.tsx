@@ -13,6 +13,7 @@ import {
   createComparisonSetAction,
   deleteComparisonSetAction,
   renameComparisonSetAction,
+  clearComparisonAction,
 } from "@/lib/compare/comparison-set-actions";
 import { ProgrammesRepository, type ProgrammeWithDetails } from "@/lib/repositories/programmes.repository";
 import type { MatchResult } from "@/lib/matching/engine";
@@ -156,6 +157,18 @@ export default async function ComparePage({
             t={t}
             tDiscover={tDiscover}
           />
+
+          {/* Clear all programmes from this comparison set */}
+          <form action={clearComparisonAction} className="flex justify-end pt-4">
+            <input type="hidden" name="comparisonId" value={activeComparison?.id ?? ""} />
+            <input type="hidden" name="locale" value={locale} />
+            <button
+              type="submit"
+              className="font-label-caps text-label-caps text-error border border-error/40 rounded-full px-4 py-2 hover:bg-error/10 transition-all active:scale-95"
+            >
+              {t("clearAll")}
+            </button>
+          </form>
         </>
       )}
 

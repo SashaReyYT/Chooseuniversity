@@ -317,6 +317,7 @@
     "deleteSetCta": "Delete comparison",
     "browseCta": "Browse programmes",
     "remove": "Remove",
+    "clearAll": "Clear all",
     "maxReached": "You can compare up to 3 programmes at a time.",
     "noticeMaxReached": "You can compare up to 3 programmes at a time — remove one before adding another.",
     "differsLegend": "Bold values differ between programmes.",
