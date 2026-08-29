@@ -121,7 +121,7 @@ export class ReferenceDataRepository {
         *,
         country:countries(*),
         accommodation(*),
-        sources:source_links(
+        sources:university_sources(
           *,
           source:sources(*)
         )

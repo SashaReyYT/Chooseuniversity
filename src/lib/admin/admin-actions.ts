@@ -631,9 +631,13 @@ export async function syncCurrencyRatesAction(): Promise<void> {
 
 export async function grantAdminAction(formData: FormData): Promise<void> {
   const supabase = await requireAdminForAction();
+  const { data: { user } } = await supabase.auth.getUser();
   const userId = String(formData.get("user_id") ?? "").trim();
   if (!userId) return;
-  const { error } = await supabase.from("admin_users").insert({ user_id: userId });
+  const { error } = await supabase.from("admin_users").insert({
+    user_id: userId,
+    granted_by: user?.id ?? null,
+  });
   if (error) throw error;
   revalidatePath("/[locale]/admin", "layout");
 }
@@ -642,6 +646,15 @@ export async function revokeAdminAction(formData: FormData): Promise<void> {
   const supabase = await requireAdminForAction();
   const userId = String(formData.get("user_id") ?? "").trim();
   if (!userId) return;
+
+  // Prevent revoking the last admin
+  const { count } = await supabase
+    .from("admin_users")
+    .select("user_id", { count: "exact", head: true });
+  if (count !== null && count <= 1) {
+    throw new Error("Cannot revoke the last admin user");
+  }
+
   const { error } = await supabase.from("admin_users").delete().eq("user_id", userId);
   if (error) throw error;
   revalidatePath("/[locale]/admin", "layout");

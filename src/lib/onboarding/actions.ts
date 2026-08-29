@@ -297,8 +297,7 @@ export async function submitOnboardingAction(
     await profileService.replaceSubjectStrengths(user.id, nmtScoreEntered ? [] : subjectStrengths);
   } catch (error) {
     console.error("Failed to save profile:", error);
-    const message = error instanceof Error ? error.message : (typeof error === 'object' && error !== null ? JSON.stringify(error) : String(error));
-    return { error: `Failed to save profile: ${message || "Unknown error"}` };
+    return { error: "Failed to save profile. Please try again." };
   }
 
   redirect(`/${locale}/results`);

@@ -1,17 +1,18 @@
 import { hasLocale } from "next-intl";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { routing } from "@/i18n/routing";
 import { Link, redirect } from "@/i18n/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { ProfileService } from "@/lib/services/profile.service";
-import { MatchingService } from "@/lib/services/matching.service";
-import { FavouritesService } from "@/lib/services/favourites.service";
-import { ComparisonService } from "@/lib/services/comparison.service";
 import {
   ProgrammesRepository,
   type ProgrammeWithDetails,
 } from "@/lib/repositories/programmes.repository";
+import { ProfileService } from "@/lib/services/profile.service";
+import { MatchingService } from "@/lib/services/matching.service";
+import { FavouritesService } from "@/lib/services/favourites.service";
+import { ComparisonService } from "@/lib/services/comparison.service";
 import { toggleSaveAction } from "@/lib/favourites/toggle-save-action";
 import { toggleCompareAction } from "@/lib/compare/toggle-compare-action";
 import { UserTestScoresRepository } from "@/lib/repositories/user-test-scores.repository";
@@ -75,6 +76,34 @@ const VS_ROW_LABEL_KEYS: Record<
   gpa: "vsGpa",
   entrance_exam: "vsEntranceExam",
 };
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/programmes/[id]">): Promise<Metadata> {
+  const { locale, id } = await params;
+  if (!hasLocale(routing.locales, locale)) return {};
+
+  const supabase = await createServerSupabaseClient();
+  const repo = new ProgrammesRepository(supabase);
+  const programme = await repo.findById(id);
+
+  if (!programme) return {};
+
+  const title = `${programme.name} — ${programme.university.name}`;
+  const description = [
+    programme.field_of_study.name,
+    programme.language.name,
+    programme.university.city,
+    programme.university.country.name,
+  ].join(" · ");
+
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { title, description },
+  };
+}
 
 const COST_CATEGORY_KEYS: {
   field: "accommodation" | "food" | "transport" | "utilities" | "internet_phone" | "study_materials" | "other";

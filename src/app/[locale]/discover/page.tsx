@@ -9,9 +9,10 @@ import { ProfileService } from "@/lib/services/profile.service";
 import { MatchingService } from "@/lib/services/matching.service";
 import { FavouritesService } from "@/lib/services/favourites.service";
 import { ComparisonService } from "@/lib/services/comparison.service";
-import { ProgrammesRepository } from "@/lib/repositories/programmes.repository";
+import { ProgrammesRepository, type ProgrammeWithDetails } from "@/lib/repositories/programmes.repository";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import { UserMatchWeightsRepository } from "@/lib/repositories/user-match-weights.repository";
+import type { MatchResult } from "@/lib/matching/engine";
 import { ProgrammeCard } from "@/components/programme-card";
 import { AppShell } from "@/components/app-shell";
 import { MatchChangesWrapper } from "@/components/match-changes-wrapper";
@@ -83,29 +84,38 @@ export default async function DiscoverPage({
   const countryFilter = sp?.country ?? "";
   const sortBy = (sp?.sort as "best_match" | "lowest_tuition" | "highest_match" | "lowest_cost") ?? "best_match";
 
-  const [entries, saved, comparisons] = await Promise.all([
-    profileData?.profile
-      ? new MatchingService(supabase)
-          .listMatchesForUser(user.id, {
-            query: searchQuery || undefined,
-            fieldOfStudyId: fieldOfStudyFilter || undefined,
-            degreeLevel: degreeFilter || undefined,
-            languageCode: languageFilter || undefined,
-            sortBy,
-          })
-          .then((ranked) => ranked.map((r) => ({ programme: r.programme, match: r.match })))
-      : new ProgrammesRepository(supabase)
-          .search({
-            query: searchQuery || undefined,
-            fieldOfStudyId: fieldOfStudyFilter || undefined,
-            degreeLevel: degreeFilter || undefined,
-            languageCode: languageFilter || undefined,
-            sortBy,
-          })
-          .then((programmes) => programmes.map((programme) => ({ programme, match: null }))),
-    favouritesService.listSavedProgrammesForUser(user.id),
-    comparisonService.listForUser(user.id),
-  ]);
+  let entries: { programme: ProgrammeWithDetails; match: MatchResult | null }[] = [];
+  let saved: Awaited<ReturnType<FavouritesService["listSavedProgrammesForUser"]>> = [];
+  let comparisons: Awaited<ReturnType<ComparisonService["listForUser"]>> = [];
+
+  try {
+    [entries, saved, comparisons] = await Promise.all([
+      profileData?.profile
+        ? new MatchingService(supabase)
+            .listMatchesForUser(user.id, {
+              query: searchQuery || undefined,
+              fieldOfStudyId: fieldOfStudyFilter || undefined,
+              degreeLevel: degreeFilter || undefined,
+              languageCode: languageFilter || undefined,
+              sortBy,
+            })
+            .then((ranked) => ranked.map((r) => ({ programme: r.programme, match: r.match })))
+        : new ProgrammesRepository(supabase)
+            .search({
+              query: searchQuery || undefined,
+              fieldOfStudyId: fieldOfStudyFilter || undefined,
+              degreeLevel: degreeFilter || undefined,
+              languageCode: languageFilter || undefined,
+              sortBy,
+            })
+            .then((programmes) => programmes.map((programme) => ({ programme, match: null }))),
+      favouritesService.listSavedProgrammesForUser(user.id),
+      comparisonService.listForUser(user.id),
+    ]);
+  } catch (err) {
+    console.error("Discover page data fetch failed:", err);
+    // Continue with empty results — page still renders
+  }
 
   const savedProgrammeIds = new Set(saved.map((s) => s.programme.id));
   const comparedProgrammeIds = new Set(
@@ -121,11 +131,19 @@ export default async function DiscoverPage({
 
   // Get filter options
   const referenceDataRepo = new ReferenceDataRepository(supabase);
-  const [fieldsOfStudy, languages, countries] = await Promise.all([
-    referenceDataRepo.listFieldsOfStudy(),
-    referenceDataRepo.listLanguages(),
-    referenceDataRepo.listCountries(),
-  ]);
+  let fieldsOfStudy: Awaited<ReturnType<ReferenceDataRepository["listFieldsOfStudy"]>> = [];
+  let languages: Awaited<ReturnType<ReferenceDataRepository["listLanguages"]>> = [];
+  let countries: Awaited<ReturnType<ReferenceDataRepository["listCountries"]>> = [];
+
+  try {
+    [fieldsOfStudy, languages, countries] = await Promise.all([
+      referenceDataRepo.listFieldsOfStudy(),
+      referenceDataRepo.listLanguages(),
+      referenceDataRepo.listCountries(),
+    ]);
+  } catch (err) {
+    console.error("Discover page reference data fetch failed:", err);
+  }
 
   // Profile summary chips (mockup "27 programmes" header): derived from
   // the stored profile, shown only when one exists.
@@ -326,6 +344,7 @@ export default async function DiscoverPage({
           <select
             name="fieldOfStudy"
             defaultValue={fieldOfStudyFilter}
+            aria-label={t("searchLabel")}
             className="font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3"
           >
             <option value="">{t("allFields")}</option>
@@ -336,6 +355,7 @@ export default async function DiscoverPage({
           <select
             name="degree"
             defaultValue={degreeFilter}
+            aria-label={t("allDegrees")}
             className="font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3"
           >
             <option value="">{t("allDegrees")}</option>
@@ -346,6 +366,7 @@ export default async function DiscoverPage({
           <select
             name="language"
             defaultValue={languageFilter}
+            aria-label={t("allLanguages")}
             className="font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3"
           >
             <option value="">{t("allLanguages")}</option>
@@ -356,6 +377,7 @@ export default async function DiscoverPage({
           <select
             name="country"
             defaultValue={countryFilter}
+            aria-label={t("allCountries")}
             className="font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3"
           >
             <option value="">{t("allCountries")}</option>

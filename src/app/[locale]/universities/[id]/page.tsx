@@ -1,6 +1,7 @@
 import { hasLocale } from "next-intl";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -14,6 +15,29 @@ import { UniLogo } from "@/components/uni-logo";
 import type { ProgrammeWithDetails } from "@/lib/repositories/programmes.repository";
 
 export const revalidate = 3600;
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/universities/[id]">): Promise<Metadata> {
+  const { locale, id } = await params;
+  if (!hasLocale(routing.locales, locale)) return {};
+
+  const supabase = await createServerSupabaseClient();
+  const repo = new ReferenceDataRepository(supabase);
+  const university = await repo.getUniversityWithDetails(id);
+
+  if (!university) return {};
+
+  const title = `${university.name} — ${university.city}, ${university.country.name}`;
+  const description = university.description?.slice(0, 160) ?? `${university.name} in ${university.city}, ${university.country.name}`;
+
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { title, description },
+  };
+}
 
 interface UniversityPageProps {
   params: Promise<{ locale: string; id: string }>;

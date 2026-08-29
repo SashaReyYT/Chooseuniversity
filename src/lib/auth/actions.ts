@@ -1,7 +1,6 @@
 "use server";
 
 import { getLocale, getTranslations } from "next-intl/server";
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { redirect } from "@/i18n/navigation";
@@ -15,13 +14,12 @@ import type { AuthFormState } from "@/lib/auth/types";
  */
 
 /**
- * Cloudflare Turnstile server-side verification. No-ops (returns true)
- * when the secret isn't configured, so local dev and self-hosted previews
- * work without registration.
+ * Cloudflare Turnstile server-side verification. Returns false
+ * when the secret isn't configured (fail closed).
  */
 async function verifyTurnstile(token: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) return true;
+  if (!secret) return false;
   if (!token) return false;
 
   try {
@@ -37,6 +35,16 @@ async function verifyTurnstile(token: string): Promise<boolean> {
   }
 }
 
+/**
+ * Validates the `next` redirect path to prevent open redirect attacks.
+ * Only allows internal paths starting with `/` without protocol.
+ */
+function safeNext(raw: string): string {
+  const next = raw.trim();
+  if (next.startsWith("/") && !next.includes("://")) return next;
+  return "/onboarding";
+}
+
 export async function signUp(
   _prevState: AuthFormState,
   formData: FormData,
@@ -44,7 +52,7 @@ export async function signUp(
   const t = await getTranslations("Auth");
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const next = String(formData.get("next") ?? "/onboarding").trim();
+  const next = safeNext(String(formData.get("next") ?? "/onboarding"));
 
   if (!email || !password) {
     return { error: t("errorMissingCredentials") };
@@ -103,7 +111,7 @@ export async function signIn(
   const t = await getTranslations("Auth");
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const next = String(formData.get("next") ?? "/onboarding").trim();
+  const next = safeNext(String(formData.get("next") ?? "/onboarding"));
 
   if (!email || !password) {
     return { error: t("errorMissingCredentials") };
@@ -148,9 +156,7 @@ export async function requestPasswordReset(
   }
 
   const supabase = await createServerSupabaseClient();
-  const h = await headers();
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  const origin = `${proto}://${h.get("host")}`;
+  const origin = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/reset`,
