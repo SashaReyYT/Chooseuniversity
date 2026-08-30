@@ -40,6 +40,8 @@ export interface MatchSearchFilters {
   tuitionMax?: number;
   livingCostMax?: number;
   sortBy?: "best_match" | "lowest_tuition" | "highest_match" | "lowest_cost";
+  countryCode?: string;
+  programmeIds?: string[];
 }
 
 /**

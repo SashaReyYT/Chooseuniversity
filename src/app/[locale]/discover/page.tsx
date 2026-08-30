@@ -97,6 +97,7 @@ export default async function DiscoverPage({
               fieldOfStudyId: fieldOfStudyFilter || undefined,
               degreeLevel: degreeFilter || undefined,
               languageCode: languageFilter || undefined,
+              countryCode: countryFilter || undefined,
               sortBy,
             })
             .then((ranked) => ranked.map((r) => ({ programme: r.programme, match: r.match })))
@@ -106,6 +107,7 @@ export default async function DiscoverPage({
               fieldOfStudyId: fieldOfStudyFilter || undefined,
               degreeLevel: degreeFilter || undefined,
               languageCode: languageFilter || undefined,
+              countryCode: countryFilter || undefined,
               sortBy,
             })
             .then((programmes) => programmes.map((programme) => ({ programme, match: null }))),

@@ -66,7 +66,9 @@ export default async function ComparePage({
   if (programmes.length > 0) {
     const profile = await new ProfileService(supabase).getForUser(user.id);
     if (profile) {
-      const matches = await new MatchingService(supabase).listMatchesForUser(user.id);
+      const matches = await new MatchingService(supabase).listMatchesForUser(user.id, {
+        programmeIds: programmes.map((p) => p.id),
+      });
       for (const ranked of matches) {
         matchById.set(ranked.programme.id, ranked.match);
       }

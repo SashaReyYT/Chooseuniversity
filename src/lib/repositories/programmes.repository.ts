@@ -55,6 +55,17 @@ const SELECT_WITH_DETAILS = `*,
   living_cost_estimates:programme_living_cost_estimates(*),
   sources:programme_sources(source:sources(*))`;
 
+const SELECT_WITH_DETAILS_INNER_UNI = `*,
+  university:universities!inner(*, country:countries(*), sources:university_sources(source:sources(*)), resources:university_resources(*), accommodation:university_accommodation(*)),
+  faculty:faculties(*),
+  field_of_study:fields_of_study(*),
+  language:languages(*),
+  academic_requirements:programme_academic_requirements(*),
+  test_requirements:programme_test_requirements(qualification:qualifications(*)),
+  tuition_variants:programme_tuition_variants(*),
+  living_cost_estimates:programme_living_cost_estimates(*),
+  sources:programme_sources(source:sources(*))`;
+
 /**
  * Supabase returns every embedded to-one relation (belongs-to a single
  * row via a foreign key) typed as an array, even though the FK guarantees
@@ -209,11 +220,14 @@ export class ProgrammesRepository {
     minMatchScore?: number;
     studyFormat?: string;
     sortBy?: "best_match" | "lowest_tuition" | "highest_match" | "lowest_cost";
+    countryCode?: string;
+    programmeIds?: string[];
   }): Promise<ProgrammeWithDetails[]> {
     // Start with the base query
+    const useInnerUni = Boolean(params.city || params.countryCode);
     let query = this.supabase
       .from("programmes")
-      .select(SELECT_WITH_DETAILS);
+      .select(useInnerUni ? SELECT_WITH_DETAILS_INNER_UNI : SELECT_WITH_DETAILS);
 
     // Text search — apply via ILIKE on multiple columns
     if (params.query && params.query.trim().length > 0) {
@@ -241,6 +255,14 @@ export class ProgrammesRepository {
 
     if (params.city) {
       query = query.ilike("university.city", `%${params.city}%`);
+    }
+
+    if (params.countryCode) {
+      query = query.eq("university.country_code", params.countryCode);
+    }
+
+    if (params.programmeIds && params.programmeIds.length > 0) {
+      query = query.in("id", params.programmeIds);
     }
 
     if (params.universityId) {

@@ -358,7 +358,7 @@ export function OnboardingForm({
     () => steps.filter((s) => s.visible),
     [steps],
   );
-  const stepCount = maxSteps; // Use max steps for progress bar
+  const stepCount = visibleSteps.length;
   const [stepIndex, setStepIndex] = useState(0);
 
   // Resume where the user left off within this browser session — an F5

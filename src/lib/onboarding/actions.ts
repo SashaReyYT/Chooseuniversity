@@ -118,7 +118,7 @@ export async function submitOnboardingAction(
     formData.get("preferred_degree_level"),
     ["foundation", "bachelor", "master", "phd", "not_sure"] as const,
   );
-  const preferredDegreeLevel = rawDegreeLevel === "not_sure" ? derivedDegreeLevel : rawDegreeLevel;
+  const preferredDegreeLevel = (rawDegreeLevel === null || rawDegreeLevel === "not_sure") ? derivedDegreeLevel : rawDegreeLevel;
 
   const startYearChoice = parseEnum(formData.get("start_year_choice"), START_YEAR_CHOICES);
   const startYear = deriveStartYear(startYearChoice);
