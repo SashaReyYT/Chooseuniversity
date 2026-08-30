@@ -5,6 +5,7 @@ import { toggleCompareAction } from "@/lib/compare/toggle-compare-action";
 import type { MatchResult } from "@/lib/matching/engine";
 import type { ProgrammeWithDetails } from "@/lib/repositories/programmes.repository";
 import { SaveButton } from "@/components/save-button";
+import { CompareButton } from "@/components/compare-button";
 import {
   BEST_FOR_KEYS,
   DIMENSION_KEYS,
@@ -222,23 +223,21 @@ export async function ProgrammeCard({
           isSaved={isSaved}
           labelSave={t("save")}
           labelSaved={t("unsave")}
+          toastSaved={t("toastSaved")}
+          toastUnsaved={t("toastUnsaved")}
           className="inline-block [&>button]:px-4 [&>button]:py-3"
         />
-        <form action={toggleCompareAction} className="inline-block">
-          <input type="hidden" name="programmeId" value={programme.id} />
-          <input type="hidden" name="isInComparison" value={String(isInComparison)} />
-          <input type="hidden" name="defaultComparisonName" value={defaultComparisonName} />
-          <button
-            type="submit"
-            className={`font-label-caps text-label-caps px-6 py-3 rounded-full border transition-all active:scale-95 ${
-              isInComparison
-                ? "bg-secondary-container text-on-secondary-container border-secondary-container"
-                : "bg-transparent text-primary border-primary hover:bg-surface-container"
-            }`}
-          >
-            {isInComparison ? t("uncompare") : t("compare")}
-          </button>
-        </form>
+        <CompareButton
+          action={toggleCompareAction}
+          programmeId={programme.id}
+          isInComparison={isInComparison}
+          defaultComparisonName={defaultComparisonName}
+          labelCompare={t("compare")}
+          labelUncompare={t("uncompare")}
+          toastCompared={t("toastCompared")}
+          toastUncompared={t("toastUncompared")}
+          className="inline-block"
+        />
       </div>
 
       {/* 7. Detailed information — collapsed by default */}

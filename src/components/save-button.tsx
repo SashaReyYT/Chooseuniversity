@@ -1,6 +1,7 @@
 "use client";
 
 import { useOptimistic, startTransition } from "react";
+import { showToast } from "@/components/toast-container";
 
 interface SaveButtonProps {
   action: (formData: FormData) => Promise<void>;
@@ -8,6 +9,8 @@ interface SaveButtonProps {
   isSaved: boolean;
   labelSave: string;
   labelSaved: string;
+  toastSaved: string;
+  toastUnsaved: string;
   className?: string;
 }
 
@@ -22,6 +25,8 @@ export function SaveButton({
   isSaved,
   labelSave,
   labelSaved,
+  toastSaved,
+  toastUnsaved,
   className = "",
 }: SaveButtonProps) {
   const [optimisticSaved, setOptimisticSaved] = useOptimistic(isSaved);
@@ -31,7 +36,10 @@ export function SaveButton({
   return (
     <form
       action={(fd: FormData) => {
-        startTransition(() => setOptimisticSaved(!saved));
+        startTransition(() => {
+          setOptimisticSaved(!saved);
+          showToast(saved ? toastUnsaved : toastSaved, "success");
+        });
         return action(fd);
       }}
       className={className}

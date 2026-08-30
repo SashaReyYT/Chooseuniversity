@@ -8,6 +8,7 @@ import { ComparisonService, type ComparisonWithProgrammes } from "@/lib/services
 import { MatchingService } from "@/lib/services/matching.service";
 import { ProfileService } from "@/lib/services/profile.service";
 import { toggleCompareAction } from "@/lib/compare/toggle-compare-action";
+import { CompareButton } from "@/components/compare-button";
 import { addComparisonProgrammeAction } from "@/lib/compare/add-programme-action";
 import {
   createComparisonSetAction,
@@ -568,16 +569,17 @@ function ComparisonTable({
                         {programme.name}
                       </Link>
                     </p>
-                    <form action={toggleCompareAction}>
-                      <input type="hidden" name="programmeId" value={programme.id} />
-                      <input type="hidden" name="isInComparison" value="true" />
-                      <button
-                        type="submit"
-                        className="font-label-caps text-label-caps text-primary border border-primary rounded-full px-4 py-2 hover:bg-surface-container transition-all active:scale-95"
-                      >
-                        {t("remove")}
-                      </button>
-                    </form>
+                    <CompareButton
+                      action={toggleCompareAction}
+                      programmeId={programme.id}
+                      isInComparison={true}
+                      defaultComparisonName={t("heading")}
+                      labelCompare=""
+                      labelUncompare={t("remove")}
+                      toastCompared={tDiscover("toastCompared")}
+                      toastUncompared={tDiscover("toastUncompared")}
+                      buttonClassName="font-label-caps text-label-caps text-primary border border-primary rounded-full px-4 py-2 hover:bg-surface-container transition-all active:scale-95 cursor-pointer"
+                    />
                   </div>
                 </th>
               ))}

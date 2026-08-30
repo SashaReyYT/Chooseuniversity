@@ -594,7 +594,7 @@ export function OnboardingForm({
         </section>
 
         {/* Q1 — residence */}
-        <div className={currentStep.id === "residence" ? "space-y-4" : "hidden"}>
+        <div className={currentStep.id === "residence" ? "space-y-4 step-transition" : "hidden"}>
           <div className="space-y-1">
             <label htmlFor="residence_country_code" className={formLabelClassName}>
               {t("residenceCountryLabel")}
@@ -642,7 +642,7 @@ export function OnboardingForm({
         </div>
 
         {/* Q2 — target country (single select) */}
-        <div className={currentStep.id === "targetCountries" ? "space-y-2" : "hidden"}>
+        <div className={currentStep.id === "targetCountries" ? "space-y-2 step-transition" : "hidden"}>
           <RadioCardGroup
             name="preferred_country_codes"
             options={supportedCountryOptions}
@@ -655,7 +655,7 @@ export function OnboardingForm({
         </div>
 
         {/* Q3 — education stage */}
-        <div className={currentStep.id === "educationStage" ? "" : "hidden"}>
+        <div className={currentStep.id === "educationStage" ? "step-transition" : "hidden"}>
           <RadioCardGroup
             name="education_stage"
             options={[
@@ -672,7 +672,7 @@ export function OnboardingForm({
         </div>
 
         {/* Q4 — start year */}
-        <div className={currentStep.id === "startYear" ? "" : "hidden"}>
+        <div className={currentStep.id === "startYear" ? "step-transition" : "hidden"}>
           <RadioCardGroup
             name="start_year_choice"
             options={[
@@ -687,7 +687,7 @@ export function OnboardingForm({
         </div>
 
         {/* Q5 — field of study: broad direction first, then the specific programme */}
-        <div className={currentStep.id === "fieldOfStudy" ? "space-y-6" : "hidden"}>
+        <div className={currentStep.id === "fieldOfStudy" ? "space-y-6 step-transition" : "hidden"}>
           <div className="space-y-3">
             <span className={formLabelClassName}>{t("categoryLabel")}</span>
             <RadioCardGroup
@@ -723,7 +723,7 @@ export function OnboardingForm({
         </div>
 
         {/* Q6 — language of instruction (only the languages of the countries picked) */}
-        <div className={currentStep.id === "languageInstruction" ? "" : "hidden"}>
+        <div className={currentStep.id === "languageInstruction" ? "step-transition" : "hidden"}>
           <ToggleCardGroup
             name="preferred_language_codes"
             options={fallbackLanguageOptions}
@@ -733,7 +733,7 @@ export function OnboardingForm({
         </div>
 
         {/* Q7 — per-language proficiency, CEFR levels */}
-        <div className={currentStep.id === "languageProficiency" ? "space-y-6" : "hidden"}>
+        <div className={currentStep.id === "languageProficiency" ? "space-y-6 step-transition" : "hidden"}>
           {selectedLanguages.map((code) => {
             const language = languages.find((l) => l.code === code);
             return (
@@ -753,7 +753,7 @@ export function OnboardingForm({
         </div>
 
         {/* Q8 — national exam (only for residents of a mapped country who've finished school) */}
-        <div className={currentStep.id === "exam" ? "space-y-5" : "hidden"}>
+        <div className={currentStep.id === "exam" ? "space-y-5 step-transition" : "hidden"}>
           <RadioCardGroup
             name="nmt_branch"
             label={t("nmtTakenLabel")}
@@ -802,7 +802,7 @@ export function OnboardingForm({
         </div>
 
         {/* Q9 — subject strengths (shown whenever no NMT score has been entered) */}
-        <div className={currentStep.id === "subjects" ? "space-y-5" : "hidden"}>
+        <div className={currentStep.id === "subjects" ? "space-y-5 step-transition" : "hidden"}>
           <div className="space-y-1">
             <span className={formLabelClassName}>{t("subjectStrengthsLabel")}</span>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
@@ -829,7 +829,7 @@ export function OnboardingForm({
         </div>
 
         {/* Q10 — budget */}
-        <div className={currentStep.id === "budget" ? "space-y-6" : "hidden"}>
+        <div className={currentStep.id === "budget" ? "space-y-6 step-transition" : "hidden"}>
           <RadioCardGroup
             name="budget_mode"
             label={t("tuitionLabel")}
@@ -856,7 +856,7 @@ export function OnboardingForm({
         </div>
 
         {/* Q11 — lifestyle preferences: city format + city features */}
-        <div className={currentStep.id === "lifestyle" ? "space-y-4" : "hidden"}>
+        <div className={currentStep.id === "lifestyle" ? "space-y-4 step-transition" : "hidden"}>
           <div className="space-y-1">
             <span className={formLabelClassName}>{t("lifestyleLabel")}</span>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
@@ -940,7 +940,7 @@ export function OnboardingForm({
         </div>
 
         {/* Q12 — extra requirements */}
-        <div className={currentStep.id === "extra" ? "space-y-4" : "hidden"}>
+        <div className={currentStep.id === "extra" ? "space-y-4 step-transition" : "hidden"}>
           <div className="space-y-1">
             <span className={formLabelClassName}>{t("requirementsLabel")}</span>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
@@ -1032,7 +1032,7 @@ export function OnboardingForm({
         </div>
 
         {/* Q13 — international student support */}
-        <div className={currentStep.id === "support" ? "space-y-4" : "hidden"}>
+        <div className={currentStep.id === "support" ? "space-y-4 step-transition" : "hidden"}>
           <RadioCardGroup
             name="support_preference"
             label={t("supportPrefLabel")}

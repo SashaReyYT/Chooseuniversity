@@ -346,6 +346,7 @@ export default async function DiscoverPage({
           <select
             name="fieldOfStudy"
             defaultValue={fieldOfStudyFilter}
+            onChange={(e) => e.target.form?.requestSubmit()}
             aria-label={t("searchLabel")}
             className="font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3"
           >
@@ -357,6 +358,7 @@ export default async function DiscoverPage({
           <select
             name="degree"
             defaultValue={degreeFilter}
+            onChange={(e) => e.target.form?.requestSubmit()}
             aria-label={t("allDegrees")}
             className="font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3"
           >
@@ -368,6 +370,7 @@ export default async function DiscoverPage({
           <select
             name="language"
             defaultValue={languageFilter}
+            onChange={(e) => e.target.form?.requestSubmit()}
             aria-label={t("allLanguages")}
             className="font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3"
           >
@@ -379,6 +382,7 @@ export default async function DiscoverPage({
           <select
             name="country"
             defaultValue={countryFilter}
+            onChange={(e) => e.target.form?.requestSubmit()}
             aria-label={t("allCountries")}
             className="font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3"
           >
@@ -390,6 +394,7 @@ export default async function DiscoverPage({
           <select
             name="intake"
             defaultValue={intakeFilter}
+            onChange={(e) => e.target.form?.requestSubmit()}
             aria-label={t("intakeLabel")}
             className="font-body-sm text-body-sm bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3"
           >

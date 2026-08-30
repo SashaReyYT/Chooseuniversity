@@ -193,6 +193,8 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
                         isSaved={savedProgrammeIds.has(entry.programme.id)}
                         labelSave={tDiscover("save")}
                         labelSaved={tDiscover("unsave")}
+                        toastSaved={tDiscover("toastSaved")}
+                        toastUnsaved={tDiscover("toastUnsaved")}
                       />
                     }
                   />

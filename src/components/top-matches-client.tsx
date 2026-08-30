@@ -76,6 +76,8 @@ export function TopMatchesClient({ topMatches, uiLocale, savedIds }: TopMatchesC
                   isSaved={savedIds.has(entry.programme.id)}
                   labelSave={t("save")}
                   labelSaved={t("unsave")}
+                  toastSaved={t("toastSaved")}
+                  toastUnsaved={t("toastUnsaved")}
                 />
               }
             />

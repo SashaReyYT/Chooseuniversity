@@ -15,6 +15,8 @@ import { FavouritesService } from "@/lib/services/favourites.service";
 import { ComparisonService } from "@/lib/services/comparison.service";
 import { toggleSaveAction } from "@/lib/favourites/toggle-save-action";
 import { toggleCompareAction } from "@/lib/compare/toggle-compare-action";
+import { SaveButton } from "@/components/save-button";
+import { CompareButton } from "@/components/compare-button";
 import { UserTestScoresRepository } from "@/lib/repositories/user-test-scores.repository";
 import { UserNmtScoresRepository } from "@/lib/repositories/user-nmt-scores.repository";
 import {
@@ -343,58 +345,27 @@ export default async function ProgrammeDetailsPage({
 
           {/* Actions */}
         <div className="flex flex-wrap gap-3">
-          <form action={toggleSaveAction}>
-            <input type="hidden" name="programmeId" value={programme.id} />
-            <input type="hidden" name="isSaved" value={String(isSaved)} />
-            <button
-              type="submit"
-              className={`font-label-caps text-label-caps px-6 py-3 rounded-full border transition-all active:scale-95 flex items-center gap-2 ${
-                isSaved
-                  ? "bg-primary text-on-primary border-primary"
-                  : "bg-transparent text-primary border-primary hover:bg-surface-container"
-              }`}
-            >
-              {/* Bookmark icon — outline when unsaved, filled when saved */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill={isSaved ? "currentColor" : "none"}
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-              </svg>
-              {isSaved ? tDiscover("unsave") : tDiscover("save")}
-            </button>
-          </form>
-          <form action={toggleCompareAction}>
-            <input type="hidden" name="programmeId" value={programme.id} />
-            <input
-              type="hidden"
-              name="isInComparison"
-              value={String(isInComparison)}
-            />
-            <input
-              type="hidden"
-              name="defaultComparisonName"
-              value={defaultComparisonName}
-            />
-            <input type="hidden" name="locale" value={locale} />
-            <button
-              type="submit"
-              className={`font-label-caps text-label-caps px-6 py-3 rounded-full border transition-all active:scale-95 ${
-                isInComparison
-                  ? "bg-secondary-container text-on-secondary-container border-secondary-container"
-                  : "bg-transparent text-primary border-primary hover:bg-surface-container"
-              }`}
-            >
-              {isInComparison ? tDiscover("uncompare") : tDiscover("compare")}
-            </button>
-          </form>
+          <SaveButton
+            action={toggleSaveAction}
+            programmeId={programme.id}
+            isSaved={isSaved}
+            labelSave={tDiscover("save")}
+            labelSaved={tDiscover("unsave")}
+            toastSaved={tDiscover("toastSaved")}
+            toastUnsaved={tDiscover("toastUnsaved")}
+            className="inline-block [&>button]:px-6 [&>button]:py-3 [&>button]:flex [&>button]:items-center [&>button]:gap-2"
+          />
+          <CompareButton
+            action={toggleCompareAction}
+            programmeId={programme.id}
+            isInComparison={isInComparison}
+            defaultComparisonName={defaultComparisonName}
+            labelCompare={tDiscover("compare")}
+            labelUncompare={tDiscover("uncompare")}
+            toastCompared={tDiscover("toastCompared")}
+            toastUncompared={tDiscover("toastUncompared")}
+            className="inline-block"
+          />
           {programme.programme_url && (
             <a
               href={programme.programme_url}
