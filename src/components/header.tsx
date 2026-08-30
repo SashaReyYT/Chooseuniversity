@@ -2,6 +2,7 @@
 import { getTranslations } from "next-intl/server";
 import { AuthNav } from "@/components/auth-nav";
 import { GlobalSearch } from "@/components/global-search";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
  * Top app bar. Navigation lives in `AppNav` (the single nav concept —
@@ -27,6 +28,7 @@ export async function Header() {
         </Link>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <GlobalSearch />
           <AuthNav />
         </div>

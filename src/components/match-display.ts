@@ -18,6 +18,74 @@ export type MatchingTranslator = Awaited<
 
 export { annualLivingCost };
 
+/** Approximate exchange rates to USD (updated 2025). Used as fallback when live rates are unavailable. */
+const APPROX_RATES_TO_USD: Record<string, number> = {
+  EUR: 1.08,
+  USD: 1,
+  GBP: 1.27,
+  CZK: 0.043,
+  PLN: 0.25,
+  CHF: 1.13,
+  SEK: 0.095,
+  DKK: 0.145,
+  NOK: 0.094,
+  UAH: 0.024,
+  CAD: 0.74,
+  AUD: 0.65,
+  JPY: 0.0067,
+  CNY: 0.14,
+  INR: 0.012,
+  BRL: 0.17,
+  TRY: 0.03,
+  RON: 0.22,
+  HUF: 0.0027,
+  BGN: 0.55,
+  RSD: 0.0092,
+  HRK: 0.14,
+  KRW: 0.00073,
+  SGD: 0.74,
+  MYR: 0.22,
+  THB: 0.028,
+  VND: 0.000039,
+  PHP: 0.017,
+  IDR: 0.000061,
+  ZAR: 0.054,
+  MXN: 0.058,
+  COP: 0.00024,
+  PEN: 0.27,
+  CLP: 0.001,
+  ARS: 0.00096,
+  EGP: 0.02,
+  NGN: 0.00064,
+  KES: 0.0077,
+  GHS: 0.064,
+};
+
+/**
+ * Converts `amount` from `fromCurrency` to USD using approximate rates.
+ * Returns the amount in USD, or the original amount if conversion is unavailable.
+ */
+export function toUsd(amount: number, fromCurrency: string): number {
+  if (fromCurrency === "USD") return amount;
+  const rate = APPROX_RATES_TO_USD[fromCurrency];
+  if (rate == null) return amount; // fallback: show original amount
+  return Math.round(amount * rate);
+}
+
+/**
+ * Formats a monetary amount in USD.
+ */
+export function formatUsd(
+  amount: number,
+  locale: string,
+): string {
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 /**
  * Shared between the discover/saved list cards and the programme detail
  * page — anywhere a `MatchResult` gets rendered should map through these
@@ -92,17 +160,15 @@ export function formatTuition(
     return t("tuitionUnknown");
   }
 
-  const money = (amount: number) =>
-    new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: programme.tuition_currency!,
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const minUsd = toUsd(programme.tuition_min, programme.tuition_currency);
+  const maxUsd = toUsd(programme.tuition_max ?? programme.tuition_min, programme.tuition_currency);
+
+  const money = (amount: number) => formatUsd(amount, locale);
 
   const amount =
-    (programme.tuition_max ?? programme.tuition_min) > programme.tuition_min
-      ? `${money(programme.tuition_min)}–${money(programme.tuition_max ?? programme.tuition_min)}`
-      : money(programme.tuition_min);
+    maxUsd > minUsd
+      ? `${money(minUsd)}–${money(maxUsd)}`
+      : money(minUsd);
 
   return `${amount} ${t("perYear")}`;
 }

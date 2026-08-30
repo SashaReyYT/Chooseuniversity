@@ -78,14 +78,20 @@ export async function ProgrammeCard({
 
   return (
     <article className="bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-6 md:p-8 ambient-shadow space-y-5">
-      {/* University cover image */}
-      {programme.university.cover_image_url && (
+      {/* University cover image or gradient fallback */}
+      {programme.university.cover_image_url ? (
         <div className="relative h-32 md:h-40 rounded-lg overflow-hidden -mx-6 md:-mx-8 -mt-6 mb-4 border border-outline-variant/30">
           <div
             className="absolute inset-0 bg-cover bg-center w-full h-full"
             style={{ backgroundImage: `url('${programme.university.cover_image_url}')` }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent" />
+        </div>
+      ) : (
+        <div className="relative h-32 md:h-40 rounded-lg overflow-hidden -mx-6 md:-mx-8 -mt-6 mb-4 border border-outline-variant/30 bg-gradient-to-br from-primary-container to-primary-fixed flex items-center justify-center">
+          <span className="font-headline-lg text-headline-lg text-on-primary-container opacity-60">
+            {programme.university.name.split(" ").map((w) => w[0]).join("").slice(0, 3).toUpperCase()}
+          </span>
         </div>
       )}
 

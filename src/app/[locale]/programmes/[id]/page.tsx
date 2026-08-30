@@ -28,6 +28,8 @@ import {
   formatTuition,
   LABEL_KEYS,
   renderMatchMessage,
+  toUsd,
+  formatUsd,
 } from "@/components/match-display";
 import { annualLivingCost } from "@/lib/matching/utils";
 import type { ProgrammeStudyMode, SourceType } from "@/types/database";
@@ -436,11 +438,7 @@ export default async function ProgrammeDetailsPage({
               value={
                 programme.application_fee_amount != null &&
                 programme.application_fee_currency
-                  ? new Intl.NumberFormat(uiLocale, {
-                      style: "currency",
-                      currency: programme.application_fee_currency,
-                      maximumFractionDigits: 0,
-                    }).format(programme.application_fee_amount)
+                  ? formatUsd(toUsd(programme.application_fee_amount, programme.application_fee_currency), uiLocale)
                   : t("notSpecified")
               }
             />
@@ -448,11 +446,7 @@ export default async function ProgrammeDetailsPage({
               programme.living_cost_currency && (
                 <Fact
                   label={t("factLivingCost")}
-                  value={`${new Intl.NumberFormat(uiLocale, {
-                    style: "currency",
-                    currency: programme.living_cost_currency,
-                    maximumFractionDigits: 0,
-                  }).format(programme.estimated_living_cost_monthly)} / ${tDiscover("months")}`}
+                  value={`${formatUsd(toUsd(programme.estimated_living_cost_monthly, programme.living_cost_currency), uiLocale)} / ${tDiscover("months")}`}
                 />
               )}
             {programme.estimated_living_cost_monthly != null &&
@@ -463,17 +457,11 @@ export default async function ProgrammeDetailsPage({
                   label={t("factEstimatedTotalCost")}
                   value={(() => {
                     const living = annualLivingCost(programme);
-                    const min = programme.tuition_min! + living;
-                    const max = programme.tuition_max! + living;
-                    const money = (amount: number) =>
-                      new Intl.NumberFormat(uiLocale, {
-                        style: "currency",
-                        currency: programme.tuition_currency!,
-                        maximumFractionDigits: 0,
-                      }).format(amount);
+                    const min = toUsd(programme.tuition_min! + living, programme.tuition_currency!);
+                    const max = toUsd(programme.tuition_max! + living, programme.tuition_currency!);
                     return max > min
-                      ? `${money(min)}–${money(max)}`
-                      : money(min);
+                      ? `${formatUsd(min, uiLocale)}–${formatUsd(max, uiLocale)}`
+                      : formatUsd(min, uiLocale);
                   })()}
                 />
               )}
@@ -516,12 +504,7 @@ export default async function ProgrammeDetailsPage({
           const totalMin = tuitionMin + annualLiving + annualAccommodationMin + applicationFee;
           const totalMax = tuitionMax + annualLiving + annualAccommodationMax + applicationFee;
 
-          const money = (amount: number) =>
-            new Intl.NumberFormat(uiLocale, {
-              style: "currency",
-              currency,
-              maximumFractionDigits: 0,
-            }).format(amount);
+          const money = (amount: number) => formatUsd(toUsd(amount, currency), uiLocale);
 
           return (
             <section className="rounded-xl border border-primary/40 bg-primary-fixed/10 p-6 space-y-4" aria-labelledby="yearly-cost-heading">
@@ -682,12 +665,7 @@ export default async function ProgrammeDetailsPage({
             </h2>
             <ul className="space-y-2">
               {programme.tuition_variants.map((variant) => {
-                const money = (amount: number) =>
-                  new Intl.NumberFormat(uiLocale, {
-                    style: "currency",
-                    currency: variant.currency,
-                    maximumFractionDigits: 0,
-                  }).format(amount);
+                const money = (amount: number) => formatUsd(toUsd(amount, variant.currency), uiLocale);
                 const periodKey =
                   variant.period === "per_semester"
                     ? "perSemester"
@@ -1404,11 +1382,7 @@ function formatMoney(
   currency: string,
   uiLocale: string,
 ): string {
-  return new Intl.NumberFormat(uiLocale, {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatUsd(toUsd(amount, currency), uiLocale);
 }
 
 function formatCostRange(

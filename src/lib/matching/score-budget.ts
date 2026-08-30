@@ -60,7 +60,6 @@ export function scoreBudgetFit(
   const reasons: MatchMessage[] = [];
   const concerns: MatchMessage[] = [];
 
-  const isApproximate = profile.budget_max == null;
   const budgetMax = profile.budget_max ?? BUDGET_MODE_CEILINGS_EUR[profile.budget_mode] ?? null;
 
   if (budgetMax == null) {
@@ -72,10 +71,6 @@ export function scoreBudgetFit(
       reasons,
       concerns: [translated("budget.missingBudget")],
     };
-  }
-
-  if (isApproximate) {
-    concerns.push(translated("budget.approximateFromMode"));
   }
 
   // Tuition unknown (a programme is catalogued only when its tuition is

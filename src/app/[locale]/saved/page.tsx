@@ -102,18 +102,25 @@ export default async function SavedPage({
   const matchProfile = profileData ? toMatchProfile(profileData) : null;
 
   // Group by match level (§37), respecting the active folder filter
+  // Sort each group by match percentage (highest first)
+  const sortByMatch = (a: typeof saved[number], b: typeof saved[number]) => {
+    const scoreA = matchesById.get(a.programme.id)?.overallScore ?? 0;
+    const scoreB = matchesById.get(b.programme.id)?.overallScore ?? 0;
+    return scoreB - scoreA;
+  };
+
   const excellentMatches = groupIf(({ programme }) => {
     const m = matchesById.get(programme.id);
     return m?.overallLabel === "Excellent Fit";
-  });
+  }).sort(sortByMatch);
   const strongMatches = groupIf(({ programme }) => {
     const m = matchesById.get(programme.id);
     return m?.overallLabel === "Strong Fit";
-  });
+  }).sort(sortByMatch);
   const otherSaved = groupIf(({ programme }) => {
     const m = matchesById.get(programme.id);
     return !m || (m.overallLabel !== "Excellent Fit" && m.overallLabel !== "Strong Fit");
-  });
+  }).sort(sortByMatch);
 
   const folderTabs: { value: string; labelKey: "folderAll" | "folderNone" | "folderDream" | "folderTarget" | "folderSafety" }[] = [
     { value: "all", labelKey: "folderAll" },
