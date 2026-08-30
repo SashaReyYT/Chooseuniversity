@@ -1,15 +1,23 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+/** Subscribe no-op — we only need the snapshot, not a live subscription. */
+const subscribe = () => () => {};
+
+/** On the server / before hydration, always treat as "not mounted". */
+const getServerSnapshot = () => false;
+
+/** After hydration, the component is mounted. */
+const getSnapshot = () => true;
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // useSyncExternalStore eliminates the setState-in-useEffect anti-pattern:
+  // returns false on the server and on the first render, true afterwards.
+  const mounted = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const isDark = mounted
     ? theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
