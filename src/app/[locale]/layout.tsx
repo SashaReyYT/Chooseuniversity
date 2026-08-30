@@ -3,7 +3,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import { ThemeProvider } from "@/components/theme-provider";
+import { Providers } from "@/components/providers";
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://unifind.org";
 
@@ -53,11 +53,11 @@ export default async function RootLayout({
   return (
     <html lang={locale} className="antialiased" suppressHydrationWarning>
       <body className="bg-background text-on-background font-body-md min-h-screen">
-        <ThemeProvider>
+        <Providers>
           <NextIntlClientProvider>
             {children}
           </NextIntlClientProvider>
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );
