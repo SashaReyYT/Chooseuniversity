@@ -17,6 +17,16 @@ import { determineBestForLabel } from "@/lib/matching/best-for";
 import type { MatchUserProfile } from "@/lib/matching/match-types";
 import { getDimensionExplanation } from "@/lib/matching/explanations";
 
+/** Sanitize a URL for use in CSS background-image — only allow https/http URLs. */
+function sanitizeCssUrl(url: string | null | undefined): string {
+  if (!url) return "";
+  const trimmed = url.trim();
+  if (trimmed.startsWith("https://") || trimmed.startsWith("http://")) {
+    return trimmed;
+  }
+  return "";
+}
+
 interface ProgrammeCardProps {
   programme: ProgrammeWithDetails;
   /** Null when browsing without a profile — the card degrades gracefully rather than requiring a match to render at all. */
@@ -83,7 +93,7 @@ export async function ProgrammeCard({
         <div className="relative h-32 md:h-40 rounded-lg overflow-hidden -mx-6 md:-mx-8 -mt-6 mb-4 border border-outline-variant/30">
           <div
             className="absolute inset-0 bg-cover bg-center w-full h-full"
-            style={{ backgroundImage: `url('${programme.university.cover_image_url}')` }}
+            style={{ backgroundImage: `url('${sanitizeCssUrl(programme.university.cover_image_url)}')` }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent" />
         </div>

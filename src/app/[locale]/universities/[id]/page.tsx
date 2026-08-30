@@ -8,11 +8,16 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ProgrammesRepository } from "@/lib/repositories/programmes.repository";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import { AppShell } from "@/components/app-shell";
-import { formatTuition } from "@/components/match-display";
+import { formatTuition, toUsd, formatUsd } from "@/components/match-display";
 import { Suspense } from "react";
 import { UniversitySkeleton } from "@/components/skeleton-wrappers";
 import { UniLogo } from "@/components/uni-logo";
 import type { ProgrammeWithDetails } from "@/lib/repositories/programmes.repository";
+
+/** Safely serialize data for JSON-LD script tags, escaping </script> sequences. */
+function safeJsonLd(data: Record<string, unknown>): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
 
 export const revalidate = 3600;
 
@@ -92,7 +97,7 @@ export default async function UniversityPage({ params }: UniversityPageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "CollegeOrUniversity",
             name: university.name,
@@ -415,9 +420,5 @@ export default async function UniversityPage({ params }: UniversityPageProps) {
 }
 
 function formatMoney(amount: number, currency: string, uiLocale: string): string {
-  return new Intl.NumberFormat(uiLocale, {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatUsd(toUsd(amount, currency), uiLocale);
 }

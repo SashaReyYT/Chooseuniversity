@@ -18,7 +18,7 @@ import {
 import { ProgrammesRepository, type ProgrammeWithDetails } from "@/lib/repositories/programmes.repository";
 import type { MatchResult } from "@/lib/matching/engine";
 import type { MatchDimensionKey } from "@/lib/matching/match-types";
-import { DIMENSION_KEYS, formatTuition, annualLivingCost, type DiscoverTranslator } from "@/components/match-display";
+import { DIMENSION_KEYS, formatTuition, annualLivingCost, toUsd, formatUsd, type DiscoverTranslator } from "@/components/match-display";
 import { formDangerButtonClassName, formInputClassName, formSecondaryButtonClassName } from "@/components/form-styles";
 import { AppShell } from "@/components/app-shell";
 import { TrackView } from "@/components/track-view";
@@ -335,11 +335,7 @@ function buildRows(
   const rows: ComparisonRow[] = [];
 
   const formatMoney = (amount: number, currency: string) =>
-    new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 0,
-    }).format(amount);
+    formatUsd(toUsd(amount, currency), locale);
 
   // Match Score + category scores — only when profile-based matching is
   // available (§38: comparison includes Match Score and category scores).
@@ -659,11 +655,10 @@ function DecisionSummary({
   const withTuition = sorted.filter((p) => p.tuition_min != null && p.tuition_currency);
   let bestValue: ProgrammeWithDetails | null = null;
   if (withTuition.length > 0) {
-    // Normalize tuition to a common currency (use first programme's currency as base)
-    const baseCurrency = withTuition[0].tuition_currency!;
+    // Normalize tuition to USD for fair cross-currency comparison
     const tuitionScores = withTuition.map((p) => {
       const match = matchById.get(p.id)!;
-      const tuition = p.tuition_currency === baseCurrency ? p.tuition_min! : p.tuition_min! * 1; // simplified
+      const tuition = toUsd(p.tuition_min!, p.tuition_currency ?? "EUR");
       return { programme: p, score: match.overallScore!, tuition };
     });
     // Best value = high score, low tuition ratio

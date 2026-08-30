@@ -40,6 +40,11 @@ import { TrackView } from "@/components/track-view";
 import { SimilarProgrammes } from "@/components/similar-programmes";
 import { ReportIssueForm } from "@/components/report-issue-form";
 
+/** Safely serialize data for JSON-LD script tags, escaping </script> sequences. */
+function safeJsonLd(data: Record<string, unknown>): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
 /** Compile-time checked message keys of the ProgrammeDetails namespace (mirrors DiscoverKey in match-display). */
 type ProgrammeDetailsKey = Parameters<
   Awaited<ReturnType<typeof getTranslations<"ProgrammeDetails">>>
@@ -252,7 +257,7 @@ export default async function ProgrammeDetailsPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "Course",
             name: programme.name,
@@ -457,8 +462,9 @@ export default async function ProgrammeDetailsPage({
                   label={t("factEstimatedTotalCost")}
                   value={(() => {
                     const living = annualLivingCost(programme);
-                    const min = toUsd(programme.tuition_min! + living, programme.tuition_currency!);
-                    const max = toUsd(programme.tuition_max! + living, programme.tuition_currency!);
+                    const tuitionCurrency = programme.tuition_currency!;
+                    const min = toUsd(programme.tuition_min! + living, tuitionCurrency);
+                    const max = toUsd((programme.tuition_max ?? programme.tuition_min!) + living, tuitionCurrency);
                     return max > min
                       ? `${formatUsd(min, uiLocale)}–${formatUsd(max, uiLocale)}`
                       : formatUsd(min, uiLocale);
@@ -1188,7 +1194,7 @@ function AdmissionOutlook({
 }: {
   t: Awaited<ReturnType<typeof getTranslations<"ProgrammeDetails">>>;
   profile: { english_level: string | null; math_background: string | null; current_education_level: string | null; current_gpa: number | null } | null;
-  programme: { academic_requirements: { entrance_exam_required: boolean | null; min_gpa: number | null; gpa_scale: number | null } | null; test_requirements: Array<{ qualification: { name: string } }> | null } | null;
+  programme: { academic_requirements: { entrance_exam_required: boolean | null; min_gpa: number | null; gpa_scale: number | null } | null; test_requirements: Array<{ qualification: { name: string }; minimum_score_display: string | null }> | null } | null;
 }) {
   const checks = [];
 
@@ -1223,7 +1229,11 @@ function AdmissionOutlook({
   if (profile?.english_level) {
     const userLevel = profile.english_level;
     const levelOrder = { a0: 0, a1: 1, a2: 2, b1: 3, b2: 4, c1: 5, c2: 6 };
-    const requiredLevel = "b2"; // default assumption
+    // Try to extract required level from programme's test requirements (e.g. "IELTS 6.5" → "b2")
+    const levelMatch = programme?.test_requirements?.find(
+      (r) => /a[0-2]|b[1-2]|c[1-2]/i.test(r.minimum_score_display ?? "")
+    )?.minimum_score_display?.toLowerCase().match(/(a[0-2]|b[1-2]|c[1-2])/);
+    const requiredLevel = levelMatch ? levelMatch[1] : "b2";
     const userIdx = levelOrder[userLevel as keyof typeof levelOrder] ?? 3;
     const reqIdx = levelOrder[requiredLevel as keyof typeof levelOrder] ?? 3;
     const meets = userIdx >= reqIdx;

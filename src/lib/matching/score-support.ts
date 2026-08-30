@@ -1,4 +1,4 @@
-import type { ProgrammeWithDetails } from "./types";
+import type { ProgrammeWithDetails } from "./match-types";
 import type { Database } from "@/types/database";
 import { roundScore } from "./utils";
 import type { MatchDimensionResult, MatchUserProfile } from "./match-types";
