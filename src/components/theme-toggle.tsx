@@ -1,20 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
 import { useTheme } from "next-themes";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-
-  // Initialize theme from localStorage or system preference on mount
-  useEffect(() => {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const storedTheme = localStorage.getItem("unifind-theme");
-    
-    // Set the initial theme based on: stored preference > system preference > light default
-    const initialTheme = storedTheme || (prefersDark ? "dark" : "light");
-    setTheme(initialTheme);
-  }, [setTheme]);
 
   const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 

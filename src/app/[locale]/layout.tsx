@@ -51,12 +51,7 @@ export default async function RootLayout({
   setRequestLocale(locale);
 
   return (
-    <ThemeProvider
-      storageKey="unifind-theme"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
+    <ThemeProvider>
       <html lang={locale} className="antialiased" suppressHydrationWarning>
         <body className="bg-background text-on-background font-body-md min-h-screen">
           <NextIntlClientProvider>
