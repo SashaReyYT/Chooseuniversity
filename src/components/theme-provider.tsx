@@ -3,11 +3,12 @@
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import type { ReactNode, ComponentPropsWithoutRef } from "react";
 
-type ThemeProviderProps = ComponentPropsWithoutRef<typeof NextThemesProvider>;
-
-export function ThemeProvider({ children, ...props }: ThemeProviderProps & { children: ReactNode }) {
+export function ThemeProvider({ children, storageKey, ...props }: { children: ReactNode; storageKey?: string } & ComponentPropsWithoutRef<typeof NextThemesProvider>) {
   return (
-    <NextThemesProvider {...props}>
+    <NextThemesProvider
+      storageKey={storageKey}
+      {...props}
+    >
       {children}
     </NextThemesProvider>
   );

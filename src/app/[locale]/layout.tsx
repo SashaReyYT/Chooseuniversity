@@ -56,6 +56,7 @@ export default async function RootLayout({
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange
+      storageKey="unifind-theme"
     >
       <html lang={locale} className="antialiased" suppressHydrationWarning>
         <body className="bg-background text-on-background font-body-md min-h-screen">
