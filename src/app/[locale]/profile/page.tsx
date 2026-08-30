@@ -2,6 +2,7 @@ import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { Link, redirect } from "@/i18n/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import { ProfileService } from "@/lib/services/profile.service";
@@ -61,9 +62,12 @@ export default async function ProfilePage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const fullProfile = user
-    ? await new ProfileService(supabase).getFullProfileForUser(user.id)
-    : null;
+  if (!user) {
+    redirect({ href: "/sign-up?next=/profile", locale });
+    return;
+  }
+
+  const fullProfile = await new ProfileService(supabase).getFullProfileForUser(user.id);
 
   if (!fullProfile?.profile) {
     const wizardData = await loadWizardData();

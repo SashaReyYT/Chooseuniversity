@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { getCurrentUser } from "@/lib/auth/session";
 
 const NAV_ITEMS = [
   { href: "/discover" as const, key: "navDiscover" as const, icon: "explore" },
@@ -14,9 +15,14 @@ const NAV_ITEMS = [
  * desktop layout. One component handles both — `hidden`/`flex` swap at
  * the `md` breakpoint rather than two separate components, since the
  * link list and labels are identical either way.
+ *
+ * Protected pages (discover, saved, compare, profile) redirect to
+ * sign-up when the visitor is not authenticated.
  */
 export async function AppNav() {
   const t = await getTranslations("Nav");
+  const user = await getCurrentUser();
+  const isLoggedIn = user && user.is_anonymous !== true;
 
   return (
     <nav
@@ -31,7 +37,7 @@ export async function AppNav() {
       {NAV_ITEMS.map((item) => (
         <Link
           key={item.href}
-          href={item.href}
+          href={isLoggedIn ? item.href : `/sign-up?next=${encodeURIComponent(item.href)}`}
           className="
             flex flex-1 flex-col items-center justify-center gap-1 py-2
             font-label-caps text-label-caps text-on-surface-variant

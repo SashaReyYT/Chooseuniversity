@@ -38,18 +38,7 @@ export default async function SavedPage({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    // Shouldn't happen — src/proxy.ts establishes an anonymous session for
-    // every visitor — but if it somehow does (session establishment
-    // failed, cookies blocked), send the visitor home rather than a bare
-    // 404, which would misleadingly imply the page itself doesn't exist.
-    //
-    // The extra `return` below is deliberate, not dead code: next-intl's
-    // `redirect` is typed to return `never`, but its signature is complex
-    // enough (generic/conditional on path params) that TypeScript's
-    // control-flow narrowing doesn't reliably pick that up — without this
-    // `return`, TS still treats `user` as possibly null afterwards even
-    // though this branch always exits at runtime.
-    redirect({ href: "/", locale });
+    redirect({ href: "/sign-up?next=/saved", locale });
     return;
   }
 

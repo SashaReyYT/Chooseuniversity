@@ -36,7 +36,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/${locale}`);
+    redirect(`/${locale}/sign-up?next=/results`);
     return;
   }
 
