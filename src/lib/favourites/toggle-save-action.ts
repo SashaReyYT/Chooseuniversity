@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { FavouritesService } from "@/lib/services/favourites.service";
+import { requireRealUser } from "@/lib/auth/session";
 
 /**
  * Toggles a programme's saved status for the current user. Used from a
@@ -12,13 +13,10 @@ import { FavouritesService } from "@/lib/services/favourites.service";
  * saved) without a manual reload.
  */
 export async function toggleSaveAction(formData: FormData): Promise<void> {
+  "use server";
+  const user = await requireRealUser("/saved");
+
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return;
-
   const programmeId = String(formData.get("programmeId") ?? "");
   if (!programmeId) return;
 

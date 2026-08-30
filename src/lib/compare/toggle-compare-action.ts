@@ -7,6 +7,7 @@ import {
   ComparisonService,
 } from "@/lib/services/comparison.service";
 import { redirect } from "@/i18n/navigation";
+import { requireRealUser } from "@/lib/auth/session";
 
 /**
  * Toggles a programme's presence in the current user's comparison set.
@@ -23,12 +24,11 @@ import { redirect } from "@/i18n/navigation";
  * dropping the request.
  */
 export async function toggleCompareAction(formData: FormData): Promise<void> {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  "use server";
+  const user = await requireRealUser("/compare");
 
-  if (!user) return;
+  const supabase = await createServerSupabaseClient();
+  const locale = await getLocale();
 
   const programmeId = String(formData.get("programmeId") ?? "");
   if (!programmeId) return;
@@ -37,7 +37,6 @@ export async function toggleCompareAction(formData: FormData): Promise<void> {
   const defaultComparisonName = String(
     formData.get("defaultComparisonName") ?? "Comparison",
   );
-  const locale = await getLocale();
 
   const comparisonService = new ComparisonService(supabase);
   const comparison = await comparisonService.getOrCreateDefaultComparison(
