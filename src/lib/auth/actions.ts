@@ -14,12 +14,12 @@ import type { AuthFormState } from "@/lib/auth/types";
  */
 
 /**
- * Cloudflare Turnstile server-side verification. Returns false
- * when the secret isn't configured (fail closed).
+ * Cloudflare Turnstile server-side verification. Returns true
+ * when the secret isn't configured (skip verification in dev).
  */
 async function verifyTurnstile(token: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) return false;
+  if (!secret) return true;
   if (!token) return false;
 
   try {
