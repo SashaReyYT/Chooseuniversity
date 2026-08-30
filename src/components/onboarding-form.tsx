@@ -136,7 +136,6 @@ function useStepDefinitions(ctx: {
   proficiencyVisible: boolean;
   examVisible: boolean;
   subjectsVisible: boolean;
-  degreeLevelVisible: boolean;
 }) {
   return useMemo(
     () =>
@@ -144,18 +143,18 @@ function useStepDefinitions(ctx: {
         { id: "residence", titleKey: "step1Title", subtitleKey: "step1Subtitle", visible: true },
         { id: "targetCountries", titleKey: "step2Title", subtitleKey: "step2Subtitle", visible: true },
         { id: "educationStage", titleKey: "step3Title", subtitleKey: "step3Subtitle", visible: true },
-        { id: "degreeLevel", titleKey: "step4Title", subtitleKey: "step4Subtitle", visible: ctx.degreeLevelVisible },
-        { id: "startYear", titleKey: "step5Title", subtitleKey: "step5Subtitle", visible: true },
-        { id: "fieldOfStudy", titleKey: "step6Title", subtitleKey: "step6Subtitle", visible: true },
-        { id: "languageInstruction", titleKey: "step7Title", subtitleKey: "step7Subtitle", visible: true },
-        { id: "languageProficiency", titleKey: "step8Title", subtitleKey: "step8Subtitle", visible: ctx.proficiencyVisible },
-        { id: "exam", titleKey: "step9Title", subtitleKey: "step9Subtitle", visible: ctx.examVisible },
-        { id: "subjects", titleKey: "step10Title", subtitleKey: "step10Subtitle", visible: ctx.subjectsVisible },
-        { id: "budget", titleKey: "step11Title", subtitleKey: "step11Subtitle", visible: true },
-        { id: "lifestyle", titleKey: "step12Title", subtitleKey: "step12Subtitle", visible: true },
-        { id: "extra", titleKey: "step13Title", subtitleKey: "step13Subtitle", visible: true },
+        { id: "startYear", titleKey: "step4Title", subtitleKey: "step4Subtitle", visible: true },
+        { id: "fieldOfStudy", titleKey: "step5Title", subtitleKey: "step5Subtitle", visible: true },
+        { id: "languageInstruction", titleKey: "step6Title", subtitleKey: "step6Subtitle", visible: true },
+        { id: "languageProficiency", titleKey: "step7Title", subtitleKey: "step7Subtitle", visible: ctx.proficiencyVisible },
+        { id: "exam", titleKey: "step8Title", subtitleKey: "step8Subtitle", visible: ctx.examVisible },
+        { id: "subjects", titleKey: "step9Title", subtitleKey: "step9Subtitle", visible: ctx.subjectsVisible },
+        { id: "budget", titleKey: "step10Title", subtitleKey: "step10Subtitle", visible: true },
+        { id: "lifestyle", titleKey: "step11Title", subtitleKey: "step11Subtitle", visible: true },
+        { id: "extra", titleKey: "step12Title", subtitleKey: "step12Subtitle", visible: true },
+        { id: "support", titleKey: "step13Title", subtitleKey: "step13Subtitle", visible: true },
       ] as const,
-    [ctx.proficiencyVisible, ctx.examVisible, ctx.subjectsVisible, ctx.degreeLevelVisible],
+    [ctx.proficiencyVisible, ctx.examVisible, ctx.subjectsVisible],
   );
 }
 
@@ -282,7 +281,6 @@ export function OnboardingForm({
   existingLanguageProficiency,
 }: OnboardingFormProps) {
   const t = useTranslations("Onboarding");
-  const tDiscover = useTranslations("Discover");
   const action = submitOnboardingAction.bind(null, locale);
   const [state, formAction, pending] = useActionState(
     action,
@@ -313,11 +311,11 @@ export function OnboardingForm({
   const [selectedFieldId, setSelectedFieldId] = useState<string>(
     existingProfile?.primary_field_of_study_id ?? "",
   );
-  const [degreeLevel, setDegreeLevel] = useState<string>(
-    existingProfile?.preferred_degree_level ?? "",
-  );
   const [nmtBranch, setNmtBranch] = useState<string>(() =>
     deriveInitialNmtBranch(existingNmtScores),
+  );
+  const [supportPref, setSupportPref] = useState<string>(
+    existingProfile?.support_preference ?? "",
   );
   const [nmtScoreCount, setNmtScoreCount] = useState(
     existingNmtScores.filter((s) => s.score != null).length,
@@ -339,28 +337,22 @@ export function OnboardingForm({
     residenceCountry in RESIDENCE_EXAM_MAP && isPastSchoolStage(educationStage);
   const subjectsVisible = !(examVisible && nmtScoreCount > 0);
   const proficiencyVisible = selectedLanguages.length > 0;
-  // Degree level is only relevant for users who have finished school or are in college
-  // (grades 9-11 are assumed to want bachelor's)
-  const degreeLevelVisible = isPastSchoolStage(educationStage);
 
   // Calculate maximum possible steps for this user's path (for progress bar)
-  // This ensures the progress bar shows the correct total from the start
   const maxSteps = useMemo(() => {
-    let count = 10; // Always visible: residence, targetCountries, educationStage, startYear, fieldOfStudy, languageInstruction, budget, lifestyle, extra
-    if (degreeLevelVisible) count += 1; // degreeLevel
+    let count = 11; // Always visible: residence, targetCountries, educationStage, startYear, fieldOfStudy, languageInstruction, budget, lifestyle, extra, support
     if (proficiencyVisible) count += 1; // languageProficiency
     if (examVisible) {
       count += 1; // exam
       if (!(nmtScoreCount > 0)) count += 1; // subjects (if no NMT scores)
     }
     return count;
-  }, [proficiencyVisible, examVisible, degreeLevelVisible, nmtScoreCount]);
+  }, [proficiencyVisible, examVisible, nmtScoreCount]);
 
   const steps = useStepDefinitions({
     proficiencyVisible,
     examVisible,
     subjectsVisible,
-    degreeLevelVisible,
   });
   const visibleSteps = useMemo(
     () => steps.filter((s) => s.visible),
@@ -679,23 +671,8 @@ export function OnboardingForm({
           />
         </div>
 
-        {/* Q4 — degree level (only for those who finished school or in college) */}
-        <div className={currentStep.id === "degreeLevel" ? "" : "hidden"}>
-          <RadioCardGroup
-            name="preferred_degree_level"
-            options={[
-              { value: "foundation", label: tDiscover("degreeFoundation") },
-              { value: "bachelor", label: tDiscover("degreeBachelor") },
-              { value: "master", label: tDiscover("degreeMaster") },
-              { value: "phd", label: tDiscover("degreePhd") },
-              { value: "not_sure", label: t("notSure") },
-            ]}
-            value={degreeLevel}
-            onChange={setDegreeLevel}
-          />
-        </div>
-
-        {/* Q5 — start year */}
+        {/* Q4 — start year */}
+        <div className={currentStep.id === "startYear" ? "" : "hidden"}>
           <RadioCardGroup
             name="start_year_choice"
             options={[
@@ -969,6 +946,7 @@ export function OnboardingForm({
             <p className="font-body-sm text-body-sm text-on-surface-variant">
               {t("requirementsSubLabel")}
             </p>
+          </div>
 
           {/* Support & opportunities group */}
           <div>
@@ -1049,16 +1027,30 @@ export function OnboardingForm({
                   </label>
                 );
               })}
-</div>
+            </div>
+          </div>
         </div>
-      </div>
-      </div>
+
+        {/* Q13 — international student support */}
+        <div className={currentStep.id === "support" ? "space-y-4" : "hidden"}>
+          <RadioCardGroup
+            name="support_preference"
+            label={t("supportPrefLabel")}
+            options={[
+              { value: "yes", label: t("supportPrefYes") },
+              { value: "no", label: t("supportPrefNo") },
+            ]}
+            value={supportPref}
+            onChange={setSupportPref}
+          />
+        </div>
 
         {state.error && (
           <p role="alert" className="font-body-sm text-body-sm text-error">
             {state.error}
           </p>
         )}
+      </div>
       </main>
 
       {/* Anchored footer CTA — single row on every screen (mockup

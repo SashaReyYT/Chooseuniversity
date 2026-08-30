@@ -186,6 +186,9 @@ export async function submitOnboardingAction(
 
   const openToAdditionalExams = noExtraExams ? false : null;
 
+  // Q13 — international student support preference
+  const supportPreference = optionalText(formData, "support_preference");
+
   // Q7 — per-language proficiency, one row per selected language (CEFR levels).
   const languageProficiency = preferredLanguageCodes
     .map((code) => {
@@ -290,6 +293,7 @@ export async function submitOnboardingAction(
       lifestyle_preferences: _lifestylePreferences,
       career_priorities: careerTags,
       preferred_study_format: preferredStudyFormat,
+      support_preference: supportPreference,
     });
 
     // Q7 — per-language proficiency.
