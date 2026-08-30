@@ -14,6 +14,7 @@ function makeInput(overrides: Partial<VsUserInput> = {}): VsUserInput {
   return {
     profile: {
       current_education_level: "bachelor",
+      has_graduated: true,
       current_gpa: 3.6,
       current_gpa_scale: 4.0,
       english_level: "b2",

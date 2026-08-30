@@ -109,8 +109,16 @@ export async function submitOnboardingAction(
 
   const residenceCountryCode = optionalText(formData, "residence_country_code");
   const educationStage = parseEnum(formData.get("education_stage"), EDUCATION_STAGES);
-  const { currentEducationLevel, hasGraduated, preferredDegreeLevel } =
+  const { currentEducationLevel, hasGraduated, preferredDegreeLevel: derivedDegreeLevel } =
     deriveFromEducationStage(educationStage);
+  // Use explicit degree level from form if provided (for finished_school/college),
+  // otherwise fall back to derived default (bachelor for pre-bachelor stages).
+  // "not_sure" maps to null (use derived default).
+  const rawDegreeLevel = parseEnum(
+    formData.get("preferred_degree_level"),
+    ["foundation", "bachelor", "master", "phd", "not_sure"] as const,
+  );
+  const preferredDegreeLevel = rawDegreeLevel === "not_sure" ? derivedDegreeLevel : rawDegreeLevel;
 
   const startYearChoice = parseEnum(formData.get("start_year_choice"), START_YEAR_CHOICES);
   const startYear = deriveStartYear(startYearChoice);
@@ -168,8 +176,6 @@ export async function submitOnboardingAction(
   // Most students are flexible on delivery mode until told otherwise —
   // keeps Study-Format Fit applicable instead of permanently "no data".
   const preferredStudyFormat = "either" as const;
-
-  const supportPreference = String(formData.get("support_preference") ?? "").trim();
 
   // Q12 — new requirements (support + admission)
   const wantsScholarship = formData.get("scholarship") != null;
@@ -284,7 +290,6 @@ export async function submitOnboardingAction(
       lifestyle_preferences: _lifestylePreferences,
       career_priorities: careerTags,
       preferred_study_format: preferredStudyFormat,
-      support_preference: supportPreference || null,
     });
 
     // Q7 — per-language proficiency.

@@ -155,6 +155,7 @@ export function makeProfile(
     support_preference: null,
     english_level: "b2",
     math_background: "good",
+    has_graduated: true,
     career_priorities: [],
     lifestyle_preferences: [],
     testScores: [

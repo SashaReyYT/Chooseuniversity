@@ -123,6 +123,7 @@ export class MatchingService {
       support_preference: profileRow.support_preference,
       english_level: profileRow.english_level,
       math_background: profileRow.math_background,
+      has_graduated: profileRow.has_graduated,
       career_priorities: profileRow.career_priorities ?? [],
       lifestyle_preferences: profileRow.lifestyle_preferences ?? [],
       testScores: testScores.map((s) => ({

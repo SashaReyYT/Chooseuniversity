@@ -40,6 +40,7 @@ export interface VsUserInput {
   profile: Pick<
     MatchUserProfile,
     | "current_education_level"
+    | "has_graduated"
     | "current_gpa"
     | "current_gpa_scale"
     | "english_level"

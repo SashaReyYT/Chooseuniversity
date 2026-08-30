@@ -39,6 +39,7 @@ export function toMatchProfile(data: FullProfileData): MatchUserProfile | null {
     support_preference: p.support_preference,
     english_level: p.english_level,
     math_background: p.math_background,
+    has_graduated: p.has_graduated,
     career_priorities: p.career_priorities ?? [],
     lifestyle_preferences: p.lifestyle_preferences ?? [],
     testScores: data.testScores.map((s) => ({

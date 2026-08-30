@@ -465,7 +465,18 @@ function buildRows(
     },
     {
       label: t("attrMathRequirements"),
-      render: (p) => p.academic_requirements?.required_math_background ?? null,
+      render: (p) => {
+        const mathBg = p.academic_requirements?.required_math_background;
+        if (!mathBg) return null;
+        const keys: Record<string, string> = {
+          excellent: "mathBackgroundExcellent",
+          good: "mathBackgroundGood",
+          average: "mathBackgroundAverage",
+          weak: "mathBackgroundWeak",
+          not_sure: "mathBackgroundNotSure",
+        };
+        return t(keys[mathBg] as Parameters<typeof t>[0]) ?? mathBg;
+      },
     },
     {
       label: t("attrEntranceExam"),

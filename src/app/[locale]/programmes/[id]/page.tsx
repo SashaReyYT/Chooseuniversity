@@ -183,6 +183,7 @@ export default async function ProgrammeDetailsPage({
       {
         profile: {
           current_education_level: profile.current_education_level,
+          has_graduated: profile.has_graduated,
           current_gpa: profile.current_gpa,
           current_gpa_scale: profile.current_gpa_scale,
           english_level: profile.english_level,
@@ -1193,7 +1194,7 @@ function AdmissionOutlook({
   programme,
 }: {
   t: Awaited<ReturnType<typeof getTranslations<"ProgrammeDetails">>>;
-  profile: { english_level: string | null; math_background: string | null; current_education_level: string | null; current_gpa: number | null } | null;
+  profile: { english_level: string | null; math_background: string | null; current_education_level: string | null; has_graduated: boolean | null; current_gpa: number | null } | null;
   programme: { academic_requirements: { entrance_exam_required: boolean | null; min_gpa: number | null; gpa_scale: number | null } | null; test_requirements: Array<{ qualification: { name: string }; minimum_score_display: string | null }> | null } | null;
 }) {
   const checks = [];
@@ -1207,8 +1208,8 @@ function AdmissionOutlook({
     });
   }
 
-  // GPA
-  if (profile?.current_gpa != null && programme?.academic_requirements?.min_gpa != null) {
+  // GPA — only show if user has graduated (finished school)
+  if (profile?.has_graduated && profile?.current_gpa != null && programme?.academic_requirements?.min_gpa != null) {
     const meets = profile.current_gpa >= programme.academic_requirements.min_gpa!;
     checks.push({
       label: "GPA",
@@ -1216,6 +1217,12 @@ function AdmissionOutlook({
       detail: meets
         ? t("admissionCheckGpaMet", { your: profile.current_gpa, required: programme.academic_requirements.min_gpa })
         : t("admissionCheckGpaBelow", { your: profile.current_gpa, required: programme.academic_requirements.min_gpa }),
+    });
+  } else if (!profile?.has_graduated && programme?.academic_requirements?.min_gpa != null) {
+    checks.push({
+      label: "GPA",
+      status: "check" as const,
+      detail: t("admissionCheckGpaAfterGraduation", { required: programme.academic_requirements.min_gpa }),
     });
   } else if (programme?.academic_requirements?.min_gpa != null) {
     checks.push({

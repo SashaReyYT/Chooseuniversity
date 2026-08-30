@@ -136,6 +136,7 @@ function useStepDefinitions(ctx: {
   proficiencyVisible: boolean;
   examVisible: boolean;
   subjectsVisible: boolean;
+  degreeLevelVisible: boolean;
 }) {
   return useMemo(
     () =>
@@ -143,17 +144,18 @@ function useStepDefinitions(ctx: {
         { id: "residence", titleKey: "step1Title", subtitleKey: "step1Subtitle", visible: true },
         { id: "targetCountries", titleKey: "step2Title", subtitleKey: "step2Subtitle", visible: true },
         { id: "educationStage", titleKey: "step3Title", subtitleKey: "step3Subtitle", visible: true },
-        { id: "startYear", titleKey: "step4Title", subtitleKey: "step4Subtitle", visible: true },
-        { id: "fieldOfStudy", titleKey: "step5Title", subtitleKey: "step5Subtitle", visible: true },
-        { id: "languageInstruction", titleKey: "step6Title", subtitleKey: "step6Subtitle", visible: true },
-        { id: "languageProficiency", titleKey: "step7Title", subtitleKey: "step7Subtitle", visible: ctx.proficiencyVisible },
-        { id: "exam", titleKey: "step8Title", subtitleKey: "step8Subtitle", visible: ctx.examVisible },
-        { id: "subjects", titleKey: "step9Title", subtitleKey: "step9Subtitle", visible: ctx.subjectsVisible },
-        { id: "budget", titleKey: "step10Title", subtitleKey: "step10Subtitle", visible: true },
-        { id: "lifestyle", titleKey: "step11Title", subtitleKey: "step11Subtitle", visible: true },
-        { id: "extra", titleKey: "step12Title", subtitleKey: "step12Subtitle", visible: true },
+        { id: "degreeLevel", titleKey: "step4Title", subtitleKey: "step4Subtitle", visible: ctx.degreeLevelVisible },
+        { id: "startYear", titleKey: "step5Title", subtitleKey: "step5Subtitle", visible: true },
+        { id: "fieldOfStudy", titleKey: "step6Title", subtitleKey: "step6Subtitle", visible: true },
+        { id: "languageInstruction", titleKey: "step7Title", subtitleKey: "step7Subtitle", visible: true },
+        { id: "languageProficiency", titleKey: "step8Title", subtitleKey: "step8Subtitle", visible: ctx.proficiencyVisible },
+        { id: "exam", titleKey: "step9Title", subtitleKey: "step9Subtitle", visible: ctx.examVisible },
+        { id: "subjects", titleKey: "step10Title", subtitleKey: "step10Subtitle", visible: ctx.subjectsVisible },
+        { id: "budget", titleKey: "step11Title", subtitleKey: "step11Subtitle", visible: true },
+        { id: "lifestyle", titleKey: "step12Title", subtitleKey: "step12Subtitle", visible: true },
+        { id: "extra", titleKey: "step13Title", subtitleKey: "step13Subtitle", visible: true },
       ] as const,
-    [ctx.proficiencyVisible, ctx.examVisible, ctx.subjectsVisible],
+    [ctx.proficiencyVisible, ctx.examVisible, ctx.subjectsVisible, ctx.degreeLevelVisible],
   );
 }
 
@@ -280,6 +282,7 @@ export function OnboardingForm({
   existingLanguageProficiency,
 }: OnboardingFormProps) {
   const t = useTranslations("Onboarding");
+  const tDiscover = useTranslations("Discover");
   const action = submitOnboardingAction.bind(null, locale);
   const [state, formAction, pending] = useActionState(
     action,
@@ -310,6 +313,9 @@ export function OnboardingForm({
   const [selectedFieldId, setSelectedFieldId] = useState<string>(
     existingProfile?.primary_field_of_study_id ?? "",
   );
+  const [degreeLevel, setDegreeLevel] = useState<string>(
+    existingProfile?.preferred_degree_level ?? "",
+  );
   const [nmtBranch, setNmtBranch] = useState<string>(() =>
     deriveInitialNmtBranch(existingNmtScores),
   );
@@ -325,9 +331,6 @@ export function OnboardingForm({
   const [requirementsNew, setRequirementsNew] = useState<string[]>(() =>
     deriveInitialRequirementsNew(existingProfile),
   );
-  const [supportPreference, setSupportPreference] = useState<string>(
-    existingProfile?.support_preference ?? "",
-  );
 
   // Q8 (national exam) only makes sense for residents of a mapped country
   // who have finished school — grades 9–11 skip it entirely (no NMT
@@ -336,23 +339,28 @@ export function OnboardingForm({
     residenceCountry in RESIDENCE_EXAM_MAP && isPastSchoolStage(educationStage);
   const subjectsVisible = !(examVisible && nmtScoreCount > 0);
   const proficiencyVisible = selectedLanguages.length > 0;
+  // Degree level is only relevant for users who have finished school or are in college
+  // (grades 9-11 are assumed to want bachelor's)
+  const degreeLevelVisible = isPastSchoolStage(educationStage);
 
   // Calculate maximum possible steps for this user's path (for progress bar)
   // This ensures the progress bar shows the correct total from the start
   const maxSteps = useMemo(() => {
-    let count = 9; // Always visible: residence, targetCountries, educationStage, startYear, fieldOfStudy, languageInstruction, budget, lifestyle, extra
+    let count = 10; // Always visible: residence, targetCountries, educationStage, startYear, fieldOfStudy, languageInstruction, budget, lifestyle, extra
+    if (degreeLevelVisible) count += 1; // degreeLevel
     if (proficiencyVisible) count += 1; // languageProficiency
-    if (residenceCountry in RESIDENCE_EXAM_MAP && isPastSchoolStage(educationStage)) {
+    if (examVisible) {
       count += 1; // exam
       if (!(nmtScoreCount > 0)) count += 1; // subjects (if no NMT scores)
     }
     return count;
-  }, [proficiencyVisible, residenceCountry, educationStage, nmtScoreCount]);
+  }, [proficiencyVisible, examVisible, degreeLevelVisible, nmtScoreCount]);
 
   const steps = useStepDefinitions({
     proficiencyVisible,
     examVisible,
     subjectsVisible,
+    degreeLevelVisible,
   });
   const visibleSteps = useMemo(
     () => steps.filter((s) => s.visible),
@@ -671,8 +679,23 @@ export function OnboardingForm({
           />
         </div>
 
-        {/* Q4 — start year */}
-        <div className={currentStep.id === "startYear" ? "" : "hidden"}>
+        {/* Q4 — degree level (only for those who finished school or in college) */}
+        <div className={currentStep.id === "degreeLevel" ? "" : "hidden"}>
+          <RadioCardGroup
+            name="preferred_degree_level"
+            options={[
+              { value: "foundation", label: tDiscover("degreeFoundation") },
+              { value: "bachelor", label: tDiscover("degreeBachelor") },
+              { value: "master", label: tDiscover("degreeMaster") },
+              { value: "phd", label: tDiscover("degreePhd") },
+              { value: "not_sure", label: t("notSure") },
+            ]}
+            value={degreeLevel}
+            onChange={setDegreeLevel}
+          />
+        </div>
+
+        {/* Q5 — start year */}
           <RadioCardGroup
             name="start_year_choice"
             options={[
@@ -1026,48 +1049,7 @@ export function OnboardingForm({
                   </label>
                 );
               })}
-            </div>
-          </div>
-
-          {/* Support preference — enables the International Support Fit dimension */}
-          <div className="pt-4 border-t border-outline-variant/20">
-            <h4 className="font-label-caps text-label-caps text-on-surface-variant mb-1">
-              {t("supportPrefLabel")}
-            </h4>
-            <p className="font-body-xs text-body-xs text-on-surface-variant mb-3">
-              {t("supportPrefHint")}
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { value: "wants_support", labelKey: "supportPrefYes" },
-                { value: "no_preference", labelKey: "supportPrefNo" },
-              ].map((opt) => {
-                const checked = supportPreference === opt.value;
-                return (
-                  <label
-                    key={opt.value}
-                    className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 cursor-pointer transition-colors ${
-                      checked
-                        ? "border-primary bg-primary-fixed/20"
-                        : "border-outline-variant bg-surface-container-lowest"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="support_preference"
-                      value={opt.value}
-                      checked={checked}
-                      onChange={() => setSupportPreference(opt.value)}
-                      className="sr-only"
-                    />
-                    <span className="font-body-sm text-body-sm text-primary">
-                      {t(opt.labelKey as Parameters<typeof t>[0])}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
+</div>
         </div>
       </div>
       </div>

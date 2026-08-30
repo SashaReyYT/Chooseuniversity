@@ -28,6 +28,7 @@ export type MatchUserProfile = Pick<
   | "support_preference"
   | "english_level"
   | "math_background"
+  | "has_graduated"
   | "career_priorities"
   | "lifestyle_preferences"
 > & {
