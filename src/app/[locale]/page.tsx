@@ -11,6 +11,7 @@ import { ProfileService } from "@/lib/services/profile.service";
 import { MatchingService, type RankedMatch } from "@/lib/services/matching.service";
 import { renderMatchMessage } from "@/components/match-display";
 import { AuthNav } from "@/components/auth-nav";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
  * Landing page (spec §9 visual reference: `unifind_premium_landing_page_updated`).
@@ -66,11 +67,12 @@ export default async function Home({
     <div className="pb-16 md:pb-0">
       <AppNav />
       <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-8 pb-16 space-y-section-gap overflow-hidden">
-        <header className="flex items-center justify-between gap-4">
+<header className="flex items-center justify-between gap-4">
           <span className="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">
             {tNav("brand")}
           </span>
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <AuthNav />
             <LanguageSwitcher />
           </div>
