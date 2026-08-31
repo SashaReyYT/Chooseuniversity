@@ -61,7 +61,37 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
 
   const profile = profileData.profile;
   const withScore = matches.filter((m) => m.match?.overallScore != null);
-  const top3 = withScore.slice(0, 3);
+
+  // Prioritise top-3 by preferred country → preferred field, within each
+  // bucket the engine's score ordering is already preserved (best first).
+  const preferredCountries: string[] = profile.preferred_country_codes ?? [];
+  const preferredFieldIds: string[] = profile.preferred_field_of_study_ids ?? [];
+
+  const inCountry = withScore.filter(
+    (m) =>
+      preferredCountries.length === 0 ||
+      preferredCountries.includes(m.programme.university.country.code),
+  );
+  const outOfCountry = withScore.filter(
+    (m) =>
+      preferredCountries.length > 0 &&
+      !preferredCountries.includes(m.programme.university.country.code),
+  );
+
+  const inCountryAndField = inCountry.filter(
+    (m) =>
+      preferredFieldIds.length === 0 ||
+      preferredFieldIds.includes(m.programme.field_of_study_id),
+  );
+  const inCountryOtherField = inCountry.filter(
+    (m) =>
+      preferredFieldIds.length > 0 &&
+      !preferredFieldIds.includes(m.programme.field_of_study_id),
+  );
+
+  // Merge buckets in priority order; dedup is implicit since a programme
+  // can only be in one bucket.
+  const top3 = [...inCountryAndField, ...inCountryOtherField, ...outOfCountry].slice(0, 3);
 
   const profileChips = [
     profile.preferred_field_of_study_ids?.[0]

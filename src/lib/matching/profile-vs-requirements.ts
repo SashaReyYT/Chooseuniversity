@@ -175,23 +175,34 @@ export function compareEnglish(
         reason: meets ? null : `Ваш рівень ${CEFR_ORDINAL_KEYS[userOrdinal]?.toUpperCase()} нижче ніж потрібний ${cefrReq.minimum_score_display ?? cefrReq.qualification.name}`,
       };
     }
+    const reqDisplay = cefrReq.minimum_score_display ?? cefrReq.qualification.name;
     return {
       key: "english",
       status: "no",
       you: null,
-      requirement: cefrReq.minimum_score_display ?? cefrReq.qualification.name,
-      reason: "Немає даних про рівень англійської",
+      requirement: reqDisplay,
+      reason: `Потрібний рівень ${reqDisplay} — додайте рівень англійської до профілю`,
     };
   }
 
+  // No matching test score for non-CEFR requirements (e.g. IELTS, TOEFL).
+  // Show the user's self-assessed CEFR level in the "You" column if available
+  // so they understand what they have vs what's needed.
+  const reqDisplay = reqs
+    .map((r) => `${r.qualification.name} ${r.minimum_score_display ?? ""}`.trim())
+    .join(" / ");
+  const cefrLevelDisplay = input.profile.english_level
+    ? input.profile.english_level.toUpperCase()
+    : null;
+  const reasonDetail = cefrLevelDisplay
+    ? `Потрібен ${reqDisplay}; ваш зафіксований рівень: ${cefrLevelDisplay}`
+    : `Потрібен ${reqDisplay} — додайте результат до профілю`;
   return {
     key: "english",
     status: "no",
-    you: bestUserEnglish(input),
-    requirement: reqs
-      .map((r) => `${r.qualification.name} ${r.minimum_score_display ?? ""}`.trim())
-      .join(" / "),
-    reason: "Немає відповідного мовного сертифіката",
+    you: cefrLevelDisplay ?? bestUserEnglish(input),
+    requirement: reqDisplay,
+    reason: reasonDetail,
   };
 }
 
@@ -228,7 +239,7 @@ export function compareMathematics(
       status: "no",
       you,
       requirement: reqMath,
-      reason: "Не вказано рівень математики",
+      reason: `Потрібний рівень математики: ${reqMath} — вкажіть рівень у профілі`,
     };
   }
 
@@ -245,7 +256,8 @@ export function compareMathematics(
       reason: "Потрібний вступний іспит з математики",
     };
   }
-  return { key: "mathematics", status: "no", you, requirement: null, reason: "Програма не вимагає математики" };
+  // No math requirement → the user automatically satisfies this row.
+  return { key: "mathematics", status: "yes", you, requirement: null, reason: "Програма не вимагає математики" };
 }
 
 export function compareDegreeLevel(

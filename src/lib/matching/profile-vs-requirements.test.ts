@@ -129,7 +129,42 @@ describe("compareEnglish (§39)", () => {
     expect(row.status).toBe("no");
     expect(row.requirement).toBeNull();
   });
-});
+
+  it("shows self-assessed CEFR level in 'you' and names required test in reason when no test score", () => {
+    const programme = makeProgramme({
+      test_requirements: [
+        makeTestRequirement({ code: "ielts", name: "IELTS" }, { minimum_score: 6.5, minimum_score_display: "6.5" }),
+      ],
+    });
+    const input = makeInput({
+      testScores: [],
+      profile: { ...makeInput().profile, english_level: "b1" },
+    });
+    const row = compareEnglish(input, programme);
+    expect(row.status).toBe("no");
+    expect(row.you).toBe("B1");
+    expect(row.requirement).toBe("IELTS 6.5");
+    expect(row.reason).toContain("B1");
+    expect(row.reason).toContain("IELTS");
+  });
+
+  it("shows null in 'you' and names required test when no test score and no english_level", () => {
+    const programme = makeProgramme({
+      test_requirements: [
+        makeTestRequirement({ code: "ielts", name: "IELTS" }, { minimum_score: 6.5, minimum_score_display: "6.5" }),
+      ],
+    });
+    const input = makeInput({
+      testScores: [],
+      profile: { ...makeInput().profile, english_level: null },
+    });
+    const row = compareEnglish(input, programme);
+    expect(row.status).toBe("no");
+    expect(row.you).toBeNull();
+    expect(row.requirement).toBe("IELTS 6.5");
+    expect(row.reason).toContain("IELTS");
+  });
+  });
 
 describe("compareMathematics (§39)", () => {
   it("shows the user's NMT score and flags no when admission is exam-gated", () => {
@@ -197,6 +232,28 @@ describe("compareMathematics (§39)", () => {
       },
     });
     expect(compareMathematics(makeInput(), programme).status).toBe("no");
+  });
+
+  it("returns yes when the programme has no mathematics requirement", () => {
+    const programme = makeProgramme({
+      academic_requirements: {
+        id: "r",
+        programme_id: "p",
+        min_gpa: null,
+        gpa_scale: null,
+        required_subjects: [],
+        entrance_exam_required: false,
+        entrance_exam_notes: null,
+        portfolio_required: false,
+        interview_required: false,
+        notes: null,
+        required_degree_level: null,
+        required_math_background: null,
+      },
+    });
+    const row = compareMathematics(makeInput(), programme);
+    expect(row.status).toBe("yes");
+    expect(row.reason?.toLowerCase()).toContain("математик");
   });
 });
 

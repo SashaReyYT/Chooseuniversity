@@ -314,9 +314,12 @@ export function OnboardingForm({
   const [nmtBranch, setNmtBranch] = useState<string>(() =>
     deriveInitialNmtBranch(existingNmtScores),
   );
-  const [supportPref, setSupportPref] = useState<string>(
-    existingProfile?.support_preference ?? "",
-  );
+  const [supportPref, setSupportPref] = useState<string>(() => {
+    const dbVal = existingProfile?.support_preference ?? "";
+    if (dbVal === "wants_support") return "yes";
+    if (dbVal === "no_preference") return "no";
+    return dbVal; // handles "" and any future values gracefully
+  });
   const [nmtScoreCount, setNmtScoreCount] = useState(
     existingNmtScores.filter((s) => s.score != null).length,
   );

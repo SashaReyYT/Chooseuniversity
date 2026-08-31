@@ -186,8 +186,16 @@ export async function submitOnboardingAction(
 
   const openToAdditionalExams = noExtraExams ? false : null;
 
-  // Q13 — international student support preference
-  const supportPreference = optionalText(formData, "support_preference");
+  // Q13 — international student support preference.
+  // The form sends "yes"/"no" (radio values); the DB CHECK constraint on
+  // user_profiles.support_preference only accepts 'wants_support' / 'no_preference'.
+  const rawSupportPref = optionalText(formData, "support_preference");
+  const supportPreference =
+    rawSupportPref === "yes"
+      ? "wants_support"
+      : rawSupportPref === "no"
+      ? "no_preference"
+      : null;
 
   // Q7 — per-language proficiency, one row per selected language (CEFR levels).
   const languageProficiency = preferredLanguageCodes
