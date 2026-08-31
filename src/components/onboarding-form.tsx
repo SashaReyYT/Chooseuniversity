@@ -339,7 +339,7 @@ export function OnboardingForm({
   const proficiencyVisible = selectedLanguages.length > 0;
 
   // Calculate maximum possible steps for this user's path (for progress bar)
-  const maxSteps = useMemo(() => {
+  const _maxSteps = useMemo(() => {
     let count = 11; // Always visible: residence, targetCountries, educationStage, startYear, fieldOfStudy, languageInstruction, budget, lifestyle, extra, support
     if (proficiencyVisible) count += 1; // languageProficiency
     if (examVisible) {

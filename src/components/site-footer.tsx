@@ -10,7 +10,7 @@ export async function SiteFooter() {
   const t = await getTranslations("Footer");
 
   return (
-    <footer className="border-t border-outline-variant/30 mt-16 pb-16 md:pb-0">
+    <footer className="hidden md:block border-t border-outline-variant/30 mt-16">
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-6 flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2">
         <Link href="/guides" className="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors">
           {t("guides")}

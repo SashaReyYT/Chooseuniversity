@@ -2,7 +2,7 @@ import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import { Link, redirect } from "@/i18n/navigation";
+import { redirect } from "@/i18n/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ReferenceDataRepository } from "@/lib/repositories/reference-data.repository";
 import { ProfileService } from "@/lib/services/profile.service";

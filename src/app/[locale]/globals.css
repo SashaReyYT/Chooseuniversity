@@ -241,3 +241,24 @@ body {
   --color-background: #1a1c1b;
   --color-on-background: #e2e3e0;
 }
+
+/* Safe Area Utilities & Touch Optimizations */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+.mt-safe {
+  margin-top: env(safe-area-inset-top, 0px);
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .touch-action-manipulation {
+    touch-action: manipulation;
+  }
+}
+

@@ -111,10 +111,10 @@ export function GlobalSearch() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Search"
-        className="hidden md:flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors border border-outline-variant rounded-full px-4 py-1.5"
+        className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-container transition-colors md:w-auto md:h-auto md:bg-transparent md:border md:border-outline-variant md:px-4 md:py-1.5 md:gap-2"
       >
-        <span className="material-symbols-outlined text-base" aria-hidden="true">search</span>
-        <kbd className="font-label-caps text-label-caps opacity-60">⌘K</kbd>
+        <span className="material-symbols-outlined text-on-surface-variant md:text-base" aria-hidden="true">search</span>
+        <kbd className="hidden md:inline font-label-caps text-label-caps opacity-60">⌘K</kbd>
       </button>
     );
   }

@@ -88,10 +88,10 @@ export async function ProgrammeCard({
     })) ?? [];
 
   return (
-    <article className="bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-6 md:p-8 ambient-shadow space-y-5">
+    <article className="bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-4 md:p-8 ambient-shadow space-y-5">
       {/* University cover image or gradient fallback */}
       {programme.university.cover_image_url ? (
-        <div className="relative h-32 md:h-40 rounded-lg overflow-hidden -mx-6 md:-mx-8 -mt-6 mb-4 border border-outline-variant/30">
+        <div className="relative h-24 md:h-40 rounded-lg overflow-hidden -mx-4 md:-mx-8 -mt-4 md:-mt-8 mb-4 border border-outline-variant/30">
           <div
             className="absolute inset-0 bg-cover bg-center w-full h-full"
             style={{ backgroundImage: `url('${sanitizeCssUrl(programme.university.cover_image_url)}')` }}
@@ -99,7 +99,7 @@ export async function ProgrammeCard({
           <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent" />
         </div>
       ) : (
-        <div className="relative h-32 md:h-40 rounded-lg overflow-hidden -mx-6 md:-mx-8 -mt-6 mb-4 border border-outline-variant/30 bg-gradient-to-br from-primary-container to-primary-fixed flex items-center justify-center">
+        <div className="relative h-24 md:h-40 rounded-lg overflow-hidden -mx-4 md:-mx-8 -mt-4 md:-mt-8 mb-4 border border-outline-variant/30 bg-gradient-to-br from-primary-container to-primary-fixed flex items-center justify-center">
           <span className="font-headline-lg text-headline-lg text-on-primary-container opacity-60">
             {programme.university.name.split(" ").map((w) => w[0]).join("").slice(0, 3).toUpperCase()}
           </span>
@@ -148,7 +148,7 @@ export async function ProgrammeCard({
 
       {/* 3. Compact metrics — Academic, Budget, Admission with human-readable summaries */}
       {compactMetrics.length > 0 && (
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
           {compactMetrics.map((dim) => (
             <div key={dim.key} className="flex items-center gap-2">
               <span className={`font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wide ${
@@ -160,7 +160,7 @@ export async function ProgrammeCard({
               <span className="font-data-lg text-data-lg text-primary">
                 {dim.score}%
               </span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant hidden sm:inline">
+              <span className="font-body-sm text-body-sm text-on-surface-variant hidden md:inline">
                 — {dim.explanation.summary}
               </span>
             </div>
@@ -210,12 +210,14 @@ export async function ProgrammeCard({
       )}
 
       {/* 6. Actions */}
-      <div className="flex flex-wrap gap-3 pt-2 border-t border-outline-variant/20">
+      <div className="grid grid-cols-3 gap-2 w-full pt-2 border-t border-outline-variant/20 md:flex md:flex-wrap md:gap-3">
         <Link
           href={`/programmes/${programme.id}`}
-          className="font-label-caps text-label-caps text-primary border border-primary rounded-full px-6 py-3 hover:bg-surface-container transition-all active:scale-95"
+          className="flex items-center justify-center gap-2 font-label-caps text-label-caps text-primary border border-primary rounded-full px-4 py-2 md:px-6 md:py-3 hover:bg-surface-container transition-all active:scale-95 text-center w-full"
         >
-          {t("viewDetails")}
+          <span className="material-symbols-outlined text-base" aria-hidden="true">info</span>
+          <span className="hidden md:inline">{t("viewDetails")}</span>
+          <span className="md:hidden">{t("viewDetails").split(" ").pop()}</span>
         </Link>
         <SaveButton
           action={toggleSaveAction}
@@ -225,7 +227,12 @@ export async function ProgrammeCard({
           labelSaved={t("unsave")}
           toastSaved={t("toastSaved")}
           toastUnsaved={t("toastUnsaved")}
-          className="inline-block [&>button]:px-4 [&>button]:py-3"
+          className="w-full"
+          buttonClassName={`w-full flex items-center justify-center gap-2 font-label-caps text-label-caps px-4 py-2 md:px-6 md:py-3 rounded-full border transition-all active:scale-95 ${
+            isSaved
+              ? "bg-primary text-on-primary border-primary"
+              : "bg-transparent text-primary border-primary hover:bg-surface-container"
+          }`}
         />
         <CompareButton
           action={toggleCompareAction}
@@ -236,7 +243,12 @@ export async function ProgrammeCard({
           labelUncompare={t("uncompare")}
           toastCompared={t("toastCompared")}
           toastUncompared={t("toastUncompared")}
-          className="inline-block"
+          className="w-full"
+          buttonClassName={`w-full flex items-center justify-center gap-2 font-label-caps text-label-caps px-4 py-2 md:px-6 md:py-3 rounded-full border transition-all active:scale-95 ${
+            isInComparison
+              ? "bg-secondary-container text-on-secondary-container border-secondary-container"
+              : "bg-transparent text-primary border-primary hover:bg-surface-container"
+          }`}
         />
       </div>
 

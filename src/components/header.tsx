@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { AuthNav } from "@/components/auth-nav";
 import { GlobalSearch } from "@/components/global-search";
@@ -28,7 +28,9 @@ export async function Header() {
         </Link>
 
         <div className="flex items-center gap-3">
-          <ThemeToggle />
+          <div className="hidden md:block">
+            <ThemeToggle />
+          </div>
           <GlobalSearch />
           <AuthNav />
         </div>

@@ -12,6 +12,7 @@ interface SaveButtonProps {
   toastSaved: string;
   toastUnsaved: string;
   className?: string;
+  buttonClassName?: string;
 }
 
 /**
@@ -28,6 +29,7 @@ export function SaveButton({
   toastSaved,
   toastUnsaved,
   className = "",
+  buttonClassName,
 }: SaveButtonProps) {
   const [optimisticSaved, setOptimisticSaved] = useOptimistic(isSaved);
 
@@ -49,7 +51,7 @@ export function SaveButton({
       <button
         type="submit"
         aria-label={saved ? labelSaved : labelSave}
-        className={`flex items-center gap-2 font-label-caps text-label-caps px-4 py-2 rounded-full border transition-all active:scale-95 ${
+        className={buttonClassName || `flex items-center gap-2 font-label-caps text-label-caps px-4 py-2 rounded-full border transition-all active:scale-95 ${
           saved
             ? "bg-primary text-on-primary border-primary"
             : "bg-transparent text-primary border-primary hover:bg-surface-container"
@@ -68,7 +70,7 @@ export function SaveButton({
         >
           <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
         </svg>
-        {saved ? labelSaved : labelSave}
+        <span className="hidden md:inline">{saved ? labelSaved : labelSave}</span>
       </button>
     </form>
   );

@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { DeleteAccountZone } from "@/components/delete-account-zone";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { Database } from "@/types/database";
 
 type UserProfileRow = Database["public"]["Tables"]["user_profiles"]["Row"];
@@ -49,6 +50,7 @@ export async function ProfileSummary({
 }: ProfileSummaryProps) {
   const t = await getTranslations("Onboarding");
   const tDiscover = await getTranslations("Discover");
+  const tFooter = await getTranslations("Footer");
 
   const degreeLabels: Record<string, string> = {
     foundation: tDiscover("degreeFoundation"),
@@ -99,12 +101,17 @@ export async function ProfileSummary({
             {t("summaryDescription")}
           </p>
         </div>
-        <Link
-          href="/onboarding"
-          className="shrink-0 font-label-caps text-label-caps text-primary border border-primary rounded-full px-6 py-3 hover:bg-surface-container transition-all active:scale-95 whitespace-nowrap"
-        >
-          {t("editProfile")}
-        </Link>
+        <div className="flex items-center gap-4 shrink-0">
+          <div className="md:hidden">
+            <ThemeToggle />
+          </div>
+          <Link
+            href="/onboarding"
+            className="shrink-0 font-label-caps text-label-caps text-primary border border-primary rounded-full px-6 py-3 hover:bg-surface-container transition-all active:scale-95 whitespace-nowrap"
+          >
+            {t("editProfile")}
+          </Link>
+        </div>
       </div>
 
       <section className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-6 md:p-8 ambient-shadow space-y-1" aria-labelledby="profile-study-heading">
@@ -228,6 +235,22 @@ export async function ProfileSummary({
           {t("deleteAccountHint")}
         </p>
         <DeleteAccountZone />
+      </section>
+
+      {/* Mobile-only footer links (since main footer is hidden on mobile) */}
+      <section className="md:hidden pt-8 border-t border-outline-variant/20 flex flex-wrap justify-center gap-x-6 gap-y-3 pb-8">
+        <Link href="/guides" className="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors">
+          {tFooter("guides")}
+        </Link>
+        <Link href="/score-methodology" className="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors">
+          {tFooter("methodology")}
+        </Link>
+        <Link href="/privacy" className="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors">
+          {tFooter("privacy")}
+        </Link>
+        <Link href="/terms" className="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors">
+          {tFooter("terms")}
+        </Link>
       </section>
     </main>
   );
