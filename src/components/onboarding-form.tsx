@@ -916,8 +916,8 @@ export function OnboardingForm({
                   >
                     <input
                       type="checkbox"
-                      name={option.value}
-                      value="true"
+                      name="city_features"
+                      value={option.value}
                       checked={checked}
                       onChange={() => toggleCityFeature(option.value)}
                       className="peer sr-only"
