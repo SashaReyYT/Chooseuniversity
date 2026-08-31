@@ -7,7 +7,10 @@ import "@fontsource/playfair-display/700.css";
 import "./globals.css";
 import "./fonts.css";
 
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://unifind.org";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
   title: "Unifind — Find the universities that actually fit you",
   description:
     "Unifind helps students discover university programmes, understand how well each one fits their profile, compare options, and build an informed shortlist.",

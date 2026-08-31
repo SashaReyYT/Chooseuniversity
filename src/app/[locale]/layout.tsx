@@ -24,6 +24,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "HomePage" });
 
   return {
+    metadataBase: new URL(baseUrl),
     title: `Unifind — ${t("heading")}`,
     description: t("description"),
     alternates: {
