@@ -288,7 +288,7 @@ export default async function DiscoverPage({
           </p>
         </div>
         <Link
-          href="/profile"
+          href="/onboarding"
           className="font-label-caps text-label-caps text-primary border border-primary rounded-full px-6 py-3 hover:bg-surface-container transition-all whitespace-nowrap"
         >
           {profile ? t("editProfile") : t("buildProfile")}
