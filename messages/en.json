@@ -209,6 +209,7 @@
     "vsStatus": "Status",
     "vsYes": "Yes",
     "vsNo": "No",
+    "vsSkipped": "N/A",
     "vsReason": "Reason",
     "vsAddProfile": "Add to your profile",
     "vsEnglish": "English",

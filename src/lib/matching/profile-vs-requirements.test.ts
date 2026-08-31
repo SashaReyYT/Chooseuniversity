@@ -130,7 +130,7 @@ describe("compareEnglish (§39)", () => {
     expect(row.requirement).toBeNull();
   });
 
-  it("shows self-assessed CEFR level in 'you' and names required test in reason when no test score", () => {
+  it("shows self-assessed CEFR level in 'you' and marks yes when B1 or above", () => {
     const programme = makeProgramme({
       test_requirements: [
         makeTestRequirement({ code: "ielts", name: "IELTS" }, { minimum_score: 6.5, minimum_score_display: "6.5" }),
@@ -141,11 +141,9 @@ describe("compareEnglish (§39)", () => {
       profile: { ...makeInput().profile, english_level: "b1" },
     });
     const row = compareEnglish(input, programme);
-    expect(row.status).toBe("no");
-    expect(row.you).toBe("B1");
+    expect(row.status).toBe("yes");
+    expect(row.you).toBe("B1+");
     expect(row.requirement).toBe("IELTS 6.5");
-    expect(row.reason).toContain("B1");
-    expect(row.reason).toContain("IELTS");
   });
 
   it("shows null in 'you' and names required test when no test score and no english_level", () => {
@@ -167,7 +165,7 @@ describe("compareEnglish (§39)", () => {
   });
 
 describe("compareMathematics (§39)", () => {
-  it("shows the user's NMT score and flags no when admission is exam-gated", () => {
+  it("shows the user's NMT score and marks yes when math background is good/excellent for entrance exam", () => {
     const programme = makeProgramme({
       academic_requirements: {
         id: "r",
@@ -187,11 +185,33 @@ describe("compareMathematics (§39)", () => {
     const row = compareMathematics(makeInput(), programme);
     expect(row).toEqual({
       key: "mathematics",
-      status: "no",
+      status: "yes",
       you: "NMT 186/200 · good",
       requirement: "Equivalent required qualification / entrance exam",
-      reason: "Потрібний вступний іспит з математики",
+      reason: null,
     });
+  });
+
+  it("flags no when math background is weak for entrance exam", () => {
+    const programme = makeProgramme({
+      academic_requirements: {
+        id: "r",
+        programme_id: "p",
+        min_gpa: null,
+        gpa_scale: null,
+        required_subjects: [],
+        entrance_exam_required: true,
+        entrance_exam_notes: null,
+        portfolio_required: false,
+        interview_required: false,
+        notes: null,
+        required_degree_level: null,
+        required_math_background: null,
+      },
+    });
+    const input = makeInput({ profile: { ...makeInput().profile, math_background: "weak" } });
+    const row = compareMathematics(input, programme);
+    expect(row.status).toBe("no");
   });
 
   it("meets a structured mathematics background requirement", () => {

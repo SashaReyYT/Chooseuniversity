@@ -23,7 +23,7 @@ export type VsRowKey =
   | "gpa"
   | "entrance_exam";
 
-export type VsStatus = "yes" | "no";
+export type VsStatus = "yes" | "no" | "skipped";
 
 export interface ProfileVsRequirementRow {
   key: VsRowKey;
@@ -186,14 +186,26 @@ export function compareEnglish(
   }
 
   // No matching test score for non-CEFR requirements (e.g. IELTS, TOEFL).
-  // Show the user's self-assessed CEFR level in the "You" column if available
-  // so they understand what they have vs what's needed.
+  // If the user has a CEFR level B1 or above, consider them as meeting
+  // the requirement — a B1+ level is broadly sufficient for most programmes.
   const reqDisplay = reqs
     .map((r) => `${r.qualification.name} ${r.minimum_score_display ?? ""}`.trim())
     .join(" / ");
+  const userCefrOrdinalVal = userCefrOrdinal(input.profile, input.testScores);
   const cefrLevelDisplay = input.profile.english_level
-    ? input.profile.english_level.toUpperCase()
+    ? `${input.profile.english_level.toUpperCase()}+`
     : null;
+  // B1=3 or above counts as meeting the requirement
+  const meetsCefr = userCefrOrdinalVal != null && userCefrOrdinalVal >= 3;
+  if (meetsCefr) {
+    return {
+      key: "english",
+      status: "yes",
+      you: cefrLevelDisplay ?? bestUserEnglish(input),
+      requirement: reqDisplay,
+      reason: null,
+    };
+  }
   const reasonDetail = cefrLevelDisplay
     ? `Потрібен ${reqDisplay}; ваш зафіксований рівень: ${cefrLevelDisplay}`
     : `Потрібен ${reqDisplay} — додайте результат до профілю`;
@@ -248,12 +260,21 @@ export function compareMathematics(
   // exam") when the programme still gates admission, otherwise nothing
   // is published to compare against.
   if (req?.entrance_exam_required) {
+    const userOrdinal = input.profile.math_background
+      ? MATH_ORDINAL[input.profile.math_background]
+      : null;
+    // good=3, excellent=4 → user is likely prepared for the entrance exam
+    const meets = userOrdinal != null && userOrdinal >= 3;
     return {
       key: "mathematics",
-      status: "no",
+      status: meets ? "yes" : "no",
       you,
       requirement: req.entrance_exam_notes ?? "Equivalent required qualification / entrance exam",
-      reason: "Потрібний вступний іспит з математики",
+      reason: meets
+        ? null
+        : you
+          ? `Ваш рівень математики (${input.profile.math_background}) може бути недостатнім для вступного іспиту`
+          : "Вкажіть рівень математики у профілі для оцінки вступного іспиту",
     };
   }
   // No math requirement → the user automatically satisfies this row.
@@ -304,6 +325,10 @@ export function compareGpa(
     return { key: "gpa", status: "no", you, requirement: null, reason: "Програма не вимагає середній бал" };
   }
   const requirement = `${formatScore(req.min_gpa)}/${formatScore(req.gpa_scale)}`;
+  // Student still in school — GPA not yet available, show as skipped.
+  if (input.profile.current_education_level === "high_school" || input.profile.has_graduated === false) {
+    return { key: "gpa", status: "skipped", you, requirement, reason: null };
+  }
   if (
     input.profile.current_gpa == null ||
     input.profile.current_gpa_scale == null

@@ -73,6 +73,7 @@ const VS_STATUS_STYLES: Record<
 > = {
   yes: { icon: "✓", iconClass: "text-success", labelKey: "vsYes" },
   no: { icon: "✕", iconClass: "text-error", labelKey: "vsNo" },
+  skipped: { icon: "—", iconClass: "text-on-surface-variant", labelKey: "vsSkipped" },
 };
 
 const VS_ROW_LABEL_KEYS: Record<
