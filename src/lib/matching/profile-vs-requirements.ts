@@ -322,7 +322,7 @@ export function compareGpa(
       ? `${formatScore(input.profile.current_gpa)}/${formatScore(input.profile.current_gpa_scale)}`
       : null;
   if (req?.min_gpa == null || req.gpa_scale == null) {
-    return { key: "gpa", status: "no", you, requirement: null, reason: "Програма не вимагає середній бал" };
+    return { key: "gpa", status: "yes", you, requirement: null, reason: "Програма не вимагає середній бал" };
   }
   const requirement = `${formatScore(req.min_gpa)}/${formatScore(req.gpa_scale)}`;
   // Student still in school — GPA not yet available, show as skipped.
