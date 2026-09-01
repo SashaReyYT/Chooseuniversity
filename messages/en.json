@@ -742,6 +742,7 @@
     },
     "admission": {
       "entranceExamRequired": "An entrance exam is required as part of admission.",
+      "entranceExamNotOpen": "An entrance exam is required, but you indicated you're not open to additional exams.",
       "noEntranceExam": "No entrance exam required.",
       "deadlinePassed": "The application deadline ({date, date, long}) has passed.",
       "deadlineSoon": "The application deadline ({date, date, long}) is coming up soon.",
@@ -786,7 +787,10 @@
       "erasmus": "Participates in Erasmus+ exchange.",
       "noErasmus": "Doesn't appear to participate in Erasmus+.",
       "dormitory": "Offers dormitory housing.",
-      "noDormitory": "No university dormitory housing found."
+      "noDormitory": "No university dormitory housing found.",
+      "scholarshipAvailable": "Has scholarship information available.",
+      "scholarshipInfoMissing": "No scholarship information available — verify directly with the university.",
+      "dormitoryWantedUnavailable": "You indicated you need dormitory housing, but this university doesn't offer it."
     }
   },
   "Admin": {

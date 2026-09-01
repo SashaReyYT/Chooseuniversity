@@ -62,12 +62,15 @@ export function scoreSupportFit(
       onKey: "support.erasmus",
       offKey: "support.noErasmus",
     },
-    {
-      known: programme.accommodation?.dormitory_available ?? null,
-      onKey: "support.dormitory",
-      offKey: "support.noDormitory",
-    },
   ];
+
+  // Dormitory fact — always checked, but weighted extra when user wants it
+  const dormitoryAvailable = programme.accommodation?.dormitory_available ?? null;
+  facts.push({
+    known: dormitoryAvailable,
+    onKey: "support.dormitory",
+    offKey: "support.noDormitory",
+  });
 
   for (const fact of facts) {
     if (fact.known === true) {
@@ -75,6 +78,21 @@ export function scoreSupportFit(
     } else if (fact.known === false) {
       concerns.push(translated(fact.offKey));
     }
+  }
+
+  // Scholarship — user explicitly wants scholarship support
+  if (profile.wants_scholarship) {
+    const hasNotes = programme.scholarship_notes != null && programme.scholarship_notes.trim().length > 0;
+    if (hasNotes) {
+      reasons.push(translated("support.scholarshipAvailable"));
+    } else {
+      concerns.push(translated("support.scholarshipInfoMissing"));
+    }
+  }
+
+  // Dormitory — user explicitly wants dormitory, flag if unavailable
+  if (profile.wants_dormitory && dormitoryAvailable === false) {
+    concerns.push(translated("support.dormitoryWantedUnavailable"));
   }
 
   // Supporting descriptions (buddy programmes, arrival info, ...) surface
@@ -101,7 +119,10 @@ export function scoreSupportFit(
       : null;
 
   const applicable =
-    profile.support_preference === "wants_support" && score != null;
+    (profile.support_preference === "wants_support" ||
+      profile.wants_dormitory === true ||
+      profile.wants_scholarship === true) &&
+    score != null;
 
   return {
     key: "support",

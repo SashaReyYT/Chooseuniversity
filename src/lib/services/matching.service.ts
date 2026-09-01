@@ -129,6 +129,11 @@ export class MatchingService {
       has_graduated: profileRow.has_graduated,
       career_priorities: profileRow.career_priorities ?? [],
       lifestyle_preferences: profileRow.lifestyle_preferences ?? [],
+      wants_dormitory: profileRow.wants_dormitory,
+      wants_scholarship: profileRow.wants_scholarship,
+      wants_work_during_study: profileRow.wants_work_during_study,
+      wants_stay_after_graduation: profileRow.wants_stay_after_graduation,
+      open_to_additional_exams: profileRow.open_to_additional_exams,
       testScores: testScores.map((s) => ({
         test_type: s.test_type,
         qualification_id: s.qualification_id,

@@ -1,4 +1,4 @@
-import type { MatchDimensionResult, ProgrammeWithDetails } from "./match-types";
+import type { MatchDimensionResult, MatchUserProfile, ProgrammeWithDetails } from "./match-types";
 import { MATCH_DIMENSION_LABELS } from "./match-types";
 import type { MatchMessage } from "./messages";
 import { translated } from "./messages";
@@ -25,6 +25,7 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
  * correctly per the active locale instead.
  */
 export function scoreAdmissionFit(
+  profile: MatchUserProfile,
   programme: ProgrammeWithDetails,
   now: Date = new Date(),
 ): MatchDimensionResult {
@@ -33,8 +34,13 @@ export function scoreAdmissionFit(
   let score = 100;
 
   if (programme.academic_requirements?.entrance_exam_required) {
-    score -= 20;
-    concerns.push(translated("admission.entranceExamRequired"));
+    const penalty = profile.open_to_additional_exams === false ? 35 : 20;
+    score -= penalty;
+    if (profile.open_to_additional_exams === false) {
+      concerns.push(translated("admission.entranceExamNotOpen"));
+    } else {
+      concerns.push(translated("admission.entranceExamRequired"));
+    }
   } else if (programme.academic_requirements) {
     // Only claim "no entrance exam" when we actually have a requirements
     // row to base that on — absence of a row means unknown, not "no exam".

@@ -31,6 +31,11 @@ export type MatchUserProfile = Pick<
   | "has_graduated"
   | "career_priorities"
   | "lifestyle_preferences"
+  | "wants_dormitory"
+  | "wants_scholarship"
+  | "wants_work_during_study"
+  | "wants_stay_after_graduation"
+  | "open_to_additional_exams"
 > & {
   testScores: Pick<
     Database["public"]["Tables"]["user_test_scores"]["Row"],

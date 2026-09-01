@@ -42,6 +42,11 @@ export function toMatchProfile(data: FullProfileData): MatchUserProfile | null {
     has_graduated: p.has_graduated,
     career_priorities: p.career_priorities ?? [],
     lifestyle_preferences: p.lifestyle_preferences ?? [],
+    wants_dormitory: p.wants_dormitory,
+    wants_scholarship: p.wants_scholarship,
+    wants_work_during_study: p.wants_work_during_study,
+    wants_stay_after_graduation: p.wants_stay_after_graduation,
+    open_to_additional_exams: p.open_to_additional_exams,
     testScores: data.testScores.map((s) => ({
       test_type: s.test_type,
       qualification_id: s.qualification_id,

@@ -158,6 +158,11 @@ export function makeProfile(
     has_graduated: true,
     career_priorities: [],
     lifestyle_preferences: [],
+    wants_dormitory: null,
+    wants_scholarship: null,
+    wants_work_during_study: null,
+    wants_stay_after_graduation: null,
+    open_to_additional_exams: null,
     testScores: [
       { test_type: "IELTS", qualification_id: "qual-ielts", score: 7.0, cefr_equivalent: "c1" },
     ],

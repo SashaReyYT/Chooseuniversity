@@ -71,7 +71,7 @@ export function computeMatchScore(
     scoreBudgetFit(profile, programme, currencyRates),
     scoreLanguageFit(profile, programme),
     scoreLocationFit(profile, programme),
-    scoreAdmissionFit(programme, now),
+    scoreAdmissionFit(profile, programme, now),
     scoreCareerFit(profile, programme),
     scoreFormatFit(profile, programme),
     scoreLifestyleFit(profile, programme),
