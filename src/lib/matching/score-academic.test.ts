@@ -306,7 +306,7 @@ describe("scoreAcademicFit", () => {
 
     const result = scoreAcademicFit(profile, programme);
 
-    expect(result.score).toBe(100); // GPA only — missing evidence isn't a penalty
+    expect(result.score).toBe(65); // GPA=100 meets requirement, but missing test = 30 → avg 65
     expect(hasMessageKey(result.concerns, "academic.missingTestRequirement")).toBe(true);
   });
 

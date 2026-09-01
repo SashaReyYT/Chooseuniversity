@@ -104,10 +104,17 @@ describe("sortRankedMatches", () => {
     expect(ranked.map((r) => r.programme.id)).toEqual(["c", "a", "b"]);
   });
 
-  it("treats highest_match the same as best_match", () => {
+  it("sorts highest_match by academic dimension score, not overall score", () => {
     const ranked = [
-      makeRanked({ id: "a", overallScore: 40 }),
-      makeRanked({ id: "b", overallScore: 90 }),
+      makeRanked({ id: "a", overallScore: 90 }),
+      makeRanked({ id: "b", overallScore: 60 }),
+    ];
+    // Give "b" a higher academic score despite lower overall
+    ranked[1].match.dimensions = [
+      { key: "academic", label: "Academic Fit", score: 95, applicable: true, reasons: [], concerns: [] },
+    ];
+    ranked[0].match.dimensions = [
+      { key: "academic", label: "Academic Fit", score: 70, applicable: true, reasons: [], concerns: [] },
     ];
 
     sortRankedMatches(ranked, "highest_match");

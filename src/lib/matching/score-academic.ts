@@ -211,6 +211,9 @@ export function scoreAcademicFit(
         );
       }
     } else {
+      // No evidence for this requirement — known gap, not unknown.
+      // Add a below-threshold signal so missing tests penalize the score.
+      testSignals.push(30);
       concerns.push(
         translated("academic.missingTestRequirement", {
           testType: r.subject

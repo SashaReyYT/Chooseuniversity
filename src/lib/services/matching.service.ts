@@ -265,8 +265,45 @@ export function sortRankedMatches(
           (b.programme.estimated_living_cost_monthly ?? Number.POSITIVE_INFINITY),
       );
       return;
+    case "highest_match": {
+      // Sort by academic dimension score first ( programmes that best match
+      // the user's academic profile rise to the top), then fall back to
+      // overall score and the standard tie-breaking chain.
+      ranked.sort((a, b) => {
+        const acadA = a.match.dimensions.find((d) => d.key === "academic");
+        const acadB = b.match.dimensions.find((d) => d.key === "academic");
+        const sa = acadA?.score ?? -1;
+        const sb = acadB?.score ?? -1;
+        if (sa !== sb) return sb - sa;
+
+        const oa = a.match.overallScore ?? -1;
+        const ob = b.match.overallScore ?? -1;
+        if (oa !== ob) return ob - oa;
+
+        const confidenceOrder = { high: 3, medium: 2, low: 1 };
+        const ca = confidenceOrder[a.match.confidence] ?? 0;
+        const cb = confidenceOrder[b.match.confidence] ?? 0;
+        if (ca !== cb) return cb - ca;
+
+        const failedA = a.match.hardRequirements.filter((r) => r.status === "fail").length;
+        const failedB = b.match.hardRequirements.filter((r) => r.status === "fail").length;
+        if (failedA !== failedB) return failedA - failedB;
+
+        const concernsA = a.match.concerns.length;
+        const concernsB = b.match.concerns.length;
+        if (concernsA !== concernsB) return concernsA - concernsB;
+
+        const priceA = a.programme.tuition_min ?? Number.POSITIVE_INFINITY;
+        const priceB = b.programme.tuition_min ?? Number.POSITIVE_INFINITY;
+        if (priceA !== priceB) return priceA - priceB;
+
+        return (a.programme.university?.name ?? "").localeCompare(
+          b.programme.university?.name ?? "",
+        );
+      });
+      return;
+    }
     case "best_match":
-    case "highest_match":
     default:
       ranked.sort((a, b) => {
         const sa = a.match.overallScore ?? -1;

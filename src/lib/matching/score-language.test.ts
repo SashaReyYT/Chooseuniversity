@@ -17,23 +17,24 @@ describe("scoreLanguageFit", () => {
     expect(hasMessageKey(result.reasons, "language.meetsTestRequirement")).toBe(true);
   });
 
-  it("is not applicable when the user has no language preference and no relevant test score", () => {
+  it("is applicable with a below-threshold score when the user has no language preference and no relevant test score", () => {
     const profile = makeProfile({ preferred_language_codes: [], testScores: [] });
     const programme = makeProgramme();
 
     const result = scoreLanguageFit(profile, programme);
 
-    expect(result.applicable).toBe(false);
-    expect(result.score).toBeNull();
+    expect(result.applicable).toBe(true);
+    expect(result.score).toBe(30);
+    expect(hasMessageKey(result.concerns, "language.addTestScore")).toBe(true);
   });
 
-  it("scores using preference alone when no test score is available", () => {
+  it("scores 65 when preference matches but no test score is available (below-threshold penalty)", () => {
     const profile = makeProfile({ preferred_language_codes: ["en"], testScores: [] });
     const programme = makeProgramme();
 
     const result = scoreLanguageFit(profile, programme);
 
-    expect(result.score).toBe(100);
+    expect(result.score).toBe(65);
     expect(hasMessageKey(result.concerns, "language.addTestScore")).toBe(true);
   });
 

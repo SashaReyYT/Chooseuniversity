@@ -62,7 +62,10 @@ export function scoreLanguageFit(
     );
 
     if (userTestsForProgramme.length === 0) {
-      proficiencyMatch = null;
+      // No test score for a required qualification — this is a known gap,
+      // not an unknown. Score it as 30 (below threshold) so the dimension
+      // reflects that the admission requirement isn't met yet.
+      proficiencyMatch = false;
       concerns.push(
         translated("language.addTestScore", {
           testTypes: languageRequirements
