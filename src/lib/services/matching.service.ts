@@ -8,6 +8,7 @@ import { UserNmtScoresRepository } from "@/lib/repositories/user-nmt-scores.repo
 import { UserQualificationsRepository } from "@/lib/repositories/user-qualifications.repository";
 import { UserMatchWeightsRepository } from "@/lib/repositories/user-match-weights.repository";
 import { computeMatchScore } from "@/lib/matching/engine";
+import { hasHardRequirementFailure } from "@/lib/matching/hard-requirements";
 import {
   matchCacheKey,
   cacheGet,
@@ -193,10 +194,14 @@ export class MatchingService {
       );
     }
 
-    const ranked = programmes.map((programme) => ({
-      programme,
-      match: computeMatchScore(profile, programme, new Date(), weights, currencyRates),
-    }));
+    const ranked = programmes
+      .map((programme) => ({
+        programme,
+        match: computeMatchScore(profile, programme, new Date(), weights, currencyRates),
+      }))
+      // Exclude programmes where the user clearly fails a hard requirement
+      // (e.g. wrong degree level, wrong field of study, insufficient language).
+      .filter((r) => !hasHardRequirementFailure(r.match.hardRequirements));
 
     sortRankedMatches(ranked, filters.sortBy);
 

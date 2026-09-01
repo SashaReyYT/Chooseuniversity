@@ -17,6 +17,51 @@ import { translated } from "./messages";
  */
 
 /**
+ * Preferred degree level hard filter. If the user explicitly chose a
+ * preferred degree level (e.g. "bachelor"), programmes at a different
+ * level are excluded.
+ */
+export function checkDegreeLevelPreference(
+  profile: MatchUserProfile,
+  programme: ProgrammeWithDetails,
+): HardRequirementCheck {
+  const preferred = profile.preferred_degree_level;
+  if (!preferred) {
+    return { type: "degree_level", status: "pass", message: "" };
+  }
+  if (programme.degree_level === preferred) {
+    return { type: "degree_level", status: "pass", message: "" };
+  }
+  return {
+    type: "degree_level",
+    status: "fail",
+    message: "hardRequirement.degreeLevelPreferenceFail",
+  };
+}
+
+/**
+ * Preferred field of study hard filter. If the user explicitly chose
+ * preferred fields of study, programmes outside those fields are excluded.
+ */
+export function checkFieldOfStudyPreference(
+  profile: MatchUserProfile,
+  programme: ProgrammeWithDetails,
+): HardRequirementCheck {
+  const preferred = profile.preferred_field_of_study_ids;
+  if (!preferred || preferred.length === 0) {
+    return { type: "field_of_study", status: "pass", message: "" };
+  }
+  if (preferred.includes(programme.field_of_study_id)) {
+    return { type: "field_of_study", status: "pass", message: "" };
+  }
+  return {
+    type: "field_of_study",
+    status: "fail",
+    message: "hardRequirement.fieldOfStudyPreferenceFail",
+  };
+}
+
+/**
  * Degree-level hard requirement. A programme that requires a minimum
  * degree level (e.g. a Master's programme requiring a Bachelor's) is
  * failed if the user's current education level is clearly below it.
@@ -239,6 +284,8 @@ export function checkHardRequirements(
 ): HardRequirementCheck[] {
   return [
     checkDegreeLevel(profile, programme),
+    checkDegreeLevelPreference(profile, programme),
+    checkFieldOfStudyPreference(profile, programme),
     checkMathBackground(profile, programme),
     checkLanguageProficiency(profile, programme),
   ];

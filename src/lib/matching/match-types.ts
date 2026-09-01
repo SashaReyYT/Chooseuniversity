@@ -100,7 +100,7 @@ export type HardRequirementStatus = "pass" | "fail" | "unknown";
 
 export interface HardRequirementCheck {
   /** Machine-readable type — rendered via `Matching` message namespace keys. */
-  type: "degree_level" | "math_background" | "language_proficiency";
+  type: "degree_level" | "field_of_study" | "math_background" | "language_proficiency";
   status: HardRequirementStatus;
   /** Human-readable detail (translated elsewhere), empty when status is `pass`. */
   message: string;
