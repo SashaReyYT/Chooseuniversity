@@ -792,7 +792,9 @@
       "noDormitory": "No university dormitory housing found.",
       "scholarshipAvailable": "Has scholarship information available.",
       "scholarshipInfoMissing": "No scholarship information available — verify directly with the university.",
-      "dormitoryWantedUnavailable": "You indicated you need dormitory housing, but this university doesn't offer it."
+      "dormitoryWantedUnavailable": "You indicated you need dormitory housing, but this university doesn't offer it.",
+      "workDuringStudyInfo": "You're interested in working during your studies — verify work-permission rules and part-time options directly with the university.",
+      "stayAfterGraduationInfo": "You're interested in staying after graduation — verify post-study work visa options directly with the university."
     }
   },
   "Admin": {

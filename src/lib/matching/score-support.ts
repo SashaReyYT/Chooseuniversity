@@ -95,6 +95,16 @@ export function scoreSupportFit(
     concerns.push(translated("support.dormitoryWantedUnavailable"));
   }
 
+  // Work during study — no structured data exists, surface as informational concern
+  if (profile.wants_work_during_study) {
+    concerns.push(translated("support.workDuringStudyInfo"));
+  }
+
+  // Stay after graduation — no structured data exists, surface as informational concern
+  if (profile.wants_stay_after_graduation) {
+    concerns.push(translated("support.stayAfterGraduationInfo"));
+  }
+
   // Supporting descriptions (buddy programmes, arrival info, ...) surface
   // as extra reasons without affecting the score — the dimension is only
   // applicable once at least one of the boolean facts above is known.
