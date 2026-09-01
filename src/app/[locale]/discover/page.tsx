@@ -242,37 +242,22 @@ export default async function DiscoverPage({
   // For search form action — uses GET to preserve query params (locale-aware)
 
   // Top matches for recommendations section — categorised as Best Fit / Safe Choice / Ambitious
-  // Prioritise by preferred country → preferred field (same logic as results page)
-  // so the top-3 always reflect the user's stated preferences.
+  // Only show programmes that match the user's preferred country AND field.
   const topMatches = (() => {
     const withScore = entries.filter((e) => e.match?.overallScore != null);
 
     const preferredCountries: string[] = profile?.preferred_country_codes ?? [];
     const preferredFieldIds: string[] = profile?.preferred_field_of_study_ids ?? [];
 
-    const inCountry = withScore.filter(
-      (e) =>
-        preferredCountries.length === 0 ||
-        preferredCountries.includes(e.programme.university.country.code),
-    );
-    const outOfCountry = withScore.filter(
-      (e) =>
-        preferredCountries.length > 0 &&
-        !preferredCountries.includes(e.programme.university.country.code),
-    );
-
-    const inCountryAndField = inCountry.filter(
-      (e) =>
-        preferredFieldIds.length === 0 ||
-        preferredFieldIds.includes(e.programme.field_of_study_id),
-    );
-    const inCountryOtherField = inCountry.filter(
-      (e) =>
-        preferredFieldIds.length > 0 &&
-        !preferredFieldIds.includes(e.programme.field_of_study_id),
-    );
-
-    const top3 = [...inCountryAndField, ...inCountryOtherField, ...outOfCountry].slice(0, 3);
+    const top3 = withScore
+      .filter(
+        (e) =>
+          (preferredCountries.length === 0 ||
+            preferredCountries.includes(e.programme.university.country.code)) &&
+          (preferredFieldIds.length === 0 ||
+            preferredFieldIds.includes(e.programme.field_of_study_id)),
+      )
+      .slice(0, 3);
 
     return top3.map((entry, idx) => {
       const score = entry.match!.overallScore!;
