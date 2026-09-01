@@ -8,6 +8,7 @@ import { UserNmtScoresRepository } from "@/lib/repositories/user-nmt-scores.repo
 import { UserQualificationsRepository } from "@/lib/repositories/user-qualifications.repository";
 import { UserMatchWeightsRepository } from "@/lib/repositories/user-match-weights.repository";
 import { computeMatchScore } from "@/lib/matching/engine";
+import { convertAmount } from "@/lib/matching/currency";
 import { hasHardRequirementFailure } from "@/lib/matching/hard-requirements";
 import {
   matchCacheKey,
@@ -115,6 +116,7 @@ export class MatchingService {
       budget_max: profileRow.budget_max,
       budget_currency: profileRow.budget_currency,
       budget_mode: profileRow.budget_mode,
+      living_cost_mode: profileRow.living_cost_mode,
       preferred_degree_level: profileRow.preferred_degree_level,
       preferred_country_codes: profileRow.preferred_country_codes,
       preferred_cities: profileRow.preferred_cities,
@@ -208,7 +210,7 @@ export class MatchingService {
       // (e.g. wrong degree level, wrong field of study, insufficient language).
       .filter((r) => !hasHardRequirementFailure(r.match.hardRequirements));
 
-    sortRankedMatches(ranked, filters.sortBy);
+    sortRankedMatches(ranked, filters.sortBy, currencyRates, profile.budget_currency ?? "EUR");
 
     cacheSet(cacheKey, ranked);
     return ranked;
@@ -248,20 +250,26 @@ export class MatchingService {
  *  2. confidence desc (high > medium > low)
  *  3. failed hard requirements asc
  *  4. concerns count asc
- *  5. tuition_min asc (cheaper wins ties)
+ *  5. tuition_min asc (cheaper wins ties, currency-converted)
  *  6. university name asc (stable)
  */
 export function sortRankedMatches(
   ranked: RankedMatch[],
   sortBy: MatchSearchFilters["sortBy"],
+  rates: CurrencyRateTable = {},
+  userCurrency: string = "EUR",
 ): void {
+  /** Convert a programme's tuition_min to the user's currency for fair comparison. */
+  const toUserCurrency = (p: RankedMatch["programme"]): number => {
+    if (p.tuition_min == null || p.tuition_currency == null) return Number.POSITIVE_INFINITY;
+    if (p.tuition_currency === userCurrency) return p.tuition_min;
+    const converted = convertAmount(p.tuition_min, p.tuition_currency, userCurrency, rates);
+    return converted ?? Number.POSITIVE_INFINITY;
+  };
+
   switch (sortBy) {
     case "lowest_tuition":
-      ranked.sort(
-        (a, b) =>
-          (a.programme.tuition_min ?? Number.POSITIVE_INFINITY) -
-          (b.programme.tuition_min ?? Number.POSITIVE_INFINITY),
-      );
+      ranked.sort((a, b) => toUserCurrency(a.programme) - toUserCurrency(b.programme));
       return;
     case "lowest_cost":
       ranked.sort(
@@ -298,8 +306,8 @@ export function sortRankedMatches(
         const concernsB = b.match.concerns.length;
         if (concernsA !== concernsB) return concernsA - concernsB;
 
-        const priceA = a.programme.tuition_min ?? Number.POSITIVE_INFINITY;
-        const priceB = b.programme.tuition_min ?? Number.POSITIVE_INFINITY;
+        const priceA = toUserCurrency(a.programme);
+        const priceB = toUserCurrency(b.programme);
         if (priceA !== priceB) return priceA - priceB;
 
         return (a.programme.university?.name ?? "").localeCompare(
@@ -328,8 +336,8 @@ export function sortRankedMatches(
         const concernsB = b.match.concerns.length;
         if (concernsA !== concernsB) return concernsA - concernsB;
 
-        const tuitionA = a.programme.tuition_min ?? Number.POSITIVE_INFINITY;
-        const tuitionB = b.programme.tuition_min ?? Number.POSITIVE_INFINITY;
+        const tuitionA = toUserCurrency(a.programme);
+        const tuitionB = toUserCurrency(b.programme);
         if (tuitionA !== tuitionB) return tuitionA - tuitionB;
 
         return a.programme.university.name.localeCompare(b.programme.university.name);

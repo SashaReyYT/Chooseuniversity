@@ -28,6 +28,7 @@ export function toMatchProfile(data: FullProfileData): MatchUserProfile | null {
     budget_max: p.budget_max,
     budget_currency: p.budget_currency,
     budget_mode: p.budget_mode,
+    living_cost_mode: p.living_cost_mode,
     preferred_degree_level: p.preferred_degree_level,
     preferred_country_codes: p.preferred_country_codes ?? [],
     preferred_cities: p.preferred_cities ?? [],

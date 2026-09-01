@@ -747,7 +747,9 @@
       "partiallyFitsBudget": "Найдешевший варіант вписується у ваш бюджет ({amountMin, number}–{amountMax, number} {currency}/рік), але найдорожчий перевищує {budgetMax, number}.",
       "overBudget": "Коштує більше за ваш бюджет (~{amount, number} проти {budgetMax, number} {currency}/рік).",
       "significantlyOverBudget": "Суттєво перевищує ваш бюджет (~{amount, number} проти {budgetMax, number} {currency}/рік).",
-      "tuitionUnknown": "Офіційна сума оплати не опублікована — бюджет не оцінюється."
+      "tuitionUnknown": "Офіційна сума оплати не опублікована — бюджет не оцінюється.",
+      "livingCostModeBonus": "Витрати на проживання відповідають вашим уподобанням.",
+      "livingCostModePenalty": "Витрати на проживання не відповідають вашим уподобанням."
     },
     "language": {
       "meetsTestRequirement": "Відповідає вимозі {testType} ({score, number} ≥ {minScore}).",

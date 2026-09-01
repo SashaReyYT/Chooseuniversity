@@ -144,6 +144,7 @@ export function makeProfile(
     budget_max: 20000,
     budget_currency: "EUR",
     budget_mode: "exact",
+    living_cost_mode: "unknown",
     preferred_degree_level: "master",
     preferred_country_codes: ["NL"],
     preferred_cities: [],

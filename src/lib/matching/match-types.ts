@@ -17,6 +17,7 @@ export type MatchUserProfile = Pick<
   | "budget_max"
   | "budget_currency"
   | "budget_mode"
+  | "living_cost_mode"
   | "preferred_degree_level"
   | "preferred_country_codes"
   | "preferred_cities"

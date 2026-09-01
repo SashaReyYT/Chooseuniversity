@@ -27,6 +27,17 @@ const BUDGET_MODE_CEILINGS_EUR: Partial<Record<MatchUserProfile["budget_mode"], 
 };
 
 /**
+ * Living cost mode adjusts the budget score based on the user's
+ * preference for living cost level. When the user chose "low", programmes
+ * with high living costs are penalized; when "high", programmes with low
+ * living costs get a bonus.
+ */
+const LIVING_COST_MODE_ADJUSTMENT: Partial<Record<MatchUserProfile["living_cost_mode"], number>> = {
+  low: -10,
+  high: 10,
+};
+
+/**
  * Budget Fit compares a programme's estimated annual cost (tuition +
  * living costs) against the user's stated budget ceiling.
  *
@@ -191,6 +202,19 @@ export function scoreBudgetFit(
         }),
       );
     }
+  }
+
+  // Apply living cost mode adjustment: user's preference for living cost
+  // level adds or subtracts from the score.
+  const livingCostAdjustment = LIVING_COST_MODE_ADJUSTMENT[profile.living_cost_mode] ?? 0;
+  if (livingCostAdjustment !== 0) {
+    const adjusted = roundScore(score + livingCostAdjustment);
+    if (adjusted > score) {
+      reasons.push(translated("budget.livingCostModeBonus"));
+    } else {
+      concerns.push(translated("budget.livingCostModePenalty"));
+    }
+    score = adjusted;
   }
 
   return {

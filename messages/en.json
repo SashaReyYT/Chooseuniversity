@@ -722,7 +722,9 @@
       "partiallyFitsBudget": "The cheapest option fits your budget ({amountMin, number}–{amountMax, number} {currency}/year), but the most expensive exceeds {budgetMax, number}.",
       "overBudget": "Costs more than your budget (~{amount, number} vs {budgetMax, number} {currency}/year).",
       "significantlyOverBudget": "Significantly exceeds your budget (~{amount, number} vs {budgetMax, number} {currency}/year).",
-      "tuitionUnknown": "No public tuition figure — Budget Fit not scored."
+      "tuitionUnknown": "No public tuition figure — Budget Fit not scored.",
+      "livingCostModeBonus": "Living costs align with your preference.",
+      "livingCostModePenalty": "Living costs don't align with your preference."
     },
     "language": {
       "meetsTestRequirement": "Meets the {testType} requirement ({score, number} ≥ {minScore}).",
